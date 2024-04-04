@@ -1,0 +1,50 @@
+{
+  "devMode": false,
+  "ignoreCodeBlockRestrictions": false,
+  "preferredDateFormat": "YYYY-MM-DD",
+  "useUsDateInputOrder": false,
+  "firstWeekday": {
+    "index": 1,
+    "name": "Monday",
+    "shortName": "Mo"
+  },
+  "syncInterval": 200,
+  "minSyncInterval": 50,
+  "maxSyncInterval": 1000,
+  "enableJs": false,
+  "viewFieldDisplayNullAsEmpty": false,
+  "enableSyntaxHighlighting": true,
+  "enableEditorRightClickMenu": true,
+  "inputFieldTemplates": [],
+  "buttonTemplates": [
+    {
+      "label": "Update literature note",
+      "hidden": false,
+      "tooltip": "This will fetch new annotations from Zotero",
+      "id": "update-litnote",
+      "style": "primary",
+      "actions": [
+        {
+          "type": "command",
+          "command": "templater-obsidian:templates/runImport.md"
+        }
+      ]
+    },
+    {
+      "label": "Update literature note with headers",
+      "hidden": false,
+      "tooltip": "This will fetch new annotations with headers from Zotero",
+      "id": "update-litnote-headers",
+      "style": "primary",
+      "actions": [
+        {
+          "type": "command",
+          "command": "templater-obsidian:templates/run-import-headers.md"
+        }
+      ]
+    }
+  ],
+  "excludedFolders": [
+    "templates"
+  ]
+}

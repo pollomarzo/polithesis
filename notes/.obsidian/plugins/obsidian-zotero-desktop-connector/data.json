@@ -1,0 +1,38 @@
+{
+  "database": "Zotero",
+  "noteImportFolder": "",
+  "pdfExportImageDPI": 120,
+  "pdfExportImageFormat": "jpg",
+  "pdfExportImageQuality": 90,
+  "citeFormats": [],
+  "exportFormats": [
+    {
+      "name": "import with headers",
+      "outputPathTemplate": "{{citekey}}.md",
+      "imageOutputPathTemplate": "media/zotero/{{citekey}}/",
+      "imageBaseNameTemplate": "{{citekey}}",
+      "templatePath": "templates/custom-headers.md",
+      "cslStyle": "ieee"
+    },
+    {
+      "name": "Basic",
+      "outputPathTemplate": "{{citekey}}.md",
+      "imageOutputPathTemplate": "media/zotero/{{citekey}}/",
+      "imageBaseNameTemplate": "{{citekey}}",
+      "templatePath": "templates/basic.md",
+      "cslStyle": "ieee"
+    },
+    {
+      "name": "Full Import",
+      "outputPathTemplate": "{{citekey}}.md",
+      "imageOutputPathTemplate": "media/zotero/{{citekey}}/",
+      "imageBaseNameTemplate": "{{citekey}}",
+      "templatePath": "templates/ZI-main.md",
+      "cslStyle": "ieee"
+    }
+  ],
+  "citeSuggestTemplate": "[[{{citekey}}]]",
+  "openNoteAfterImport": true,
+  "whichNotesToOpenAfterImport": "first-imported-note",
+  "shouldConcat": true
+}

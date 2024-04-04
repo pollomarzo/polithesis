@@ -1,0 +1,1 @@
+<%* app.plugins.getPlugin('obsidian-zotero-desktop-connector').runImport('import with headers', tp.file.title,2) %>
