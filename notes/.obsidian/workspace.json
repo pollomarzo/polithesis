@@ -129,12 +129,12 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -147,77 +147,42 @@
       "templater-obsidian:Templater": false
     }
   },
-  "floating": {
-    "id": "4bc11bdb5f0984ed",
-    "type": "floating",
-    "children": [
-      {
-        "id": "47b1284b1b0dfe15",
-        "type": "window",
-        "children": [
-          {
-            "id": "6dfad4e6c0671fb1",
-            "type": "tabs",
-            "children": [
-              {
-                "id": "66d977aab7bbae5d",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "templates/ZI-main.md",
-                    "mode": "source",
-                    "source": true
-                  }
-                }
-              }
-            ]
-          }
-        ],
-        "direction": "vertical",
-        "x": 448,
-        "y": 117,
-        "width": 1024,
-        "height": 800,
-        "maximize": false,
-        "zoom": 1
-      }
-    ]
-  },
   "active": "c76efd2966363885",
   "lastOpenFiles": [
-    "yinNeuralMechanismsBinaural2019.md",
+    "docker.md",
+    "wunderlichDemonstratingAdvantagesNeuromorphic2019.md",
     "grotheNaturalHistorySound2014.md",
-    "grotheMechanismsSoundLocalization2010.md",
     "templates/custom-headers.md",
+    "yinNeuralMechanismsBinaural2019.md",
+    "templates/ZI-main.md",
+    "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019/wunderlichDemonstratingAdvantagesNeuromorphic2019-9-x36-y478.png",
+    "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019/wunderlichDemonstratingAdvantagesNeuromorphic2019-6-x48-y156.png",
+    "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019/wunderlichDemonstratingAdvantagesNeuromorphic2019-6-x346-y424.png",
+    "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019/wunderlichDemonstratingAdvantagesNeuromorphic2019-5-x375-y270.png",
+    "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019/wunderlichDemonstratingAdvantagesNeuromorphic2019-5-x309-y138.png",
+    "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019",
+    "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-17-x77-y379.png",
     "templates/run-import-headers.md",
+    "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-13-x157-y302.png",
+    "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-11-x181-y256.png",
+    "test.md",
+    "grotheMechanismsSoundLocalization2010.md",
     "templates/custom-headers.njk.md",
     "templates/custom-headers.njk",
     "media/zotero/grotheMechanismsSoundLocalization2010/grotheMechanismsSoundLocalization2010-6-x39-y475.png",
     "media/zotero/grotheMechanismsSoundLocalization2010",
-    "templates/ZI-main.md",
     "templates/runImport.md",
     "templates/basic.md",
     "22U28Z6H.png",
-    "CMIR8JLZ.png",
-    "STNYAPB3.png",
-    "media/zotero/grotheNaturalHistorySound2014/grotheNaturalHistorySound2014-7-x302-y525.png",
-    "media/zotero/grotheNaturalHistorySound2014/grotheNaturalHistorySound2014-7-x103-y447.png",
-    "media/zotero/grotheNaturalHistorySound2014/grotheNaturalHistorySound2014-10-x49-y313.png",
     "media/zotero/grotheNaturalHistorySound2014",
-    "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-8-x82-y558.png",
-    "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-57-x357-y513.png",
-    "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-54-x197-y434.png",
     "media/zotero/yinNeuralMechanismsBinaural2019",
     "media/zotero",
     "media",
     "Note-status-YZ7JAQCY.md",
     "YIN-2019-summary-ADK5H3WJ.md",
-    "Untitled.md",
     "templates",
     "inbox",
     "YIN-2019-summary-ADK5H3WJ.md.tmp",
-    "attachments",
     "YIN-2019-summary.md"
   ]
 }

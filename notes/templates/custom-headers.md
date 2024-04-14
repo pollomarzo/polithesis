@@ -50,7 +50,7 @@ attachments:{% endif %}
 
 {#- The following is a cursor placeholder for the Templater plugin. After importing the note, you can jump to each of these with an assigned hotkey like ctrl+J  #}
 
-- <% tp.file.cursor(1) %>
+- <% tp.file.cursor(1) %>jump here with ctrl+shift+J
 
 ## Connections
 
@@ -146,22 +146,22 @@ ___
     },
     "#2ea8e5": {
         "colorCategory": "Blue",
-        "symbol": "#### ",
+        "symbol": "###### ",
         "isHeader": true
     },
     "#a28ae5": {
         "colorCategory": "Purple",
-        "symbol": "### ",
+        "symbol": "##### ",
         "isHeader": true
     },
     "#e56eee": {
         "colorCategory": "Magenta",
-        "symbol": "## ",
+        "symbol": "#### ",
         "isHeader": true
     },
     "#f19837": {
         "colorCategory": "Orange",
-        "symbol": "# ",
+        "symbol": "### ",
         "isHeader": true
     }
 } -%}
