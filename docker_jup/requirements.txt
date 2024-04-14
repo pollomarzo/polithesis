@@ -1,0 +1,2 @@
+brian2==2.6.0
+brian2hears==0.9.2
