@@ -8,18 +8,6 @@
         "type": "tabs",
         "children": [
           {
-            "id": "c76efd2966363885",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "grotheNaturalHistorySound2014.md",
-                "mode": "source",
-                "source": true
-              }
-            }
-          },
-          {
             "id": "bd80762a5249eabe",
             "type": "leaf",
             "state": {
@@ -66,9 +54,33 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "0d2aa21229b3fa74",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "grotheNaturalHistorySound2014.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "7388bd78255d3ba8",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "grotheMechanismsSoundLocalization2010.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -134,7 +146,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "nest.md",
+                "file": "grotheMechanismsSoundLocalization2010.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -151,7 +163,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "nest.md",
+                "file": "grotheMechanismsSoundLocalization2010.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -174,7 +186,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "nest.md"
+                "file": "grotheMechanismsSoundLocalization2010.md"
               }
             }
           }
@@ -196,14 +208,18 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "55c5a4ca018dc178",
+  "active": "7388bd78255d3ba8",
   "lastOpenFiles": [
-    "comob.md",
+    "grotheNaturalHistorySound2014.md",
+    "grotheMechanismsSoundLocalization2010.md",
+    "media/zotero/grotheMechanismsSoundLocalization2010/grotheMechanismsSoundLocalization2010-24-x64-y372.png",
+    "media/zotero/grotheMechanismsSoundLocalization2010/grotheMechanismsSoundLocalization2010-6-x54-y381.png",
+    "templates/run-import-headers.md",
     "nest.md",
+    "comob.md",
     "zotero.md",
     "cochlea modeling.md",
     "Pasted image 20240416120552.png",
-    "grotheNaturalHistorySound2014.md",
     "docker.md",
     "wunderlichDemonstratingAdvantagesNeuromorphic2019.md",
     "templates/custom-headers.md",
@@ -216,14 +232,10 @@
     "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019/wunderlichDemonstratingAdvantagesNeuromorphic2019-5-x309-y138.png",
     "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019",
     "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-17-x77-y379.png",
-    "templates/run-import-headers.md",
     "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-13-x157-y302.png",
-    "media/zotero/yinNeuralMechanismsBinaural2019/yinNeuralMechanismsBinaural2019-11-x181-y256.png",
     "test.md",
-    "grotheMechanismsSoundLocalization2010.md",
     "templates/custom-headers.njk.md",
     "templates/custom-headers.njk",
-    "media/zotero/grotheMechanismsSoundLocalization2010/grotheMechanismsSoundLocalization2010-6-x39-y475.png",
     "media/zotero/grotheMechanismsSoundLocalization2010",
     "templates/runImport.md",
     "templates/basic.md",
