@@ -2,7 +2,6 @@
   "devMode": false,
   "ignoreCodeBlockRestrictions": false,
   "preferredDateFormat": "YYYY-MM-DD",
-  "useUsDateInputOrder": false,
   "firstWeekday": {
     "index": 1,
     "name": "Monday",
@@ -46,5 +45,6 @@
   ],
   "excludedFolders": [
     "templates"
-  ]
+  ],
+  "useUsDateInputOrder": false
 }

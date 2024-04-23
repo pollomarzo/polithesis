@@ -73,7 +73,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "grotheMechanismsSoundLocalization2010.md",
+                "file": "yinNeuralMechanismsBinaural2019.md",
                 "mode": "source",
                 "source": false
               }
@@ -146,7 +146,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "grotheMechanismsSoundLocalization2010.md",
+                "file": "yinNeuralMechanismsBinaural2019.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -163,7 +163,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "grotheMechanismsSoundLocalization2010.md",
+                "file": "yinNeuralMechanismsBinaural2019.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -186,7 +186,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "grotheMechanismsSoundLocalization2010.md"
+                "file": "yinNeuralMechanismsBinaural2019.md"
               }
             }
           }
@@ -210,16 +210,16 @@
   },
   "active": "7388bd78255d3ba8",
   "lastOpenFiles": [
-    "grotheNaturalHistorySound2014.md",
+    "zotero.md",
+    "Pasted image 20240416120552.png",
     "grotheMechanismsSoundLocalization2010.md",
+    "grotheNaturalHistorySound2014.md",
     "media/zotero/grotheMechanismsSoundLocalization2010/grotheMechanismsSoundLocalization2010-24-x64-y372.png",
     "media/zotero/grotheMechanismsSoundLocalization2010/grotheMechanismsSoundLocalization2010-6-x54-y381.png",
     "templates/run-import-headers.md",
     "nest.md",
     "comob.md",
-    "zotero.md",
     "cochlea modeling.md",
-    "Pasted image 20240416120552.png",
     "docker.md",
     "wunderlichDemonstratingAdvantagesNeuromorphic2019.md",
     "templates/custom-headers.md",
