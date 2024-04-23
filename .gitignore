@@ -1,2 +1,4 @@
 test.njk
 .ipynb_checkpoints
+__pycache__
+.micromamba

@@ -1,0 +1,9 @@
+name: hears
+channels:
+- conda-forge
+dependencies:
+- brian2
+- jupyter
+- nest-simulator
+- pip:
+  - brian2hears
