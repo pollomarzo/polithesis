@@ -27,3 +27,5 @@ class Constants:
 
     C_mso = 1
     delays_mso = [1, 1.3, 1, 0.45, 0.44]  # ms
+
+    time_sim = 2  # ms
