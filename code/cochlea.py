@@ -1,6 +1,7 @@
 from enum import Enum
 from brian2 import *
 from brian2hears import *
+import numpy as np
 import nest
 
 NUM_CF = 3500  # 3500 (3.5k cochlea ciliar -> 10 ANF for each -> 35000 ANF)
@@ -10,22 +11,25 @@ CFMAX = 20 * kHz
 IRCAM_DIR = "../data/IRCAM"
 
 
-def spike_generator_from_sound(
-    sound: Sound = Sound.tone(1 * kHz, 1 * second), plot_spikes=False
-):
+def generate_sound_database(sound: Sound = Sound.tone(1 * kHz, 1 * second)):
     hrtfdb = IRCAM_LISTEN(IRCAM_DIR)
     hrtfset = hrtfdb.load_subject(hrtfdb.subjects[0])
     # there are 24 trials per row, 187 trils total, elevation starts at -45;
     # we want elevation=0, azimuth=0
-    index = 72
-    # HRTF for the chosen location
-    hrtf = hrtfset.hrtf[index]
-    # We apply the chosen HRTF to the sound, the output has 2 channels
-    hrtf_fb = hrtf.filterbank(sound)
+    coord2sounds: dict[int, np.array] = {}
+    for coord_azim in range(90, 270, 15):
+        hrtf = hrtfset(azim=coord_azim, elev=0)
+        # We apply the chosen HRTF to the sound, the output has 2 channels
+        hrtf_fb = hrtf.filterbank(sound)
+        coord2sounds[coord_azim] = hrtf_fb.process().T
+    return coord2sounds
+
+
+def spike_generator_from_sound(sounds, plot_spikes=False):
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     # in here, we will place two nest.NodeCollection; the first will contain the ANF spikes for the left ear, the second for the right
     anfs_per_ear = []
-    for sound_arr in hrtf_fb.process().T:
+    for sound_arr in sounds.process().T:
         sound = Sound(sound_arr)
         # frequencies distributed as cochlea
         # To model how hair cells in adjacent frequencies are engaged as well, but less
