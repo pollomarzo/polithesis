@@ -17,7 +17,8 @@ def generate_sound_database(sound: Sound = Sound.tone(1 * kHz, 1 * second)):
     # there are 24 trials per row, 187 trils total, elevation starts at -45;
     # we want elevation=0, azimuth=0
     coord2sounds: dict[int, np.array] = {}
-    for coord_azim in range(90, 270, 15):
+    # i actually just listened to the sounds... :)
+    for coord_azim in range(90, 271, 15):
         hrtf = hrtfset(azim=coord_azim, elev=0)
         # We apply the chosen HRTF to the sound, the output has 2 channels
         hrtf_fb = hrtf.filterbank(sound)
@@ -29,7 +30,8 @@ def spike_generator_from_sound(sounds, plot_spikes=False):
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     # in here, we will place two nest.NodeCollection; the first will contain the ANF spikes for the left ear, the second for the right
     anfs_per_ear = []
-    for sound_arr in sounds.process().T:
+
+    for sound_arr in sounds:
         sound = Sound(sound_arr)
         # frequencies distributed as cochlea
         # To model how hair cells in adjacent frequencies are engaged as well, but less

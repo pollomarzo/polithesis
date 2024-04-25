@@ -4,17 +4,20 @@ import datetime
 import sys
 import os
 
-CURRENT_MAIN = os.path.basename(__main__.__file__)
-
+try:
+    PREFIX = os.path.basename(__main__.__file__)
+except:
+    PREFIX = "ipythonNB"
+    # main file not set by ipynb, no time to think of ergonomic solution
 
 LOG_PATH = "../logs/"
-LOG_NAME = f"{CURRENT_MAIN}_{datetime.datetime.now().date()}"
+LOG_NAME = f"{PREFIX}_{datetime.datetime.now().date()}"
 
 
 logFormatter = logging.Formatter(
     "%(asctime)s [%(levelname)-5.5s]  %(message)s"  # [%(threadName)-12.12s]
 )
-logger = logging.getLogger(CURRENT_MAIN)
+logger = logging.getLogger(PREFIX)
 
 fileHandler = logging.FileHandler(
     "{0}/{1}.log".format(LOG_PATH, LOG_NAME),
