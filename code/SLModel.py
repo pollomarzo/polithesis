@@ -1,12 +1,18 @@
 import numpy as np
-import nest
 from consts import Constants as C
+from cochlea import IHC_to_ANF
+from utils import logger
+import nest
 
 
 class SLModel:
-    def __init__(self, inputs):
-        r_ANFs = inputs[0]
-        l_ANFs = inputs[1]
+    def __init__(self, binaural_ihc):
+        logger.info("creating spike generator according to input IHC response...")
+        anfs_per_ear = IHC_to_ANF(binaural_ihc)
+
+        logger.info("creating rest of network...")
+        r_ANFs = anfs_per_ear["L"]
+        l_ANFs = anfs_per_ear["R"]
 
         r_SBCs = nest.Create(
             "iaf_cond_alpha", C.n_SBCs, params={"C_m": C.C_m_sbc, "V_reset": C.V_reset}
@@ -227,6 +233,7 @@ class SLModel:
             "one_to_one",
             syn_spec={"weight": C.SYN_WEIGHTS.MNTBCs2LSO},
         )
+        logger.info("model creation complete.")
 
     def simulate(self, time: float | int):
         nest.Simulate(time)

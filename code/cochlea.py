@@ -2,36 +2,25 @@ from enum import Enum
 from brian2 import *
 from brian2hears import *
 import numpy as np
+import pickle
+from consts import Paths as P
 import nest
 
 NUM_CF = 3500  # 3500 (3.5k cochlea ciliar -> 10 ANF for each -> 35000 ANF)
+# of course, if you change this, you need to regenerate all created files
 NUM_ANF_PER_HC = 10
 CFMIN = 20 * Hz
 CFMAX = 20 * kHz
-IRCAM_DIR = "../data/IRCAM"
 
 
-def generate_sound_database(sound: Sound = Sound.tone(1 * kHz, 1 * second)):
-    hrtfdb = IRCAM_LISTEN(IRCAM_DIR)
-    hrtfset = hrtfdb.load_subject(hrtfdb.subjects[0])
-    # there are 24 trials per row, 187 trils total, elevation starts at -45;
-    # we want elevation=0, azimuth=0
-    coord2sounds: dict[int, np.array] = {}
-    # i actually just listened to the sounds... :)
-    for coord_azim in range(90, 271, 15):
-        hrtf = hrtfset(azim=coord_azim, elev=0)
-        # We apply the chosen HRTF to the sound, the output has 2 channels
-        hrtf_fb = hrtf.filterbank(sound)
-        coord2sounds[coord_azim] = hrtf_fb.process().T
-    return coord2sounds
-
-
-def spike_generator_from_sound(sounds, plot_spikes=False):
+def sounds_to_IHC(binaural_sound, plot_spikes=False, save_to_file=False, filepath=None):
+    if save_to_file and filepath is None:
+        raise Exception("Cannot save result to file with no filename.")
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
-    # in here, we will place two nest.NodeCollection; the first will contain the ANF spikes for the left ear, the second for the right
-    anfs_per_ear = []
+    binaural_IHC_response = {}
 
-    for sound_arr in sounds:
+    logger.info("generating simulated IHC response...")
+    for sound_arr, channel in zip(binaural_sound, ["L", "R"]):
         sound = Sound(sound_arr)
         # frequencies distributed as cochlea
         # To model how hair cells in adjacent frequencies are engaged as well, but less
@@ -53,15 +42,37 @@ def spike_generator_from_sound(sounds, plot_spikes=False):
             plot(M.t / ms, M.i, ".")
             show()
 
-        spike_trains = [e / ms for i, e in M.spike_trains().items()]
+        binaural_IHC_response[channel] = M.spike_trains()
+    logger.info("generation complete.")
 
+    if save_to_file:
+        logger.info(f"saving result to {filepath}")
+        with open(filepath, "wb") as f:
+            pickle.dump(binaural_IHC_response, f)
+    return binaural_IHC_response
+
+
+def IHC_to_ANF(binaural_IHC_response=None, filepath=None):
+    if binaural_IHC_response is None and filepath is None:
+        raise Exception("'IHC_response' and 'filepath' cannot both be None")
+
+    anfs_per_ear = {}
+    if binaural_IHC_response is None:
+        logger.info("loading spikes from file at " + filepath)
+        with open(filepath, "rb") as f:
+            binaural_IHC_response = pickle.load(f)
+
+    for channel, response_IHC in binaural_IHC_response.items():
         anfs = nest.Create("spike_generator", NUM_CF * NUM_ANF_PER_HC)
         # each hair cell is innervated by NUM_ANF_PER_HC nerve fibers
-        for i, e in enumerate(spike_trains):
-            for j in range(NUM_ANF_PER_HC * i, NUM_ANF_PER_HC * i + NUM_ANF_PER_HC):
+        for ihf_idx, spike_times in response_IHC.items():
+            for j in range(
+                NUM_ANF_PER_HC * ihf_idx, NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC
+            ):
                 nest.SetStatus(
-                    anfs[j], params={"spike_times": e, "allow_offgrid_times": True}
+                    anfs[j],
+                    params={"spike_times": spike_times, "allow_offgrid_times": True},
                 )
-        anfs_per_ear.append(anfs)
+        anfs_per_ear[channel] = anfs
 
     return anfs_per_ear

@@ -29,3 +29,9 @@ class Constants:
     delays_mso = [1, 1.3, 1, 0.45, 0.44]  # ms
 
     time_sim = 2  # ms
+
+
+class Paths:
+    DATA_DIR = "../data/"
+    IRCAM_DIR = DATA_DIR + "IRCAM/"
+    IHF_SPIKES_DIR = DATA_DIR + "IHF_SPIKES/"
