@@ -59,27 +59,17 @@ class SLModel:
         # ANFs_noise = nest.Create('poisson_generator',1,
         #                  params = {'rate':noise_rate})
 
-        self.s_rec_r = nest.Create("spike_recorder")
-        self.s_rec_l = nest.Create("spike_recorder")
+        self.s_rec_r_LSO = nest.Create("spike_recorder")
+        self.s_rec_l_LSO = nest.Create("spike_recorder")
+        self.s_rec_r_MSO = nest.Create("spike_recorder")
+        self.s_rec_l_MSO = nest.Create("spike_recorder")
 
         # Devices
-        nest.Connect(r_ANFs, self.s_rec_r, "all_to_all")
-        nest.Connect(l_ANFs, self.s_rec_l, "all_to_all")
+        nest.Connect(r_MSO, self.s_rec_r_LSO, "all_to_all")
+        nest.Connect(l_MSO, self.s_rec_l_LSO, "all_to_all")
 
-        nest.Connect(r_SBCs, self.s_rec_r, "all_to_all")
-        nest.Connect(l_SBCs, self.s_rec_l, "all_to_all")
-
-        nest.Connect(r_GBCs, self.s_rec_r, "all_to_all")
-        nest.Connect(l_GBCs, self.s_rec_l, "all_to_all")
-
-        nest.Connect(r_MNTBCs, self.s_rec_r, "all_to_all")
-        nest.Connect(l_MNTBCs, self.s_rec_l, "all_to_all")
-
-        nest.Connect(r_MSO, self.s_rec_r, "all_to_all")
-        nest.Connect(l_MSO, self.s_rec_l, "all_to_all")
-
-        nest.Connect(self.r_LSO, self.s_rec_r, "all_to_all")
-        nest.Connect(self.l_LSO, self.s_rec_l, "all_to_all")
+        nest.Connect(self.r_LSO, self.s_rec_r_MSO, "all_to_all")
+        nest.Connect(self.l_LSO, self.s_rec_l_MSO, "all_to_all")
 
         # ANFs to SBCs
         for i in range(C.n_SBCs):
@@ -242,9 +232,11 @@ class SLModel:
         nest.Simulate(time)
 
     def analyze(self):
-        return (self.s_rec_r, self.s_rec_l)
-        data_r = self.s_rec_r.get("events")
-        data_l = self.s_rec_l.get("events")
+        # return (self.s_rec_r, self.s_rec_l)
+        data_r_LSO = self.s_rec_r_LSO.get("events")
+        data_l_LSO = self.s_rec_l_LSO.get("events")
+        data_r_MSO = self.s_rec_r_MSO.get("events")
+        data_l_MSO = self.s_rec_l_MSO.get("events")
 
         # LSO
 
@@ -252,16 +244,12 @@ class SLModel:
         result_l_LSO = 0
 
         # averaging on total number of active cells --> result: average rate of the population
-        rate_r_lso = (
-            len(data_r["times"][np.where(data_r["senders"] >= self.id_r_LSO1)])
-            / (C.time_sim)
-            * 1000
-        )
-        rate_l_lso = (
-            len(data_l["times"][np.where(data_l["senders"] >= self.id_l_LSO1)])
-            / (C.time_sim)
-            * 1000
-        )
+        rate_r_lso = len(data_r_LSO["times"])  # / (C.time_sim) * 1000
+        rate_l_lso = len(data_l_LSO["times"])  # / (C.time_sim) * 1000
+        rate_r_mso = len(data_r_MSO["times"])  # / (C.time_sim) * 1000
+        rate_l_mso = len(data_l_MSO["times"])  # / (C.time_sim) * 1000
+
+        return (rate_r_lso, rate_l_lso, rate_r_mso, rate_l_mso)
 
         # ac_r_lso = np.unique(
         #     data_r["senders"][np.where((data_r["senders"] >= self.id_r_LSO1))]
