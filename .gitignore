@@ -4,3 +4,4 @@ __pycache__
 .micromamba
 logs
 IHF_SPIKES
+.vscode
