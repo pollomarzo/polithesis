@@ -44,10 +44,10 @@ def generate_possible_sounds():
 def generate_ANF_and_save():
     logger.info(f"generating sound database...")
     sounds = generate_possible_sounds()
+    hrtfdb = IRCAM_LISTEN(P.IRCAM_DIR)
+    hrtfset = hrtfdb.load_subject(hrtfdb.subjects[0])
     for key, sound in sounds.items():
         logger.info(f"now handling sound {key}")
-        hrtfdb = IRCAM_LISTEN(P.IRCAM_DIR)
-        hrtfset = hrtfdb.load_subject(hrtfdb.subjects[0])
 
         # each angle (and channel) must now be converted to ANF spiking patterns
         logger.info(
