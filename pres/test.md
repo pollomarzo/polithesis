@@ -103,21 +103,7 @@ adv:  Francesco De Santis
 ### humans
 - report verbally <span class='text-small'>(Wightman and Kistler, 1992)</span>
 - nose pointing <span class='text-small'>(Makous and Middlebrooks, 1990)</span>
-<p class="break"></p>
-
-</div>
-
----
-## Task definition
-> The ability to identify the location of a sound source in a sound field. <span class='cite text-small'>(Jutras et al., 2020)</span>
-<div class="twocols mt-0">
-<div>
-
-### humans
-- report verbally <span class='text-small'>(Wightman and Kistler, 1992)</span>
-- nose pointing <span class='text-small'>(Makous and Middlebrooks, 1990)</span>
-- God's eye <span class='text-small'>(Gilkey et al., 1995)</span>
-</div>
+* God's eye <span class='text-small'>(Gilkey et al., 1995)</span>
 </div>
 
 ---
@@ -212,7 +198,13 @@ adv:  Francesco De Santis
         - for humans, viable >1.3 kHz 
 
 ---
-TODO: HRTF!
+![bg h:90%](./img/hrtf-cat-azim.png)
+
+<!-- 
+the generalization of these cues, which is the sum of all possible aspects that differentiate how the sound arrives to one eardrum from the other, are called the head related transfer functions
+-->
+---
+![bg h:90%](./img/hrtf-elev.png)
 
 ---
 
@@ -252,6 +244,15 @@ this also means possibly independent solutions! -->
 1) parallel evolution means different mechanisms may be in use in different _classes_
 
 ---
+# what is my role in all this?
+<br/>
+
+- as a compu neuro, I cannot prove or disprove anything definitively
+- various models of how sound localization is achieved exist
+- bring evidence to the feasibility of a model
+- specifically, simulate various network configurations and verify physiological results
+- real results (may) need real inputs!
+---
 # anatomy of hearing
 
 ![bg right w:489](./img/audio-pathway.png)
@@ -264,7 +265,7 @@ this also means possibly independent solutions! -->
 
 ---
 
-![bg w:100%](./img/ear-ext.png)
+![bg w:101%](./img/ear-ext.png)
 <!-- 
 formed of three parts...
 here's my opinion on the external ear, for our purposes.
@@ -326,8 +327,6 @@ Sensory epithelium of the chicken cochlea:
 
 (Hudspeth, 2008)
 
-<!-- TODO mention phase locking as ihc move back and forth between hyper pol and depol -->
-
 --- 
 ![bg left w:600](./img/ihc-just-d.png)
 1. Deflection of the bundle bends the stereociliary pivots, tenses the tip link, and opens the transduction channel
@@ -337,10 +336,21 @@ Sensory epithelium of the chicken cochlea:
 (Hudspeth, 2008)
 
 ---
+![bg left w:620](./img/phaselock.png)
+- cells depolarize and polarize according to the sound phase
+- this corresponds to an AC component paired with a DC component
+- low frequencies (below 5Hz) -> just AC
+- ANFs at low frequencies are *phase locked*
+
+(Yin et al., 2019)
+
+---
 ![bg right w:480](./img/ihc-synapse.png)
 - although inner hair cells depolarize, they do not produce an action potential, but a _graded potential_
 - the depolarization causes release of glutamate in ribbon synapse
 - glutamate stimulates action potential in type I fibers
+<br/>
+<span class="text-small">image from [here](openlearn.open.ac.uk/mod/resource/view.php?id=263162)</span>
 
 ---
 <div class="twocols mt-0">
@@ -355,12 +365,8 @@ Sensory epithelium of the chicken cochlea:
 </div>
 </div>
 <!-- 
-which then connect to a variety of different cell types and go on to reach the superior olivary complex, which is outside of our scope -->
-
----
-# what are we doing? what am i doing?
-- what is our role? validating a model
-
+which then connect to a variety of different cell types and go on to reach the superior olivary complex, which is outside of today's scope
+-->
 
 ---
 
@@ -375,10 +381,125 @@ which then connect to a variety of different cell types and go on to reach the s
 
 ---
 
-# how do we code this?
+# how do we simulate (code) this?
+<br/>
+<div class="twocols">
+<div>
 
+## ear section
+
+- HRTF
+- cochlea (IHC)
+
+![](./img/brianhearslogo.png)
+</div>
+<div>
+
+## neural section
+- single neurons/synapses with varying characteristics
+- entire populations 
+
+![center](./img/nest_logo.png)
+</div>
+</div>
 
 ---
 
+## neural section
+![bg left w:80%](./img/pynest.png)
+- NEST is a simulator for spiking neural network
+- the actual simulator, written in C++, has an SLI interface
+- `pyNEST` is an interface for NEST (specifically for its SLI)
+- currently using desa's code in full <3
 
-<!-- _class: -->
+<!-- 
+this means that whenever you're creating a population or connecting two with synapses, your objects only exist in the nest kernel, while python serves only as your API. a little bit like controlling a server from your laptop
+ -->
+---
+
+## ear section
+- `brian2hears` is a (mature) auditory modelling library
+- designed to be used with `brian2`, another simulator, or standalone
+- provides 
+    - elementary HRTF support
+    - cochlea models as well as pieces to build your own
+    - sound handling (filters, default sounds...)
+    - full python implementation:
+        - somewhat slow
+        - inspectable!
+
+---
+### cochlea modeling elements
+<br/>
+<center>
+
+| cochlea  | modelling   | 
+|:-------------- | --------------:| 
+| tonotopic organization    | erbspace     |
+| approximate frequency    | gammatone     |
+| OHC/active hearing    | compression     |
+| limited frequency range | refractory period | 
+
+</center>
+
+most importantly:
+ we can use the sound itself as the **driving variable** in a neuron model!
+
+---
+
+![bg w:90%](./img/cochlea-block.png)
+
+#### resulting scheme
+
+---
+
+<!-- _class: invert -->
+
+### basic implementation
+
+```python
+cfmin, cfmax, cfN = 20*Hz, 20*kHz, 3000
+cf = erbspace(cfmin, cfmax, cfN)
+sound = Sound.whitenoise(100*ms)
+gfb = Gammatone(sound, cf)
+ihc = FunctionFilterbank(gfb, lambda x: 3*clip(x, 0, Inf)**(1.0/3.0))
+# Leaky integrate-and-fire model with noise and refractoriness
+eqs = '''
+dv/dt = (I-v)/(1*ms)+0.2*xi*(2/(1*ms))**.5 : 1 (unless refractory)
+I : 1
+'''
+G = FilterbankGroup(ihc, 'I', eqs, reset='v=0', threshold='v>1', refractory=5*ms)
+# Run, and raster plot of the spikes
+M = SpikeMonitor(G)
+run(sound.duration)
+plot(M.t/ms, M.i, '.')
+show()
+```
+---
+
+### results:
+
+![bg h:80%](./img/auditory-nerve-fibre-rasterplot.png)
+
+<!-- 
+as these are just spikes, spike generators can be initialized in nest to fire accordingly. leaving us with a full-nest network.
+-->
+
+---
+
+## reality check
+<br/>
+
+1) implemented, but no comparisons with existing inputs yet
+2) cochlea is still a very simple model
+3) `brian2hears` is pretty slow, so I created all spike trains at once
+4) "default" HRTFs have limited angles, while more recent ones leave complete control
+
+---
+
+# future steps
+
+* produce some results! compare with existing inputs
+* compare with more complete cochlea models
+* move to more standard HRTFs (stop using `brian2hears` integrated IRCAM database)
+* can we also simulate dynamical properties of sound localization with synaptic plasticity? what about the adaptation we saw in IHCs? and localizing two sounds next to each other?
