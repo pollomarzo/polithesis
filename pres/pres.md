@@ -164,12 +164,13 @@ co-adv:  Francesco De Santis
 (Lingner et al., 2012) - sound localization SNR
 
 ---
+<!-- 8 minutes till here -->
 ## why it's interesting
 <br/><br/>
 
-1. point-like sensor to spatial
-1. limited cues are enough to accomplish it
-1. evolutionary perspective
+1) point-like sensor to spatial
+1) limited cues are enough to accomplish it
+1) evolutionary perspective
 
 ---
 ## why it's interesting
@@ -190,20 +191,25 @@ co-adv:  Francesco De Santis
 ![center w:1150](./img/cues.png)
 (Grothe and Pecka, 2014)
 
+<!-- 
+not obvious: you'd think frequency mostly depends on signal
+ -->
 ---
 ## why it's interesting
 
 1. point-like sensor to spatial -> consider vision and somatosensation
 1. ### limited cues are enough to accomplish it
-    - 3 classes of cues
-    * spectral cues don't change in horizontal -> binaural
-    * small ranges: ITD $\in [\pm 0.6 \micro s ]$, ILD $\in [\pm 50dB ]$
+    - 3 classes of cues: ITD, ILD, spectral
+    * ITD, ILD are sufficient cues for x-y localization
+    * *very* small range: ITD $\in [\pm 0.6ms ]$
     * ITD viable in larger heads, ILD frequency dependent
         - ILD high freq affected most (Rayleigh, 1875)
-        - for humans, viable >1.3 kHz 
+        - for humans, viable >1.3 kHz (Grothe and Pecka, 2014)
 
 ---
 ![bg h:90%](./img/hrtf-cat-azim.png)
+
+### HRTFs
 
 <!-- 
 the generalization of these cues, which is the sum of all possible aspects that differentiate how the sound arrives to one eardrum from the other, are called the head related transfer functions
@@ -239,7 +245,9 @@ this also means possibly independent solutions! -->
     * mother-pup communication calls outside reptilian-bird hearing range
 
 ---
-
+<!-- 
+around 15 minutes
+-->
 ## basic concepts: review
 <br/>
 
@@ -529,6 +537,9 @@ if sound defines how the charge moves in and out of the IHC -> sound is the curr
 ![bg w:90%](./img/cochlea-block.png)
 
 #### resulting scheme
+<!-- 
+TODO add location to first diagram
+ -->
 
 ---
 
