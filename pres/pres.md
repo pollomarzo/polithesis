@@ -33,15 +33,20 @@ style: |
 paginate: true
 math: mathjax
 ---
-<div class='timeline'>intro-anato-<span class='highlight'>simul:IHC</span>-conclu
-</div>
 
 
 # Sound Localization Basics
-auth: Paolo Marzolo
-adv:  Francesco De Santis
+
+<br/>
+
+author: Paolo Marzolo
+advisor: Alberto Antonietti
+co-adv:  Francesco De Santis
 
 ---
+<div class='timeline'>intro-anato-<span class='highlight'>simul:IHC</span>-conclu
+</div>
+
 # Table of contents
 <div class="twocols">
 <div>
@@ -253,6 +258,33 @@ this also means possibly independent solutions! -->
 - specifically, simulate various network configurations and verify physiological results
 - real results (may) need real inputs!
 ---
+
+<div class="twocols">
+<div>
+
+1. introduction
+    - task definition
+    - why it's interesting
+    - basic concepts
+1. **anatomical** 
+    - overall structure
+    - my part
+</div>
+<div>
+
+3. simulation
+    - nest and architecture
+    - brian2-brian2hears
+    - my implementation and workflow
+4. conclusion
+</div>
+
+<!-- 
+and so we get into some anatomy
+-->
+
+---
+
 # anatomy of hearing
 
 ![bg right w:489](./img/audio-pathway.png)
@@ -370,14 +402,26 @@ which then connect to a variety of different cell types and go on to reach the s
 
 ---
 
-# simulation
+## where are we at?
+<div class="twocols">
+<div>
 
-3. simulation
+1. introduction
+    - task definition
+    - why it's interesting
+    - basic concepts
+1. anatomical 
+    - overall structure
+    - my part
+</div>
+<div>
+
+3. **simulation**
     - nest and architecture
     - brian2-brian2hears
     - my implementation and workflow
 4. conclusion
-5. feature steps
+</div>
 
 ---
 
@@ -437,6 +481,38 @@ this means that whenever you're creating a population or connecting two with syn
 |:-------------- | --------------:| 
 | tonotopic organization    | erbspace     |
 | approximate frequency    | gammatone     |
+---
+
+A bank of gammatone filters:
+![bg w:90%](./img/gammatone.png)
+
+
+---
+
+### cochlea modeling elements
+<br/>
+<center>
+
+| cochlea  | modelling   | 
+|:-------------- | --------------:| 
+| tonotopic organization    | erbspace     |
+| approximate frequency    | gammatone     |
+| OHC/active hearing    | compression     |
+
+> Over most of its range, an active hair bundle’s response grows as the one-third power of the stimulus amplitude. 
+
+(Martin and Hudspeth, 2001)
+
+---
+
+### cochlea modeling elements
+<br/>
+<center>
+
+| cochlea  | modelling   | 
+|:-------------- | --------------:| 
+| tonotopic organization    | erbspace     |
+| approximate frequency    | gammatone     |
 | OHC/active hearing    | compression     |
 | limited frequency range | refractory period | 
 
@@ -445,6 +521,9 @@ this means that whenever you're creating a population or connecting two with syn
 most importantly:
  we can use the sound itself as the **driving variable** in a neuron model!
 
+<!-- 
+if sound defines how the charge moves in and out of the IHC -> sound is the current!
+-->
 ---
 
 ![bg w:90%](./img/cochlea-block.png)
