@@ -356,11 +356,13 @@ outer hair cells actually have a very specific function: they non-linearly compr
 -->
 
 ---
-![center](./img/ear-active-process.png)
+### active hearing
+![center w:550](./img/ear-active-process.png)
 <!-- the threshold is 0.1nm -> 0dB; loudest is 10nm -> 120dB -->
 
 ---
 ![bg left w:600](./img/ihc-stim.png)
+### bundle depolarization
 Sensory epithelium of the chicken cochlea:
 - hexagonal array of short hair cells bordered supporting cells
 - deflecting causes depolarization
@@ -386,10 +388,11 @@ Sensory epithelium of the chicken cochlea:
 
 ---
 ![bg right w:480](./img/ihc-synapse.png)
+### from IHC to ANF
 - although inner hair cells depolarize, they do not produce an action potential, but a _graded potential_
 - the depolarization causes release of glutamate in ribbon synapse
 - glutamate stimulates action potential in type I fibers
-<br/>
+
 <span class="text-small">image from [here](openlearn.open.ac.uk/mod/resource/view.php?id=263162)</span>
 
 ---
@@ -534,12 +537,9 @@ if sound defines how the charge moves in and out of the IHC -> sound is the curr
 -->
 ---
 
-![bg w:90%](./img/cochlea-block.png)
+![bg w:90%](./img/block-cochlea.png)
 
 #### resulting scheme
-<!-- 
-TODO add location to first diagram
- -->
 
 ---
 
