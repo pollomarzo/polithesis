@@ -7,7 +7,7 @@ generates a series of files with spike trains PICKLED
 from brian2 import Hz, kHz, second, Quantity
 from brian2hears import Sound, IRCAM_LISTEN
 import numpy as np
-from cochlea import sounds_to_IHC
+from cochlea import sounds_to_spikes
 from utils import logger
 from consts import Paths as P
 from pathlib import Path
@@ -65,14 +65,14 @@ def generate_ANF_and_save():
             binaural_sound: np.NDArray = hrtf.filterbank(sound).process().T
             logger.info(f"generated {len(sounds.keys())} pairs of inputs to IHCs...")
             filepath = dirpath.joinpath(f"{key}_{angle}deg.pic")
-            binaural_IHC_response = sounds_to_IHC(
+            binaural_IHC_response = sounds_to_spikes(
                 binaural_sound, save_to_file=True, filepath=filepath
             )
 
         logger.info(f"completed sound {key}")
 
 
-def load_saved_ihcs(sound_keys: list[str] | None = None):
+def load_saved_anf_as_nestgen(sound_keys: list[str] | None = None):
     """
     {
         tone_1Hz: {

@@ -13,7 +13,9 @@ CFMIN = 20 * Hz
 CFMAX = 20 * kHz
 
 
-def sounds_to_IHC(binaural_sound, plot_spikes=False, save_to_file=False, filepath=None):
+def sounds_to_spikes(
+    binaural_sound, plot_spikes=False, save_to_file=False, filepath=None
+):
     if save_to_file and filepath is None:
         raise Exception("Cannot save result to file with no filename.")
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
@@ -52,7 +54,7 @@ def sounds_to_IHC(binaural_sound, plot_spikes=False, save_to_file=False, filepat
     return binaural_IHC_response
 
 
-def IHC_to_ANF(binaural_IHC_response=None, filepath=None):
+def spikes_to_nestgen(binaural_IHC_response=None, filepath=None):
     if binaural_IHC_response is None and filepath is None:
         raise Exception("'IHC_response' and 'filepath' cannot both be None")
 

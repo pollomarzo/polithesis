@@ -1,6 +1,6 @@
 import numpy as np
 from consts import Constants as C
-from cochlea import IHC_to_ANF
+from cochlea import spikes_to_nestgen
 from utils import logger
 import nest
 
@@ -8,7 +8,7 @@ import nest
 class SLModel:
     def __init__(self, binaural_ihc):
         logger.info("creating spike generator according to input IHC response...")
-        anfs_per_ear = IHC_to_ANF(binaural_ihc)
+        anfs_per_ear = spikes_to_nestgen(binaural_ihc)
 
         logger.info("creating rest of network...")
         r_ANFs = anfs_per_ear["L"]
