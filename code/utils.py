@@ -21,7 +21,7 @@ logger = logging.getLogger(PREFIX)
 
 fileHandler = logging.FileHandler(
     "{0}/{1}.log".format(LOG_PATH, LOG_NAME),
-    mode="a",
+    mode="a+",
 )
 fileHandler.setFormatter(logFormatter)
 logger.addHandler(fileHandler)
