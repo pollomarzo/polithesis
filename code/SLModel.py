@@ -121,14 +121,11 @@ class SLModel:
         )
 
         # MSO
-        for i in range(C.n_GBCs):
-            # for j in range(C.n_battery):
-
-            # Right MSO
+        for i in range(C.n_MSOs):
             # From SBCs (excitation):
             nest.Connect(
                 r_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
-                r_MSO[i],  # * C.n_battery + j],
+                r_MSO[i],
                 "all_to_all",
                 syn_spec={
                     "weight": C.SYN_WEIGHTS.SBCs2MSO,
@@ -137,7 +134,7 @@ class SLModel:
             )  # ipsilateral
             nest.Connect(
                 l_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
-                r_MSO[i],  # * C.n_battery + j],
+                r_MSO[i],
                 "all_to_all",
                 syn_spec={
                     "weight": C.SYN_WEIGHTS.SBCs2MSO,
@@ -147,7 +144,7 @@ class SLModel:
             # From LNTBCs (inhibition)
             nest.Connect(
                 r_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
-                r_MSO[i],  # * C.n_battery + j],
+                r_MSO[i],
                 "all_to_all",
                 syn_spec={
                     "weight": C.SYN_WEIGHTS.SBCs2MSO_inh,
@@ -155,11 +152,10 @@ class SLModel:
                 },
             )  # ipsilateral
 
-            # Left MSO
             # From SBCs (excitation):
             nest.Connect(
                 l_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
-                l_MSO[i],  # * C.n_battery + j],
+                l_MSO[i],
                 "all_to_all",
                 syn_spec={
                     "weight": C.SYN_WEIGHTS.SBCs2MSO,
@@ -168,7 +164,7 @@ class SLModel:
             )  # ipsilateral
             nest.Connect(
                 r_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
-                l_MSO[i],  # * C.n_battery + j],
+                l_MSO[i],
                 "all_to_all",
                 syn_spec={
                     "weight": C.SYN_WEIGHTS.SBCs2MSO,
@@ -178,17 +174,18 @@ class SLModel:
             # From LNTBCs (inhibition)
             nest.Connect(
                 l_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
-                l_MSO[i],  # * C.n_battery + j],
+                l_MSO[i],
                 "all_to_all",
                 syn_spec={
                     "weight": C.SYN_WEIGHTS.SBCs2MSO_inh,
                     "delay": C.delays_mso[1],
                 },
             )  # ipsilateral
+
         # From MNTBCs (inhibition)
         nest.Connect(
             l_MNTBCs,
-            r_MSO,  # * C.n_battery + j],
+            r_MSO,
             "one_to_one",
             syn_spec={
                 "weight": C.SYN_WEIGHTS.MNTBCs2MSO,
@@ -198,7 +195,7 @@ class SLModel:
         # From MNTBCs (inhibition)
         nest.Connect(
             r_MNTBCs,
-            l_MSO,  # * C.n_battery + j],
+            l_MSO,
             "one_to_one",
             syn_spec={
                 "weight": C.SYN_WEIGHTS.MNTBCs2MSO,
@@ -239,24 +236,14 @@ class SLModel:
         nest.Simulate(time)
 
     def analyze(self):
-        # return (self.s_rec_r, self.s_rec_l)
         data_r_LSO = self.s_rec_r_LSO.get("events")
         data_l_LSO = self.s_rec_l_LSO.get("events")
         data_r_MSO = self.s_rec_r_MSO.get("events")
         data_l_MSO = self.s_rec_l_MSO.get("events")
 
         # LSO
-
-        result_r_LSO = 0
-        result_l_LSO = 0
-
-        # averaging on total number of active cells --> result: average rate of the population
-        rate_r_lso = len(data_r_LSO["times"])  # / (C.time_sim) * 1000
-        rate_l_lso = len(data_l_LSO["times"])  # / (C.time_sim) * 1000
-        rate_r_mso = len(data_r_MSO["times"])  # / (C.time_sim) * 1000
-        rate_l_mso = len(data_l_MSO["times"])  # / (C.time_sim) * 1000
-
-        return (rate_r_lso, rate_l_lso, rate_r_mso, rate_l_mso)
+        n_spikes_r_lso = len(data_r_LSO["times"])  # / (C.time_sim) * 1000
+        n_spikes_l_lso = len(data_l_LSO["times"])  # / (C.time_sim) * 1000
 
         # ac_r_lso = np.unique(
         #     data_r["senders"][np.where((data_r["senders"] >= self.id_r_LSO1))]
@@ -265,55 +252,8 @@ class SLModel:
         #     data_l["senders"][np.where((data_l["senders"] >= self.id_l_LSO1))]
         # )
 
-        """
         # MSO
+        n_spikes_r_mso = len(data_r_MSO["times"])  # / (C.time_sim) * 1000
+        n_spikes_l_mso = len(data_l_MSO["times"])  # / (C.time_sim) * 1000
 
-        results_r_MSO = np.zeros((n_battery, len(angles)))
-        results_l_MSO = np.zeros((n_battery, len(angles)))
-
-        # averaging on total number of active batteries --> result: battery with rates for each inh weight
-        rate_r_mso = np.zeros(C.n_battery)
-        rate_l_mso = np.zeros(C.n_battery)
-        ac_r_mso = np.zeros((int(C.n_MSOs / C.n_battery), C.n_battery))
-        ac_l_mso = np.zeros((int(C.n_MSOs / C.n_battery), C.n_battery))
-        n_ac_r_mso = np.zeros(C.n_battery)
-        n_ac_l_mso = np.zeros(C.n_battery)
-        id_r_MSO1 = r_MSO[0].get('global_id')
-        id_l_MSO1 = l_MSO[0].get('global_id')
-
-        for i in range(int(C.n_MSOs / C.n_battery)):  # n of batteries
-            for j in range(C.n_battery):  # neurons for battery
-                if id_r_MSO1 + C.n_battery * i + j in data_r["senders"]:
-                    rate_r_mso[j] += np.unique(
-                        data_r["senders"][
-                            np.where(
-                                data_r["senders"] == id_r_MSO1 + C.n_battery * i + j
-                            )
-                        ],
-                        return_counts=True,
-                    )[1][0]
-                    ac_r_mso[i, j] = id_r_MSO1 + i * C.n_battery + j
-                    n_ac_r_mso[j] += 1
-                else:
-                    rate_r_mso[j] += 0
-                if id_l_MSO1 + C.n_battery * i + j in data_l["senders"]:
-                    rate_l_mso[j] += np.unique(
-                        data_l["senders"][
-                            np.where(
-                                data_l["senders"] == id_l_MSO1 + C.n_battery * i + j
-                            )
-                        ],
-                        return_counts=True,
-                    )[1][0]
-                    ac_l_mso[i, j] = id_l_MSO1 + i * C.n_battery + j
-                    n_ac_l_mso[j] += 1
-                else:
-                    rate_l_mso[j] += 0
-
-        results_r_MSO[:, np.where(angles == angle)[0][0]] = rate_r_mso
-        results_l_MSO[:, np.where(angles == angle)[0][0]] = rate_l_mso
-        """
-
-        result_r_LSO = rate_r_lso
-        result_l_LSO = rate_l_lso
-        return (result_r_LSO, result_l_LSO)
+        return (n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso)
