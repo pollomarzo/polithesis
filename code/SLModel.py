@@ -154,16 +154,6 @@ class SLModel:
                     "delay": C.delays_mso[1],
                 },
             )  # ipsilateral
-            # From MNTBCs (inhibition)
-            nest.Connect(
-                l_MNTBCs[i],
-                r_MSO[i],  # * C.n_battery + j],
-                "all_to_all",
-                syn_spec={
-                    "weight": C.SYN_WEIGHTS.MNTBCs2MSO,
-                    "delay": C.delays_mso[4],
-                },
-            )  # contralateral
 
             # Left MSO
             # From SBCs (excitation):
@@ -195,16 +185,26 @@ class SLModel:
                     "delay": C.delays_mso[1],
                 },
             )  # ipsilateral
-            # From MNTBCs (inhibition)
-            nest.Connect(
-                r_MNTBCs[i],
-                l_MSO[i],  # * C.n_battery + j],
-                "all_to_all",
-                syn_spec={
-                    "weight": C.SYN_WEIGHTS.MNTBCs2MSO,
-                    "delay": C.delays_mso[4],
-                },
-            )  # contralateral
+        # From MNTBCs (inhibition)
+        nest.Connect(
+            l_MNTBCs,
+            r_MSO,  # * C.n_battery + j],
+            "one_to_one",
+            syn_spec={
+                "weight": C.SYN_WEIGHTS.MNTBCs2MSO,
+                "delay": C.delays_mso[4],
+            },
+        )  # contralateral
+        # From MNTBCs (inhibition)
+        nest.Connect(
+            r_MNTBCs,
+            l_MSO,  # * C.n_battery + j],
+            "one_to_one",
+            syn_spec={
+                "weight": C.SYN_WEIGHTS.MNTBCs2MSO,
+                "delay": C.delays_mso[4],
+            },
+        )  # contralateral
 
         # LSO
         for i in range(0, C.n_GBCs):
