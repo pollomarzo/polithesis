@@ -3,11 +3,14 @@ from utils import logger
 from generate_DB import load_saved_anf_as_nestgen
 from consts import Paths as P
 from pathlib import Path
+import brian2
 import pickle
 import nest
 import nest.voltage_trace
 
 nest.set_verbosity("M_ERROR")
+
+brian2.seed(42)
 
 TIME_SIMULATION = 1000
 
