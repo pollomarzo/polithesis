@@ -10,7 +10,7 @@ import nest.voltage_trace
 
 nest.set_verbosity("M_ERROR")
 
-brian2.seed(42)
+brian2.seed(42)  # https://brian2.readthedocs.io/en/stable/advanced/random.html
 
 TIME_SIMULATION = 1000
 
