@@ -1,10 +1,11 @@
 from SLModel import SLModel
 from utils import logger
 from generate_DB import load_saved_anf_as_nestgen
-from consts import Paths as P
+from consts import Constants as C, Paths as P, save_current_conf
 from pathlib import Path
 import brian2
 import pickle
+import datetime
 import nest
 import nest.voltage_trace
 
@@ -16,11 +17,14 @@ TIME_SIMULATION = 1000
 
 logger.info("loading saved anfs...")
 
-CURRENT_TONE = "tone_1.kHz"
-anf_spikes = load_saved_anf_as_nestgen([CURRENT_TONE])[CURRENT_TONE]
+SOUND = "tone_1.kHz"
+
+anf_spikes = load_saved_anf_as_nestgen([SOUND])[SOUND]
 logger.info("...loaded saved anfs!")
 
-results = {}
+result = {}
+
+angle_to_rate = {}
 """
 {
     90: (n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso),
@@ -37,13 +41,16 @@ for angle, binaural_anf in anf_spikes.items():
     logger.info(f"\t\tmodel initialized. begin simulation...")
     model.simulate(TIME_SIMULATION)
     logger.info(f"\t\t...simulation complete. collecting results...")
-    results[angle] = model.analyze()
-    logger.info(
-        f"\t\tn_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso: {str(results[angle])}"
-    )
+    angle_to_rate[angle] = model.analyze()
 
 
-result_file = Path(P.RESULTS_DIR).joinpath(f"{CURRENT_TONE}.pic")
+result_file = Path(P.RESULTS_DIR).joinpath(
+    f"{SOUND}_{datetime.datetime.now().isoformat()[:-5]}.pic"
+)
+
+result["conf"] = save_current_conf(model)
+result["angle_to_rate"] = angle_to_rate
+
 logger.info(f"saving results to {result_file.absolute()}...")
 with open(result_file, "wb") as f:
-    pickle.dump(results, f)
+    pickle.dump(result, f)
