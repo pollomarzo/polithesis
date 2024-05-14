@@ -19,7 +19,8 @@ nest.set_verbosity("M_ERROR")
 SOUND_DURATION = 1 * second
 SOUND_FREQUENCIES = [100 * Hz, 1 * kHz, 10 * kHz]
 # i actually just listened to the sounds... :)
-ANGLES = range(90, 271, 15)
+ANGLES = [90, 75, 60, 45, 30, 15, 0, 345, 330, 315, 300, 285, 270]
+# range(90, 271, 15)
 INFO_FILE_NAME = "info.txt"
 INFO_HEADER = "this directory holds all computed angles for a specific sound: \n"
 
