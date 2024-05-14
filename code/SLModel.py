@@ -2,15 +2,25 @@ import numpy as np
 from consts import Constants as C
 from cochlea import spikes_to_nestgen
 from utils import logger
+from SpikingModel import SpikingModel
+from inspect import getsource
 import nest
 
 
-class SLModel:
+class SLModel(SpikingModel):
+    name = "Simple model v1.0"
+
     def __init__(self, binaural_ihc):
         logger.info("creating spike generator according to input IHC response...")
         anfs_per_ear = spikes_to_nestgen(binaural_ihc)
-
+        self.create_network(anfs_per_ear)
         logger.info("creating rest of network...")
+        logger.info("model creation complete.")
+
+    def describe_model(self):
+        return {"name": self.name, "networkdef": getsource(self.create_network)}
+
+    def create_network(self, anfs_per_ear):
         r_ANFs = anfs_per_ear["L"]
         l_ANFs = anfs_per_ear["R"]
 
@@ -61,9 +71,6 @@ class SLModel:
             C.n_GBCs,
             params={"C_m": C.cap_nuclei, "V_m": C.V_m, "V_reset": C.V_reset},
         )
-
-        # ANFs_noise = nest.Create('poisson_generator',1,
-        #                  params = {'rate':noise_rate})
 
         self.s_rec_r_LSO = nest.Create("spike_recorder")
         self.s_rec_l_LSO = nest.Create("spike_recorder")
@@ -230,7 +237,6 @@ class SLModel:
             "one_to_one",
             syn_spec={"weight": C.SYN_WEIGHTS.MNTBCs2LSO},
         )
-        logger.info("model creation complete.")
 
     def simulate(self, time: float | int):
         nest.Simulate(time)

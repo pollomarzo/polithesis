@@ -1,3 +1,6 @@
+from inspect import isclass, isfunction
+
+
 class Constants:
     class SYN_WEIGHTS:
         ANFs2SBCs = 2.0
@@ -16,12 +19,11 @@ class Constants:
         ANFs2GBCs = 20
 
     n_ANFs = 35000
-    # n_battery = len(SYN_WEIGHTS.MNTBCs2MSO)
     SBCs2MSOs = int(POP_CONN.ANFs2GBCs / POP_CONN.ANFs2SBCs)
     SBCs2LSOs = int(POP_CONN.ANFs2GBCs / POP_CONN.ANFs2SBCs)
     n_SBCs = int(n_ANFs / POP_CONN.ANFs2SBCs)
     n_GBCs = int(n_ANFs / POP_CONN.ANFs2GBCs)
-    n_MSOs = n_GBCs  # * n_battery
+    n_MSOs = n_GBCs
     n_inhMSOs = n_GBCs
     V_m = V_reset = -70  # mV
     C_m_sbc = 3
@@ -37,3 +39,24 @@ class Paths:
     IRCAM_DIR = DATA_DIR + "IRCAM/"
     IHF_SPIKES_DIR = DATA_DIR + "IHF_SPIKES/"
     RESULTS_DIR = "../results/"
+
+
+def save_current_conf(model):
+    conf = {}
+    __explore_class(conf, "constants", Constants)
+    __explore_class(conf, "paths", Paths)
+    conf["model_desc"] = model.describe_model()
+    return conf
+
+
+def __explore_class(conf, k, v):
+    if isclass(v):
+        tocheck = {}
+        for kk, vv in v.__dict__.items():
+            __explore_class(tocheck, kk, vv)
+        conf[k] = tocheck
+        return conf
+
+    if not isfunction(v) and not str(k).startswith("__"):
+        conf[k] = v
+        return conf
