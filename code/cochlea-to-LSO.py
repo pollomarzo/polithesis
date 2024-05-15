@@ -27,8 +27,8 @@ result = {}
 angle_to_rate = {}
 """
 {
-    90: (n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso),
-    105: (n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso)
+    90: {n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso},
+    105: {n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso}
     ...
 }
 """
@@ -42,6 +42,7 @@ for angle, binaural_anf in anf_spikes.items():
     model.simulate(TIME_SIMULATION)
     logger.info(f"\t\t...simulation complete. collecting results...")
     angle_to_rate[angle] = model.analyze()
+    break
 
 
 result_file = Path(P.RESULTS_DIR).joinpath(

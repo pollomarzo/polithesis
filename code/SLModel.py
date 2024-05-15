@@ -261,5 +261,10 @@ class SLModel(SpikingModel):
         # MSO
         n_spikes_r_mso = len(data_r_MSO["times"])  # / (C.time_sim) * 1000
         n_spikes_l_mso = len(data_l_MSO["times"])  # / (C.time_sim) * 1000
-
-        return (n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso)
+        result = {
+            "n_spikes_r_lso": n_spikes_r_lso,
+            "n_spikes_l_lso": n_spikes_l_lso,
+            "n_spikes_r_mso": n_spikes_r_mso,
+            "n_spikes_l_mso": n_spikes_l_mso,
+        }
+        return result
