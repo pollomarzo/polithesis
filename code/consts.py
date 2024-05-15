@@ -1,16 +1,16 @@
 from inspect import isclass, isfunction
 
 
-class Constants:
+class Parameters:
     class SYN_WEIGHTS:
         ANFs2SBCs = 2.0
         ANFs2GBCs = 1.0
         SBCs2MSO = 1
-        SBCs2MSO_inh = 0
-        SBCs2inhMSO_inh = -30
+        SBCs2MSO_inh = -30
+        SBCs2MSO_noinh = 0
         SBCs2LSO = 16.0
         MNTBCs2MSO = -30
-        MNTBCs2inhMSO = -30
+        MNTBCs2MSO_noinh = 0
         GBCs2MNTBCs = 16.0
         MNTBCs2LSO = -2.0
 
@@ -31,7 +31,14 @@ class Constants:
     cap_nuclei = 1  # pF
 
     C_mso = 1
-    delays_mso = [1, 1.3, 1, 0.45, 0.44]  # ms
+
+    class DELAYS:  # ms
+        GBCs2MNTBCs = 0.45
+        SBCs2MSO_exc_ipsi = 1
+        SBCs2MSO_inh_ipsi = 1.3
+        SBCs2MSO_exc_contra = 1
+        MNTBCs2MSO_inh_contra = 0.44
+        LNTBCs2MSO_inh_ipsi = 1.3
 
 
 class Paths:
@@ -43,7 +50,7 @@ class Paths:
 
 def save_current_conf(model):
     conf = {}
-    __explore_class(conf, "constants", Constants)
+    __explore_class(conf, "constants", Parameters)
     __explore_class(conf, "paths", Paths)
     conf["model_desc"] = model.describe_model()
     return conf

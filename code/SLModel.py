@@ -1,5 +1,5 @@
 import numpy as np
-from consts import Constants as C
+from consts import Parameters as P
 from cochlea import spikes_to_nestgen
 from utils import logger
 from SpikingModel import SpikingModel
@@ -25,51 +25,64 @@ class SLModel(SpikingModel):
         l_ANFs = anfs_per_ear["R"]
 
         r_SBCs = nest.Create(
-            "iaf_cond_alpha", C.n_SBCs, params={"C_m": C.C_m_sbc, "V_reset": C.V_reset}
+            "iaf_cond_alpha", P.n_SBCs, params={"C_m": P.C_m_sbc, "V_reset": P.V_reset}
         )
 
         l_SBCs = nest.Create(
-            "iaf_cond_alpha", C.n_SBCs, params={"C_m": C.C_m_sbc, "V_reset": C.V_reset}
+            "iaf_cond_alpha", P.n_SBCs, params={"C_m": P.C_m_sbc, "V_reset": P.V_reset}
         )
 
         r_GBCs = nest.Create(
-            "iaf_cond_alpha", C.n_GBCs, params={"C_m": C.C_m_gcb, "V_reset": C.V_reset}
+            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
 
         l_GBCs = nest.Create(
-            "iaf_cond_alpha", C.n_GBCs, params={"C_m": C.C_m_gcb, "V_reset": C.V_reset}
+            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
 
         r_MNTBCs = nest.Create(
-            "iaf_cond_alpha", C.n_GBCs, params={"C_m": C.C_m_gcb, "V_reset": C.V_reset}
+            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
 
         l_MNTBCs = nest.Create(
-            "iaf_cond_alpha", C.n_GBCs, params={"C_m": C.C_m_gcb, "V_reset": C.V_reset}
+            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
 
         r_MSO = nest.Create(
             "iaf_cond_alpha",
-            C.n_MSOs,
-            params={"C_m": C.cap_nuclei, "V_reset": C.V_reset},
+            P.n_MSOs,
+            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
         )
 
         l_MSO = nest.Create(
             "iaf_cond_alpha",
-            C.n_MSOs,
-            params={"C_m": C.cap_nuclei, "V_reset": C.V_reset},
+            P.n_MSOs,
+            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
+        )
+        # these are supposed to simulate the strychnine-induced MSO
+        # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
+        r_MSO_no_inh = nest.Create(
+            "iaf_cond_alpha",
+            P.n_MSOs,
+            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
         )
 
-        self.r_LSO = nest.Create(
+        l_MSO_no_inh = nest.Create(
             "iaf_cond_alpha",
-            C.n_GBCs,
-            params={"C_m": C.cap_nuclei, "V_reset": C.V_reset},
+            P.n_MSOs,
+            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
         )
 
-        self.l_LSO = nest.Create(
+        r_LSO = nest.Create(
             "iaf_cond_alpha",
-            C.n_GBCs,
-            params={"C_m": C.cap_nuclei, "V_m": C.V_m, "V_reset": C.V_reset},
+            P.n_GBCs,
+            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
+        )
+
+        l_LSO = nest.Create(
+            "iaf_cond_alpha",
+            P.n_GBCs,
+            params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
         )
 
         self.s_rec_r_LSO = nest.Create("spike_recorder")
@@ -81,36 +94,36 @@ class SLModel(SpikingModel):
         nest.Connect(r_MSO, self.s_rec_r_LSO, "all_to_all")
         nest.Connect(l_MSO, self.s_rec_l_LSO, "all_to_all")
 
-        nest.Connect(self.r_LSO, self.s_rec_r_MSO, "all_to_all")
-        nest.Connect(self.l_LSO, self.s_rec_l_MSO, "all_to_all")
+        nest.Connect(r_LSO, self.s_rec_r_MSO, "all_to_all")
+        nest.Connect(l_LSO, self.s_rec_l_MSO, "all_to_all")
 
         # ANFs to SBCs
-        for i in range(C.n_SBCs):
+        for i in range(P.n_SBCs):
             nest.Connect(
-                r_ANFs[C.POP_CONN.ANFs2SBCs * i : C.POP_CONN.ANFs2SBCs * (i + 1)],
+                r_ANFs[P.POP_CONN.ANFs2SBCs * i : P.POP_CONN.ANFs2SBCs * (i + 1)],
                 r_SBCs[i],
                 "all_to_all",
-                syn_spec={"weight": C.SYN_WEIGHTS.ANFs2SBCs},
+                syn_spec={"weight": P.SYN_WEIGHTS.ANFs2SBCs},
             )
             nest.Connect(
-                l_ANFs[C.POP_CONN.ANFs2SBCs * i : C.POP_CONN.ANFs2SBCs * (i + 1)],
+                l_ANFs[P.POP_CONN.ANFs2SBCs * i : P.POP_CONN.ANFs2SBCs * (i + 1)],
                 l_SBCs[i],
                 "all_to_all",
-                syn_spec={"weight": C.SYN_WEIGHTS.ANFs2SBCs},
+                syn_spec={"weight": P.SYN_WEIGHTS.ANFs2SBCs},
             )
         # ANFs to GBCs
-        for i in range(C.n_GBCs):
+        for i in range(P.n_GBCs):
             nest.Connect(
-                r_ANFs[C.POP_CONN.ANFs2GBCs * i : C.POP_CONN.ANFs2GBCs * (i + 1)],
+                r_ANFs[P.POP_CONN.ANFs2GBCs * i : P.POP_CONN.ANFs2GBCs * (i + 1)],
                 r_GBCs[i],
                 "all_to_all",
-                syn_spec={"weight": C.SYN_WEIGHTS.ANFs2GBCs},
+                syn_spec={"weight": P.SYN_WEIGHTS.ANFs2GBCs},
             )
             nest.Connect(
-                l_ANFs[C.POP_CONN.ANFs2GBCs * i : C.POP_CONN.ANFs2GBCs * (i + 1)],
+                l_ANFs[P.POP_CONN.ANFs2GBCs * i : P.POP_CONN.ANFs2GBCs * (i + 1)],
                 l_GBCs[i],
                 "all_to_all",
-                syn_spec={"weight": C.SYN_WEIGHTS.ANFs2GBCs},
+                syn_spec={"weight": P.SYN_WEIGHTS.ANFs2GBCs},
             )
 
         # GBCs to MNTBCs
@@ -118,124 +131,138 @@ class SLModel(SpikingModel):
             r_GBCs,
             r_MNTBCs,
             "one_to_one",
-            syn_spec={"weight": C.SYN_WEIGHTS.GBCs2MNTBCs, "delay": C.delays_mso[3]},
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.GBCs2MNTBCs,
+                "delay": P.DELAYS.GBCs2MNTBCs,
+            },
         )
         nest.Connect(
             l_GBCs,
             l_MNTBCs,
             "one_to_one",
-            syn_spec={"weight": C.SYN_WEIGHTS.GBCs2MNTBCs, "delay": C.delays_mso[3]},
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.GBCs2MNTBCs,
+                "delay": P.DELAYS.GBCs2MNTBCs,
+            },
         )
 
-        # MSO
-        for i in range(C.n_MSOs):
-            # From SBCs (excitation):
+        # normal MSO
+        for i in range(P.n_MSOs):
+            # r_MSO
+            #   From SBCs (excitation):
+            #       ipsi
             nest.Connect(
-                r_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
+                r_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
                 r_MSO[i],
                 "all_to_all",
                 syn_spec={
-                    "weight": C.SYN_WEIGHTS.SBCs2MSO,
-                    "delay": C.delays_mso[0],
+                    "weight": P.SYN_WEIGHTS.SBCs2MSO,
+                    "delay": P.DELAYS.SBCs2MSO_exc_ipsi,
                 },
             )  # ipsilateral
+            #       contra
             nest.Connect(
-                l_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
+                l_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
                 r_MSO[i],
                 "all_to_all",
                 syn_spec={
-                    "weight": C.SYN_WEIGHTS.SBCs2MSO,
-                    "delay": C.delays_mso[2],
+                    "weight": P.SYN_WEIGHTS.SBCs2MSO,
+                    "delay": P.DELAYS.SBCs2MSO_exc_contra,
                 },
-            )  # contralateral
-            # From LNTBCs (inhibition)
+            )
+            # From LNTBCs (mirrors SBC) (inhibition), ipsi
             nest.Connect(
-                r_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
+                r_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
                 r_MSO[i],
                 "all_to_all",
                 syn_spec={
-                    "weight": C.SYN_WEIGHTS.SBCs2MSO_inh,
-                    "delay": C.delays_mso[1],
+                    "weight": P.SYN_WEIGHTS.SBCs2MSO_inh,
+                    "delay": P.DELAYS.LNTBCs2MSO_inh_ipsi,
                 },
-            )  # ipsilateral
+            )
+            # From MNTBCs (inh) contra outside of loop
 
+            # l_MSO
             # From SBCs (excitation):
+            #       ipsi
             nest.Connect(
-                l_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
+                l_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
                 l_MSO[i],
                 "all_to_all",
                 syn_spec={
-                    "weight": C.SYN_WEIGHTS.SBCs2MSO,
-                    "delay": C.delays_mso[0],
+                    "weight": P.SYN_WEIGHTS.SBCs2MSO,
+                    "delay": P.DELAYS.SBCs2MSO_exc_ipsi,
                 },
-            )  # ipsilateral
+            )
+            #       contra
             nest.Connect(
-                r_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
+                r_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
                 l_MSO[i],
                 "all_to_all",
                 syn_spec={
-                    "weight": C.SYN_WEIGHTS.SBCs2MSO,
-                    "delay": C.delays_mso[2],
+                    "weight": P.SYN_WEIGHTS.SBCs2MSO,
+                    "delay": P.DELAYS.SBCs2MSO_exc_contra,
                 },
-            )  # contralateral
-            # From LNTBCs (inhibition)
+            )
+            # From LNTBCs (mirrors SBC) (inhibition) ipsi
             nest.Connect(
-                l_SBCs[C.SBCs2MSOs * i : C.SBCs2MSOs * (i + 1)],
+                l_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
                 l_MSO[i],
                 "all_to_all",
                 syn_spec={
-                    "weight": C.SYN_WEIGHTS.SBCs2MSO_inh,
-                    "delay": C.delays_mso[1],
+                    "weight": P.SYN_WEIGHTS.SBCs2MSO_inh,
+                    "delay": P.DELAYS.LNTBCs2MSO_inh_ipsi,
                 },
-            )  # ipsilateral
+            )
+            # From MNTBCs (inh) contra outside of loop
 
-        # From MNTBCs (inhibition)
+        # From MNTBCs (inhibition) contra
         nest.Connect(
             l_MNTBCs,
             r_MSO,
             "one_to_one",
             syn_spec={
-                "weight": C.SYN_WEIGHTS.MNTBCs2MSO,
-                "delay": C.delays_mso[4],
+                "weight": P.SYN_WEIGHTS.MNTBCs2MSO,
+                "delay": P.DELAYS.MNTBCs2MSO_inh_contra,
             },
-        )  # contralateral
-        # From MNTBCs (inhibition)
+        )
+        # From MNTBCs (inhibition) contra
         nest.Connect(
             r_MNTBCs,
             l_MSO,
             "one_to_one",
             syn_spec={
-                "weight": C.SYN_WEIGHTS.MNTBCs2MSO,
-                "delay": C.delays_mso[4],
+                "weight": P.SYN_WEIGHTS.MNTBCs2MSO,
+                "delay": P.DELAYS.MNTBCs2MSO_inh_contra,
             },
-        )  # contralateral
+        )
 
         # LSO
-        for i in range(0, C.n_GBCs):
+        for i in range(0, P.n_GBCs):
             nest.Connect(
-                r_SBCs[C.SBCs2LSOs * i : C.SBCs2LSOs * (i + 1)],
-                self.r_LSO[i],
+                r_SBCs[P.SBCs2LSOs * i : P.SBCs2LSOs * (i + 1)],
+                r_LSO[i],
                 "all_to_all",
-                syn_spec={"weight": C.SYN_WEIGHTS.SBCs2LSO},
+                syn_spec={"weight": P.SYN_WEIGHTS.SBCs2LSO},
             )
             nest.Connect(
-                l_SBCs[C.SBCs2LSOs * i : C.SBCs2LSOs * (i + 1)],
-                self.l_LSO[i],
+                l_SBCs[P.SBCs2LSOs * i : P.SBCs2LSOs * (i + 1)],
+                l_LSO[i],
                 "all_to_all",
-                syn_spec={"weight": C.SYN_WEIGHTS.SBCs2LSO},
+                syn_spec={"weight": P.SYN_WEIGHTS.SBCs2LSO},
             )
 
         nest.Connect(
             r_MNTBCs,
-            self.l_LSO,
+            l_LSO,
             "one_to_one",
-            syn_spec={"weight": C.SYN_WEIGHTS.MNTBCs2LSO},
+            syn_spec={"weight": P.SYN_WEIGHTS.MNTBCs2LSO},
         )
         nest.Connect(
             l_MNTBCs,
-            self.r_LSO,
+            r_LSO,
             "one_to_one",
-            syn_spec={"weight": C.SYN_WEIGHTS.MNTBCs2LSO},
+            syn_spec={"weight": P.SYN_WEIGHTS.MNTBCs2LSO},
         )
 
     def simulate(self, time: float | int):
