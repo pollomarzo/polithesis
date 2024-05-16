@@ -9,7 +9,7 @@ from brian2hears import Sound, IRCAM_LISTEN
 import numpy as np
 from cochlea import sounds_to_spikes
 from utils import logger
-from consts import Paths as P
+from consts import Paths
 from pathlib import Path
 import pickle
 import nest
@@ -45,7 +45,7 @@ def generate_possible_sounds():
 def generate_ANF_and_save():
     logger.info(f"generating sound database...")
     sounds = generate_possible_sounds()
-    hrtfdb = IRCAM_LISTEN(P.IRCAM_DIR)
+    hrtfdb = IRCAM_LISTEN(Paths.IRCAM_DIR)
     hrtfset = hrtfdb.load_subject(hrtfdb.subjects[0])
     for key, sound in sounds.items():
         logger.info(f"now handling sound {key}")
@@ -55,7 +55,7 @@ def generate_ANF_and_save():
             f"creating directory to keep all possible angles "
             "of sound {key} converted to ANF spiking patterns..."
         )
-        dirpath = Path(P.IHF_SPIKES_DIR).joinpath(key)
+        dirpath = Path(Paths.IHF_SPIKES_DIR).joinpath(key)
         dirpath.mkdir(parents=True, exist_ok=True)
         with open(dirpath.joinpath(INFO_FILE_NAME), "w") as f:
             f.write(INFO_HEADER + str(sound) + "\n")
@@ -92,13 +92,13 @@ def load_saved_anf_as_nestgen(sound_keys: list[str] | None = None):
     # for every sound_key, you'll get a dictionary of angle->IHC
     sounds = {}
     if sound_keys is None:
-        for _, dirs, _ in Path(P.IHF_SPIKES_DIR).walk():
+        for _, dirs, _ in Path(Paths.IHF_SPIKES_DIR).walk():
             sound_dirs = dirs
     else:
         sound_dirs = sound_keys
     # build the large dict that will hold all our values
     for sound_key in sound_dirs:
-        dirpath = Path(P.IHF_SPIKES_DIR).joinpath(sound_key)
+        dirpath = Path(Paths.IHF_SPIKES_DIR).joinpath(sound_key)
         angle_to_IHC = {}
         for angle_path in dirpath.glob("*.pic"):
             angle_filename = angle_path.name

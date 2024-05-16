@@ -10,17 +10,18 @@ import nest
 class SLModel(SpikingModel):
     name = "Simple model v1.0"
 
-    def __init__(self, binaural_ihc):
+    def __init__(self, parameters, binaural_ihc):
+        self.params = parameters
         logger.info("creating spike generator according to input IHC response...")
         anfs_per_ear = spikes_to_nestgen(binaural_ihc)
-        self.create_network(anfs_per_ear)
+        self.create_network(parameters, anfs_per_ear)
         logger.info("creating rest of network...")
         logger.info("model creation complete.")
 
     def describe_model(self):
         return {"name": self.name, "networkdef": getsource(self.create_network)}
 
-    def create_network(self, anfs_per_ear):
+    def create_network(self, P, anfs_per_ear):
         r_ANFs = anfs_per_ear["L"]
         l_ANFs = anfs_per_ear["R"]
 
