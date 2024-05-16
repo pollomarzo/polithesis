@@ -3,7 +3,7 @@ from brian2 import *
 from brian2hears import *
 import numpy as np
 import pickle
-from consts import Paths as P
+from consts import Paths as Paths
 import nest
 
 NUM_CF = 3500  # 3500 (3.5k cochlea ciliar -> 10 ANF for each -> 35000 ANF)
