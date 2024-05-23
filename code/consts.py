@@ -10,10 +10,8 @@ class Parameters:
         ANFs2GBCs: float = 1.0
         SBCs2MSO: float = 1
         SBCs2MSO_inh: float = -30
-        # SBCs2MSO_noinh = 0
         SBCs2LSO: float = 16.0
         MNTBCs2MSO: float = -30
-        # MNTBCs2MSO_noinh = 0
         GBCs2MNTBCs: float = 16.0
         MNTBCs2LSO: float = -2.0
 

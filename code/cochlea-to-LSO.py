@@ -26,11 +26,9 @@ logger.info("...loaded saved anfs!")
 logger.info("beginning to cycle through angles...")
 params_normal = Parameters()
 params_modified = Parameters()
+# Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
 params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
 params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
-
-print(params_modified.SYN_WEIGHTS.MNTBCs2MSO)
-print(params_normal.SYN_WEIGHTS.MNTBCs2MSO)
 
 for params, model_key, model_desc in zip(
     [params_normal, params_modified],

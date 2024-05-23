@@ -1,5 +1,5 @@
 import numpy as np
-from consts import Parameters as P
+from consts import Parameters
 from cochlea import spikes_to_nestgen
 from utils import logger
 from SpikingModel import SpikingModel
@@ -21,65 +21,43 @@ class SLModel(SpikingModel):
     def describe_model(self):
         return {"name": self.name, "networkdef": getsource(self.create_network)}
 
-    def create_network(self, P, anfs_per_ear):
+    def create_network(self, P: Parameters, anfs_per_ear):
         r_ANFs = anfs_per_ear["L"]
         l_ANFs = anfs_per_ear["R"]
 
         r_SBCs = nest.Create(
             "iaf_cond_alpha", P.n_SBCs, params={"C_m": P.C_m_sbc, "V_reset": P.V_reset}
         )
-
         l_SBCs = nest.Create(
             "iaf_cond_alpha", P.n_SBCs, params={"C_m": P.C_m_sbc, "V_reset": P.V_reset}
         )
-
         r_GBCs = nest.Create(
             "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
-
         l_GBCs = nest.Create(
             "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
-
         r_MNTBCs = nest.Create(
             "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
-
         l_MNTBCs = nest.Create(
             "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
-
         r_MSO = nest.Create(
             "iaf_cond_alpha",
             P.n_MSOs,
             params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
         )
-
         l_MSO = nest.Create(
             "iaf_cond_alpha",
             P.n_MSOs,
             params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
         )
-        # these are supposed to simulate the strychnine-induced MSO
-        # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
-        r_MSO_no_inh = nest.Create(
-            "iaf_cond_alpha",
-            P.n_MSOs,
-            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
-        )
-
-        l_MSO_no_inh = nest.Create(
-            "iaf_cond_alpha",
-            P.n_MSOs,
-            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
-        )
-
         r_LSO = nest.Create(
             "iaf_cond_alpha",
             P.n_GBCs,
             params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
         )
-
         l_LSO = nest.Create(
             "iaf_cond_alpha",
             P.n_GBCs,
@@ -92,11 +70,11 @@ class SLModel(SpikingModel):
         self.s_rec_l_MSO = nest.Create("spike_recorder")
 
         # Devices
-        nest.Connect(r_MSO, self.s_rec_r_LSO, "all_to_all")
-        nest.Connect(l_MSO, self.s_rec_l_LSO, "all_to_all")
+        nest.Connect(r_MSO, self.s_rec_r_MSO, "all_to_all")
+        nest.Connect(l_MSO, self.s_rec_l_MSO, "all_to_all")
 
-        nest.Connect(r_LSO, self.s_rec_r_MSO, "all_to_all")
-        nest.Connect(l_LSO, self.s_rec_l_MSO, "all_to_all")
+        nest.Connect(r_LSO, self.s_rec_r_LSO, "all_to_all")
+        nest.Connect(l_LSO, self.s_rec_l_LSO, "all_to_all")
 
         # ANFs to SBCs
         for i in range(P.n_SBCs):
@@ -147,7 +125,7 @@ class SLModel(SpikingModel):
             },
         )
 
-        # normal MSO
+        # MSO
         for i in range(P.n_MSOs):
             # r_MSO
             #   From SBCs (excitation):
@@ -278,13 +256,6 @@ class SLModel(SpikingModel):
         # LSO
         n_spikes_r_lso = len(data_r_LSO["times"])  # / (C.time_sim) * 1000
         n_spikes_l_lso = len(data_l_LSO["times"])  # / (C.time_sim) * 1000
-
-        # ac_r_lso = np.unique(
-        #     data_r["senders"][np.where((data_r["senders"] >= self.id_r_LSO1))]
-        # )
-        # ac_l_lso = np.unique(
-        #     data_l["senders"][np.where((data_l["senders"] >= self.id_l_LSO1))]
-        # )
 
         # MSO
         n_spikes_r_mso = len(data_r_MSO["times"])  # / (C.time_sim) * 1000
