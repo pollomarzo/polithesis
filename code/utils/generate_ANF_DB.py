@@ -7,8 +7,8 @@ generates a series of files with spike trains PICKLED
 from brian2 import Hz, kHz, second, Quantity
 from brian2hears import Sound, IRCAM_LISTEN
 import numpy as np
-from cochlea import sounds_to_spikes
-from utils import logger
+from utils.cochlea import sounds_to_spikes
+from utils.logging import logger
 from consts import Paths
 from pathlib import Path
 import pickle

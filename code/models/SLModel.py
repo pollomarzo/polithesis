@@ -1,8 +1,8 @@
 import numpy as np
 from consts import Parameters
-from cochlea import spikes_to_nestgen
-from utils import logger
-from SpikingModel import SpikingModel
+from utils.cochlea import spikes_to_nestgen
+from utils.logging import logger
+from .SpikingModel import SpikingModel
 from inspect import getsource
 import nest
 

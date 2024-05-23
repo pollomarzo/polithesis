@@ -1,6 +1,6 @@
-from SLModel import SLModel
-from utils import logger
-from generate_DB import load_saved_anf_as_nestgen
+from models.SLModel import SLModel
+from utils.logging import logger
+from utils.generate_ANF_DB import load_saved_anf_as_nestgen
 from consts import Paths, save_current_conf, Parameters
 from pathlib import Path
 import brian2
@@ -54,6 +54,7 @@ for params, model_key, model_desc in zip(
         model.simulate(TIME_SIMULATION)
         logger.info(f"\t\t\t...simulation complete. collecting results...")
         angle_to_rate[angle] = model.analyze()
+        break
 
     result_file = Path(Paths.RESULTS_DIR).joinpath(
         f"{SOUND}-{model_key}-{datetime.datetime.now().isoformat()[:-5]}.pic"
@@ -65,3 +66,4 @@ for params, model_key, model_desc in zip(
     logger.info(f"\tsaving results for {model_key} to {result_file.absolute()}...")
     with open(result_file, "wb") as f:
         dill.dump(result, f)
+    break
