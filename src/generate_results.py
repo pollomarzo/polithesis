@@ -1,9 +1,13 @@
 from models.SLModel import SLModel
 from utils.log import logger
-from utils.helper_IHC_DB import load_saved_anf_spiketrain, SavedResponse
+from utils.helper_IHC_DB import (
+    load_saved_anf_spiketrain,
+    SavedIHCResponse,
+    SoundAfterHRTF,
+)
 from consts import Paths, save_current_conf, Parameters
 from pathlib import Path
-import brian2
+import brian2, brian2hears as b2h
 import dill
 import datetime
 import nest
@@ -19,7 +23,10 @@ logger.info("loading saved anfs...")
 
 SOUND = "tone_1.kHz"
 
-anf_spikes: dict[str, SavedResponse] = load_saved_anf_spiketrain([SOUND])[SOUND]
+sound_hrtfed: SoundAfterHRTF = load_saved_anf_spiketrain(
+    # all the sounds you want to load...
+    [SOUND]
+)[SOUND]
 logger.info("...loaded saved anfs!")
 
 
@@ -45,7 +52,7 @@ for params, model_key, model_desc in zip(
         ...
     }
     """
-    for angle, binaural_anf in anf_spikes.items():
+    for angle, binaural_anf in sound_hrtfed.angle_to_response.items():
         nest.ResetKernel()
         logger.info(f"\t\tcurrent angle: {angle}")
         model = SLModel(params, binaural_anf.binaural_IHC_response)
@@ -60,6 +67,7 @@ for params, model_key, model_desc in zip(
     )
 
     result["conf"] = save_current_conf(model, params, SOUND)
+    # if i wanted, i could include the actual sound, which is in sound_hrtfed.basesound
     result["angle_to_rate"] = angle_to_rate
 
     logger.info(f"\tsaving results for {model_key} to {result_file.absolute()}...")

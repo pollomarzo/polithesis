@@ -38,7 +38,7 @@ def generate_possible_sounds():
 
 
 @dataclass
-class SavedResponse:
+class SavedIHCResponse:
     binaural_IHC_response: dict
     left: Sound
     right: Sound
@@ -75,38 +75,49 @@ def generate_ANF_and_save():
             binaural_IHC_response = sounds_to_spikes(binaural_sound)
 
             logger.info(f"saving result to {filepath}")
-            saved_data = SavedResponse(binaural_IHC_response, left, right)
+            saved_data = SavedIHCResponse(binaural_IHC_response, left, right)
             with open(filepath, "wb") as f:
                 pickle.dump(saved_data, f)
 
         logger.info(f"completed sound {key}")
 
 
-def load_saved_anf_spiketrain(sound_keys: list[str] | None = None):
+@dataclass
+class SoundAfterHRTF:
+    basesound: Sound
+    angle_to_response: dict[str, SavedIHCResponse]
+
+
+def load_saved_anf_spiketrain(
+    sound_keys: list[str] | None = None,
+) -> dict[str, SoundAfterHRTF]:
     """
     {
-        tone_1Hz: {
-            90: {
-                SavedResponse: {
-                    binaural_IHC_response: dict:{
-                        L : ...,
-                        R : ...
-                    },
-                    left: Sound
-                    right: Sound
-                }
-            },
-            105: {
-                SavedResponse: {
-                    binaural_IHC_response: dict:{
-                        L : ...,
-                        R : ...
-                    },
-                    left: Sound
-                    right: Sound
-                }
-            },
-        }
+        "tone_1Hz": SoundAfterHRTF(
+            basesound: Sound();
+            angle_to_response: {
+                90: {
+                    SavedIHCResponse: {
+                        binaural_IHC_response: dict:{
+                            L : ...,
+                            R : ...
+                        },
+                        left: Sound
+                        right: Sound
+                    }
+                },
+                105: {
+                    SavedIHCResponse: {
+                        binaural_IHC_response: dict:{
+                            L : ...,
+                            R : ...
+                        },
+                        left: Sound
+                        right: Sound
+                    }
+                },
+            }
+        )
         ...
     }
     """
@@ -119,6 +130,7 @@ def load_saved_anf_spiketrain(sound_keys: list[str] | None = None):
         sound_dirs = sound_keys
     # build the large dict that will hold all our values
     for sound_key in sound_dirs:
+        sounds[sound_key] = {}
         dirpath = Path(Paths.IHF_SPIKES_DIR).joinpath(sound_key)
         angle_data = {}
         # unpickle all saved ihc responses (and corresponding sounds)
@@ -127,12 +139,12 @@ def load_saved_anf_spiketrain(sound_keys: list[str] | None = None):
             # get angle string from angle files
             angle = angle_filename.split("Hz_")[1].split("deg")[0]
             with open(angle_path, "rb") as f:
-                saved_data: SavedResponse = pickle.load(f)
+                saved_data: SavedIHCResponse = pickle.load(f)
             angle_data[angle] = saved_data
         # unpickle base sound
         basesound_path = list(dirpath.glob("*basesound.pic"))
         if len(basesound_path) == 1:
             with open(basesound_path[0], "rb") as f:
-                angle_data["basesound"] = pickle.load((f))
-        sounds[sound_key] = angle_data
+                basesound = pickle.load((f))
+        sounds[sound_key] = SoundAfterHRTF(basesound, angle_data)
     return sounds
