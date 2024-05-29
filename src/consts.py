@@ -60,11 +60,12 @@ class Paths:
     RESULTS_DIR: str = "../results/"
 
 
-def save_current_conf(model, params, paths=Paths()):
+def save_current_conf(model, params, sound_key, paths=Paths()):
     conf = {}
     __explore_dataclass(conf, "parameters", params)
     __explore_dataclass(conf, "paths", paths)
     conf["model_desc"] = model.describe_model()
+    conf["sound_key"] = sound_key
     return conf
 
 

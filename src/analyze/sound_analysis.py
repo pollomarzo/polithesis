@@ -2,7 +2,7 @@ from brian2 import Hz, kHz, second, Quantity, ms
 from brian2hears import Sound, IRCAM_LISTEN
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.logging import logger
+from src.utils.log import logger
 from sorcery import (
     dict_of,
 )

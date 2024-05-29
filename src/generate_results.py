@@ -1,6 +1,6 @@
 from models.SLModel import SLModel
-from utils.logging import logger
-from utils.generate_ANF_DB import load_saved_anf_as_nestgen
+from utils.log import logger
+from utils.helper_IHC_DB import load_saved_anf_spiketrain, SavedResponse
 from consts import Paths, save_current_conf, Parameters
 from pathlib import Path
 import brian2
@@ -19,7 +19,7 @@ logger.info("loading saved anfs...")
 
 SOUND = "tone_1.kHz"
 
-anf_spikes = load_saved_anf_as_nestgen([SOUND])[SOUND]
+anf_spikes: dict[str, SavedResponse] = load_saved_anf_spiketrain([SOUND])[SOUND]
 logger.info("...loaded saved anfs!")
 
 
@@ -48,22 +48,20 @@ for params, model_key, model_desc in zip(
     for angle, binaural_anf in anf_spikes.items():
         nest.ResetKernel()
         logger.info(f"\t\tcurrent angle: {angle}")
-        model = SLModel(params, binaural_anf)
+        model = SLModel(params, binaural_anf.binaural_IHC_response)
         model.name = model_key
         logger.info(f"\t\t\tmodel initialized. begin simulation...")
         model.simulate(TIME_SIMULATION)
         logger.info(f"\t\t\t...simulation complete. collecting results...")
         angle_to_rate[angle] = model.analyze()
-        break
 
     result_file = Path(Paths.RESULTS_DIR).joinpath(
         f"{SOUND}-{model_key}-{datetime.datetime.now().isoformat()[:-5]}.pic"
     )
 
-    result["conf"] = save_current_conf(model, params)
+    result["conf"] = save_current_conf(model, params, SOUND)
     result["angle_to_rate"] = angle_to_rate
 
     logger.info(f"\tsaving results for {model_key} to {result_file.absolute()}...")
     with open(result_file, "wb") as f:
         dill.dump(result, f)
-    break

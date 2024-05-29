@@ -1,16 +1,11 @@
-"""
-generates a series of files with spike trains PICKLED
-
-
-"""
-
 from brian2 import Hz, kHz, second, Quantity
 from brian2hears import Sound, IRCAM_LISTEN
 import numpy as np
 from utils.cochlea import sounds_to_spikes
-from utils.logging import logger
+from utils.log import logger
 from consts import Paths
 from pathlib import Path
+from dataclasses import dataclass
 import pickle
 import nest
 
@@ -22,7 +17,7 @@ SOUND_FREQUENCIES = [100 * Hz, 1 * kHz, 10 * kHz]
 ANGLES = [90, 75, 60, 45, 30, 15, 0, 345, 330, 315, 300, 285, 270]
 # range(90, 271, 15)
 INFO_FILE_NAME = "info.txt"
-INFO_HEADER = "this directory holds all computed angles for a specific sound: \n"
+INFO_HEADER = "this directory holds all computed angles for a specific sound. the pickled sound is also available. \n"
 
 
 def create_base_sound_key(frequency: str | Quantity, sound_type):
@@ -42,6 +37,13 @@ def generate_possible_sounds():
     return sounds
 
 
+@dataclass
+class SavedResponse:
+    binaural_IHC_response: dict
+    left: Sound
+    right: Sound
+
+
 def generate_ANF_and_save():
     logger.info(f"generating sound database...")
     sounds = generate_possible_sounds()
@@ -53,38 +55,57 @@ def generate_ANF_and_save():
         # each angle (and channel) must now be converted to ANF spiking patterns
         logger.info(
             f"creating directory to keep all possible angles "
-            "of sound {key} converted to ANF spiking patterns..."
+            f"of sound {key} converted to ANF spiking patterns..."
         )
         dirpath = Path(Paths.IHF_SPIKES_DIR).joinpath(key)
         dirpath.mkdir(parents=True, exist_ok=True)
         with open(dirpath.joinpath(INFO_FILE_NAME), "w") as f:
-            f.write(INFO_HEADER + str(sound) + "\n")
+            f.write(INFO_HEADER + str(sound) + "\n" + key + "\n")
+        with open(dirpath.joinpath(key + "_basesound.pic"), "wb") as f:
+            pickle.dump(sound, f)
 
         for angle in ANGLES:
             hrtf = hrtfset(azim=angle, elev=0)
             # We apply the chosen HRTF to the sound, the output has 2 channels
             binaural_sound: np.NDArray = hrtf.filterbank(sound).process().T
+            left = Sound(binaural_sound[0])
+            right = Sound(binaural_sound[1])
             logger.info(f"generated {len(sounds.keys())} pairs of inputs to IHCs...")
             filepath = dirpath.joinpath(f"{key}_{angle}deg.pic")
-            binaural_IHC_response = sounds_to_spikes(
-                binaural_sound, save_to_file=True, filepath=filepath
-            )
+            binaural_IHC_response = sounds_to_spikes(binaural_sound)
+
+            logger.info(f"saving result to {filepath}")
+            saved_data = SavedResponse(binaural_IHC_response, left, right)
+            with open(filepath, "wb") as f:
+                pickle.dump(saved_data, f)
 
         logger.info(f"completed sound {key}")
 
 
-def load_saved_anf_as_nestgen(sound_keys: list[str] | None = None):
+def load_saved_anf_spiketrain(sound_keys: list[str] | None = None):
     """
     {
         tone_1Hz: {
             90: {
-                L : ...,
-                R : ...
+                SavedResponse: {
+                    binaural_IHC_response: dict:{
+                        L : ...,
+                        R : ...
+                    },
+                    left: Sound
+                    right: Sound
+                }
             },
             105: {
-                L : ...,
-                R : ...
-            }
+                SavedResponse: {
+                    binaural_IHC_response: dict:{
+                        L : ...,
+                        R : ...
+                    },
+                    left: Sound
+                    right: Sound
+                }
+            },
         }
         ...
     }
@@ -99,16 +120,19 @@ def load_saved_anf_as_nestgen(sound_keys: list[str] | None = None):
     # build the large dict that will hold all our values
     for sound_key in sound_dirs:
         dirpath = Path(Paths.IHF_SPIKES_DIR).joinpath(sound_key)
-        angle_to_IHC = {}
-        for angle_path in dirpath.glob("*.pic"):
+        angle_data = {}
+        # unpickle all saved ihc responses (and corresponding sounds)
+        for angle_path in dirpath.glob("*deg.pic"):
             angle_filename = angle_path.name
+            # get angle string from angle files
             angle = angle_filename.split("Hz_")[1].split("deg")[0]
             with open(angle_path, "rb") as f:
-                angle_values = pickle.load(f)
-            angle_to_IHC[angle] = angle_values
-        sounds[sound_key] = angle_to_IHC
+                saved_data: SavedResponse = pickle.load(f)
+            angle_data[angle] = saved_data
+        # unpickle base sound
+        basesound_path = list(dirpath.glob("*basesound.pic"))
+        if len(basesound_path) == 1:
+            with open(basesound_path[0], "rb") as f:
+                angle_data["basesound"] = pickle.load((f))
+        sounds[sound_key] = angle_data
     return sounds
-
-
-if __name__ == "__main__":
-    generate_ANF_and_save()

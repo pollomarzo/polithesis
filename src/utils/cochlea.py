@@ -13,11 +13,7 @@ CFMIN = 20 * Hz
 CFMAX = 20 * kHz
 
 
-def sounds_to_spikes(
-    binaural_sound, plot_spikes=False, save_to_file=False, filepath=None
-):
-    if save_to_file and filepath is None:
-        raise Exception("Cannot save result to file with no filename.")
+def sounds_to_spikes(binaural_sound, plot_spikes=False):
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     binaural_IHC_response = {}
 
@@ -46,11 +42,6 @@ def sounds_to_spikes(
 
         binaural_IHC_response[channel] = M.spike_trains()
     logger.info("generation complete.")
-
-    if save_to_file:
-        logger.info(f"saving result to {filepath}")
-        with open(filepath, "wb") as f:
-            pickle.dump(binaural_IHC_response, f)
     return binaural_IHC_response
 
 
