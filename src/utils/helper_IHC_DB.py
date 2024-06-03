@@ -67,15 +67,15 @@ def generate_ANF_and_save():
         for angle in ANGLES:
             hrtf = hrtfset(azim=angle, elev=0)
             # We apply the chosen HRTF to the sound, the output has 2 channels
-            binaural_sound: np.NDArray = hrtf.filterbank(sound).process().T
-            left = Sound(binaural_sound[0])
-            right = Sound(binaural_sound[1])
+            binaural_sound: Sound = hrtf(sound)
             logger.info(f"generated {len(sounds.keys())} pairs of inputs to IHCs...")
             filepath = dirpath.joinpath(f"{key}_{angle}deg.pic")
             binaural_IHC_response = sounds_to_spikes(binaural_sound)
 
             logger.info(f"saving result to {filepath}")
-            saved_data = SavedIHCResponse(binaural_IHC_response, left, right)
+            saved_data = SavedIHCResponse(
+                binaural_IHC_response, binaural_sound.left, binaural_sound.right
+            )
             with open(filepath, "wb") as f:
                 pickle.dump(saved_data, f)
 

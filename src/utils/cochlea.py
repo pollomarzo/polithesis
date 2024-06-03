@@ -1,9 +1,9 @@
 from enum import Enum
-from brian2 import *
-from brian2hears import *
-import numpy as np
+from brian2 import clip, Inf, ms, Hz, kHz, plot, show, run, SpikeMonitor
+from brian2hears import Sound, Gammatone, FunctionFilterbank, FilterbankGroup, erbspace
 import pickle
-from consts import Paths as Paths
+from consts import Paths
+from .log import logger
 import nest
 
 NUM_CF = 3500  # 3500 (3.5k cochlea ciliar -> 10 ANF for each -> 35000 ANF)
@@ -13,13 +13,12 @@ CFMIN = 20 * Hz
 CFMAX = 20 * kHz
 
 
-def sounds_to_spikes(binaural_sound, plot_spikes=False):
+def sounds_to_spikes(binaural_sound: Sound, plot_spikes=False):
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     binaural_IHC_response = {}
 
     logger.info("generating simulated IHC response...")
-    for sound_arr, channel in zip(binaural_sound, ["L", "R"]):
-        sound = Sound(sound_arr)
+    for sound, channel in zip([binaural_sound.left, binaural_sound.right], ["L", "R"]):
         # frequencies distributed as cochlea
         # To model how hair cells in adjacent frequencies are engaged as well, but less
         gfb = Gammatone(sound, cf)
