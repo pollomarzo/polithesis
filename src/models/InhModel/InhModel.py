@@ -22,8 +22,8 @@ class InhModel(SpikingModel):
         return {"name": self.name, "networkdef": getsource(self.create_network)}
 
     def create_network(self, P: Parameters, anfs_per_ear):
-        r_ANFs = anfs_per_ear["L"]
-        l_ANFs = anfs_per_ear["R"]
+        l_ANFs = anfs_per_ear["L"]
+        r_ANFs = anfs_per_ear["R"]
 
         r_SBCs = nest.Create(
             "iaf_cond_alpha", P.n_SBCs, params={"C_m": P.C_m_sbc, "V_reset": P.V_reset}

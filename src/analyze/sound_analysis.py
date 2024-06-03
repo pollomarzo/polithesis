@@ -2,7 +2,7 @@ from brian2 import Hz, kHz, second, Quantity, ms
 from brian2hears import Sound, IRCAM_LISTEN
 import numpy as np
 import matplotlib.pyplot as plt
-from src.utils.log import logger
+from utils.log import logger
 from sorcery import (
     dict_of,
 )
@@ -16,7 +16,7 @@ _SILENCE_PROFILE_TIME = 4 * ms
 
 
 def _first_outside_max_variance(sound: Sound):
-    max_variance = np.max(np.abs(np.array(sound[0 * ms : _SILENCE_PROFILE_TIME]))) * 2
+    max_variance = np.max(np.abs(np.array(sound[0 * ms : _SILENCE_PROFILE_TIME]))) * 5
     first_idx = np.argmax(abs(sound) > max_variance)
     return [first_idx, np.array(sound)[first_idx], sound.times[first_idx]]
 
@@ -39,7 +39,7 @@ def itd(left: Sound, right: Sound, display=False):
         plotted_range_end = left_start_time + 3 * ms
         plotted_left = left[plotted_range_start:plotted_range_end]
 
-        plt.plot(plotted_left.times + plotted_range_start, plotted_left, ".")
+        plt.plot(plotted_left.times + plotted_range_start, plotted_left, ".-")
         plt.axvline(left_start_time / second, color="red")
 
         if right_start_time < left_start_time:
@@ -49,7 +49,7 @@ def itd(left: Sound, right: Sound, display=False):
         plt.subplot(212)
         plotted_right = right[plotted_range_start:plotted_range_end]
 
-        plt.plot(plotted_right.times + plotted_range_start, plotted_right, ".")
+        plt.plot(plotted_right.times + plotted_range_start, plotted_right, ".-")
         plt.axvline(right_start_time / second, color="red")
 
         if left_start_time < right_start_time:
@@ -89,7 +89,8 @@ def ild(left: Sound, right: Sound, orig: Sound, display=False):
     left_sp, left_freq = spectrum(left)
     orig_sp, orig_freq = spectrum(orig)
 
-    diff = abs(left_sp - right_sp)
+    # diff = left_sp - right_sp
+    diff = np.max(np.abs(np.array(left))) - np.max(np.abs(np.array(right)))
 
     if display:
         ymax = max(np.max(left_sp), np.max(right_sp), np.max(orig_sp))
