@@ -1,14 +1,14 @@
 import numpy as np
-from consts import Parameters
+from .params import Parameters
 from utils.cochlea import spikes_to_nestgen
 from utils.log import logger
-from .SpikingModel import SpikingModel
+from ..SpikingModel import SpikingModel
 from inspect import getsource
 import nest
 
 
-class SLModel(SpikingModel):
-    name = "Simple model v1.0"
+class InhModel(SpikingModel):
+    name = "Inhibitory model, mso iaf_cond_beta"
 
     def __init__(self, parameters, binaural_ihc):
         self.params = parameters
@@ -44,14 +44,28 @@ class SLModel(SpikingModel):
             "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
         r_MSO = nest.Create(
-            "iaf_cond_alpha",
+            "iaf_cond_beta",
             P.n_MSOs,
-            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
+            params={
+                "C_m": P.cap_nuclei,
+                "tau_rise_ex": P.MSO_TAUS.rise_ex,
+                "tau_rise_in": P.MSO_TAUS.rise_in,
+                "tau_decay_ex": P.MSO_TAUS.decay_ex,
+                "tau_decay_in": P.MSO_TAUS.decay_in,
+                "V_reset": P.V_reset,
+            },
         )
         l_MSO = nest.Create(
-            "iaf_cond_alpha",
+            "iaf_cond_beta",
             P.n_MSOs,
-            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
+            params={
+                "C_m": P.cap_nuclei,
+                "tau_rise_ex": P.MSO_TAUS.rise_ex,
+                "tau_rise_in": P.MSO_TAUS.rise_in,
+                "tau_decay_ex": P.MSO_TAUS.decay_ex,
+                "tau_decay_in": P.MSO_TAUS.decay_in,
+                "V_reset": P.V_reset,
+            },
         )
         r_LSO = nest.Create(
             "iaf_cond_alpha",
@@ -138,7 +152,7 @@ class SLModel(SpikingModel):
                     "weight": P.SYN_WEIGHTS.SBCs2MSO,
                     "delay": P.DELAYS.SBCs2MSO_exc_ipsi,
                 },
-            )  # ipsilateral
+            )
             #       contra
             nest.Connect(
                 l_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
