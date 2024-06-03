@@ -1,11 +1,14 @@
-from models.SLModel import SLModel
+# from models.SLModel import SLModel
+from models.InhModel.InhModel import InhModel
 from utils.log import logger
 from utils.helper_IHC_DB import (
     load_saved_anf_spiketrain,
-    SavedIHCResponse,
     SoundAfterHRTF,
 )
-from consts import Paths, save_current_conf, Parameters
+from consts import Paths, save_current_conf
+
+# from models.SLModel.params import Parameters as SLParam
+from models.InhModel.params import Parameters as InhParam
 from pathlib import Path
 import brian2, brian2hears as b2h
 import dill
@@ -31,8 +34,8 @@ logger.info("...loaded saved anfs!")
 
 
 logger.info("beginning to cycle through angles...")
-params_normal = Parameters()
-params_modified = Parameters()
+params_normal = InhParam()
+params_modified = InhParam()
 # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
 params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
 params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
@@ -40,7 +43,7 @@ params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
 for params, model_key, model_desc in zip(
     [params_normal, params_modified],
     ["default", "no_inh"],
-    [SLModel.name, "inhibition to MSO turned off"],
+    [InhModel.name, "inhibition to MSO turned off"],
 ):
     logger.info(f"\tnow working on model {model_key}")
     result = {}
@@ -55,7 +58,7 @@ for params, model_key, model_desc in zip(
     for angle, binaural_anf in sound_hrtfed.angle_to_response.items():
         nest.ResetKernel()
         logger.info(f"\t\tcurrent angle: {angle}")
-        model = SLModel(params, binaural_anf.binaural_IHC_response)
+        model = InhModel(params, binaural_anf.binaural_IHC_response)
         model.name = model_key
         logger.info(f"\t\t\tmodel initialized. begin simulation...")
         model.simulate(TIME_SIMULATION)
