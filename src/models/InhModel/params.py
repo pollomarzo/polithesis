@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 @dataclass
 class Parameters:
+    key = "default_params"
+
     @dataclass
     class SYN_WEIGHTS:
         ANFs2SBCs: float = 2.0

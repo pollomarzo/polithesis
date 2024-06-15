@@ -6,16 +6,17 @@ from dataclasses import dataclass, asdict, is_dataclass
 class Paths:
     DATA_DIR: str = "../data/"
     IRCAM_DIR: str = DATA_DIR + "IRCAM/"
-    IHF_SPIKES_DIR: str = DATA_DIR + "IHF_SPIKES/"
+    ANF_SPIKES_DIR: str = DATA_DIR + "ANF_SPIKETRAINS/"
     RESULTS_DIR: str = "../results/"
 
 
-def save_current_conf(model, params, sound_key, paths=Paths()):
+def save_current_conf(model, params, cochlea, sound_key, paths=Paths()):
     conf = {}
     __explore_dataclass(conf, "parameters", params)
     __explore_dataclass(conf, "paths", paths)
     conf["model_desc"] = model.describe_model()
     conf["sound_key"] = sound_key
+    conf["cochlea_type"] = cochlea
     return conf
 
 

@@ -3,9 +3,12 @@ channels:
 - conda-forge
 dependencies:
 - brian2
+- dill
+- ipympl
+- ipywidgets
 - jupyter
 - nest-simulator
-- dill
+- scipy
 - pip:
-  - brian2hears
   - sorcery
+  - brian2hears

@@ -1,6 +1,5 @@
 import numpy as np
 from .params import Parameters
-from utils.cochlea import spikes_to_nestgen
 from utils.log import logger
 from ..SpikingModel import SpikingModel
 from inspect import getsource
@@ -44,18 +43,17 @@ def create_spectro(tone, time_sim):
             spectro[0 : channel_x + 1, :] = amplitudes[10 - channel_x : 11].reshape(
                 channel_x + 1, 1
             ) * np.ones((channel_x + 1, time_sim))
+        elif channel_x > 3489:  # truncation of the gaussian profile of amplitudes
+            spectro[channel_x - 10 : channel_x + 1] = amplitudes[:11].reshape(
+                11, 1
+            ) * np.ones((11, time_sim))
+            spectro[channel_x:] = amplitudes[10 : 10 + 3500 - channel_x].reshape(
+                3500 - channel_x, 1
+            ) * np.ones((3500 - channel_x, time_sim))
         else:
-            if channel_x > 3489:  # truncation of the gaussian profile of amplitudes
-                spectro[channel_x - 10 : channel_x + 1] = amplitudes[:11].reshape(
-                    11, 1
-                ) * np.ones((11, time_sim))
-                spectro[channel_x:] = amplitudes[10 : 10 + 3500 - channel_x].reshape(
-                    3500 - channel_x, 1
-                ) * np.ones((3500 - channel_x, time_sim))
-            else:
-                spectro[channel_x - 10 : channel_x + 10 + 1, :] = amplitudes.reshape(
-                    21, 1
-                ) * np.ones((21, time_sim))
+            spectro[channel_x - 10 : channel_x + 10 + 1, :] = amplitudes.reshape(
+                21, 1
+            ) * np.ones((21, time_sim))
     else:
         spectro[channel_x, :] = np.ones(time_sim)
 
@@ -64,19 +62,16 @@ def create_spectro(tone, time_sim):
 
 class PpgModel(SpikingModel):
     name = "Inhibitory model, mso iaf_cond_beta"
+    key = ""
 
-    def __init__(self, parameters, tone, angle, time_sim):
+    def __init__(self, parameters, tone, angle):
         self.params = parameters
         self.tone = tone
         self.angle = angle
         logger.info("creating pulsepacket generator according to input IHC response...")
         generators = {
-            "L": nest.Create(
-                "pulsepacket_generator", n_ANFs, params={"stop": time_sim, "sdev": sdev}
-            ),
-            "R": nest.Create(
-                "pulsepacket_generator", n_ANFs, params={"stop": time_sim, "sdev": sdev}
-            ),
+            "L": nest.Create("pulsepacket_generator", n_ANFs, params={"sdev": sdev}),
+            "R": nest.Create("pulsepacket_generator", n_ANFs, params={"sdev": sdev}),
         }
         self.create_network(parameters, generators)
         logger.info("creating rest of network...")
@@ -324,8 +319,7 @@ class PpgModel(SpikingModel):
 
     def simulate(self, time_sim: float | int):
         delta_x = w_head * np.sin(np.deg2rad(self.angle))
-        itd = 1000 * delta_x / v_sound  # ms
-        itd = np.round(itd, 2)  # only for spike_generators
+        itd = np.round(1000 * delta_x / v_sound, 2)  # ms
         spectro = create_spectro(self.tone, time_sim)
         # sets up the PPGs according to sound spectrum
         for t in range(time_sim):

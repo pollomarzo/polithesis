@@ -1,22 +1,25 @@
 import numpy as np
+
+from cochleas.anf_utils import AnfResponse, spikes_to_nestgen
 from .params import Parameters
-from utils.cochlea import spikes_to_nestgen
 from utils.log import logger
 from ..SpikingModel import SpikingModel
 from inspect import getsource
+from utils.custom_sounds import Tone
 import nest
 
 
 class InhModel(SpikingModel):
     name = "Inhibitory model, mso iaf_cond_beta"
+    key = "inh_model"
 
-    def __init__(self, parameters, binaural_ihc):
-        self.params = parameters
-        logger.info("creating spike generator according to input IHC response...")
-        anfs_per_ear = spikes_to_nestgen(binaural_ihc)
-        self.create_network(parameters, anfs_per_ear)
-        logger.info("creating rest of network...")
-        logger.info("model creation complete.")
+    def __init__(self, params: Parameters, anf: AnfResponse):
+        self.params = params
+        logger.debug("creating spike generator according to input IHC response...")
+        anfs_per_ear = spikes_to_nestgen(anf)
+        logger.debug("creating rest of network...")
+        self.create_network(params, anfs_per_ear)
+        logger.debug("model creation complete.")
 
     def describe_model(self):
         return {"name": self.name, "networkdef": getsource(self.create_network)}
