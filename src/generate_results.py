@@ -1,16 +1,16 @@
-# from models.SLModel import SLModel
-from models.InhModel.InhModel import InhModel
-from utils.log import logger
-from utils.helper_IHC_DB import (
-    load_saved_anf_spiketrain,
-    SoundAfterHRTF,
-)
-from consts import Paths, save_current_conf
-
-# from models.SLModel.params import Parameters as SLParam
-from models.InhModel.params import Parameters as InhParam
 from pathlib import Path
-import brian2, brian2hears as b2h
+from utils.custom_sounds import Tone
+from models.InhModel.InhModel import InhModel
+from models.PpgModel.PpgModel import PpgModel
+from models.InhModel.params import Parameters as InhParam
+from models.PpgModel.params import Parameters as PpgParam
+from consts import Paths, save_current_conf
+from utils.log import logger
+import brian2 as b2, brian2hears as b2h
+from brian2 import Hz
+from cochleas.anf_utils import load_anf_response, COCHLEAS, create_sound_key
+from cochleas.consts import ANGLES
+from sorcery import dict_of
 import dill
 import datetime
 import nest
@@ -18,61 +18,62 @@ import nest.voltage_trace
 
 nest.set_verbosity("M_ERROR")
 
-brian2.seed(42)  # https://brian2.readthedocs.io/en/stable/advanced/random.html
+b2.seed(42)  # https://brian2.readthedocs.io/en/stable/advanced/random.html
 
 TIME_SIMULATION = 1000
-
-logger.info("loading saved anfs...")
-
-SOUND = "tone_1.kHz"
-
-sound_hrtfed: SoundAfterHRTF = load_saved_anf_spiketrain(
-    # all the sounds you want to load...
-    [SOUND]
-)[SOUND]
-logger.info("...loaded saved anfs!")
+create_execution_key = lambda i, c, m, p: f"{create_sound_key(i)}&{c}&{m}&{p}"
+ex_key_with_time = (
+    lambda *args: f"{create_execution_key(*args)}&{datetime.datetime.now().isoformat()[:-7]}"
+)
 
 
-logger.info("beginning to cycle through angles...")
-params_normal = InhParam()
-params_modified = InhParam()
-# Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
-params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
-params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
+if __name__ == "__main__":
+    inputs = [Tone(i) for i in [100, 1000, 10000] * Hz]
+    params_modified = InhParam()
+    # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
+    params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
+    params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
+    params_modified.key = "no_inh_MSO"
 
-for params, model_key, model_desc in zip(
-    [params_normal, params_modified],
-    ["default", "no_inh"],
-    [InhModel.name, "inhibition to MSO turned off"],
-):
-    logger.info(f"\tnow working on model {model_key}")
+    params = [params_modified]  # , PpgParam()]
+    models = [InhModel]  # , PpgModel]
+    cochleas = COCHLEAS
     result = {}
-    angle_to_rate = {}
-    """
-    {
-        90: {n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso},
-        105: {n_spikes_r_lso, n_spikes_l_lso, n_spikes_r_mso, n_spikes_l_mso}
-        ...
-    }
-    """
-    for angle, binaural_anf in sound_hrtfed.angle_to_response.items():
-        nest.ResetKernel()
-        logger.info(f"\t\tcurrent angle: {angle}")
-        model = InhModel(params, binaural_anf.binaural_IHC_response)
-        model.name = model_key
-        logger.info(f"\t\t\tmodel initialized. begin simulation...")
-        model.simulate(TIME_SIMULATION)
-        logger.info(f"\t\t\t...simulation complete. collecting results...")
-        angle_to_rate[angle] = model.analyze()
 
-    result_file = Path(Paths.RESULTS_DIR).joinpath(
-        f"{SOUND}-{model_key}-{datetime.datetime.now().isoformat()[:-5]}.pic"
-    )
+    for input in inputs:
+        for cochlea_key, cochlea in cochleas.items():
+            for Model, parameters in zip(models, params):
+                ex_key = ex_key_with_time(input, cochlea_key, Model.key, parameters.key)
+                result = {
+                    "basesound": input,
+                }
+                angle_to_rate = {}
+                for angle in ANGLES:
+                    nest.ResetKernel()
+                    logger.info(f"starting trial for {dict_of(ex_key,angle)}")
+                    # this section is cached on disk
+                    anf = load_anf_response(input, angle, cochlea_key)
+                    logger.info("anf loaded. Creating model...")
 
-    result["conf"] = save_current_conf(model, params, SOUND)
-    # if i wanted, i could include the actual sound, which is in sound_hrtfed.basesound
-    result["angle_to_rate"] = angle_to_rate
+                    model = Model(parameters, anf)
+                    logger.info("model created. starting simulation...")
+                    model.simulate(TIME_SIMULATION)
 
-    logger.info(f"\tsaving results for {model_key} to {result_file.absolute()}...")
-    with open(result_file, "wb") as f:
-        dill.dump(result, f)
+                    model_result = model.analyze()
+                    angle_to_rate[angle] = model_result
+                    logger.info("trial complete.")
+
+                logger.info(f"saving all angles for model {ex_key}...")
+                # save model results to file
+                result_file = Path(Paths.RESULTS_DIR).joinpath(f"{ex_key}.pic")
+
+                result["conf"] = save_current_conf(
+                    model, parameters, cochlea_key, create_sound_key(input)
+                )
+                result["angle_to_rate"] = angle_to_rate
+
+                logger.info(
+                    f"\tsaving results for {ex_key} to {result_file.absolute()}..."
+                )
+                with open(result_file, "wb") as f:
+                    dill.dump(result, f)
