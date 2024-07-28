@@ -278,9 +278,25 @@ class InhModel(SpikingModel):
         n_spikes_r_mso = len(data_r_MSO["times"])  # / (C.time_sim) * 1000
         n_spikes_l_mso = len(data_l_MSO["times"])  # / (C.time_sim) * 1000
         result = {
-            "n_spikes_r_lso": n_spikes_r_lso,
-            "n_spikes_l_lso": n_spikes_l_lso,
-            "n_spikes_r_mso": n_spikes_r_mso,
-            "n_spikes_l_mso": n_spikes_l_mso,
+            "R": {
+                "LSO": {
+                    "n_spikes": n_spikes_r_lso,
+                    "spikes": data_r_LSO,
+                },
+                "MSO": {
+                    "n_spikes": n_spikes_r_mso,
+                    "spikes": data_r_MSO,
+                },
+            },
+            "L": {
+                "LSO": {
+                    "n_spikes": n_spikes_l_lso,
+                    "spikes": data_l_LSO,
+                },
+                "MSO": {
+                    "n_spikes": n_spikes_l_mso,
+                    "spikes": data_l_MSO,
+                },
+            },
         }
         return result
