@@ -1,5 +1,5 @@
 from brian2 import Hz, kHz
-from brian2hears import Sound, IRCAM_LISTEN
+from brian2hears import Sound, IRCAM_LISTEN, dB
 from .anf_response import AnfResponse
 import numpy as np
 from sorcery import dict_of
@@ -32,9 +32,10 @@ def create_sound_key(sound: Tone):
     if type(sound) is Tone:
         frequency = str(sound.frequency).replace(" ", "")
         sound_type = "tone"
+        level = int(sound.sound.level)
     else:
         raise NotImplementedError(f"sound {sound} is not a Tone")
-    return f"{sound_type}_{frequency}"
+    return f"{sound_type}_{frequency}_{level}dB"
 
 
 def generate_possible_sounds():

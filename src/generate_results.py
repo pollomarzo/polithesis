@@ -29,6 +29,9 @@ ex_key_with_time = (
 
 if __name__ == "__main__":
     inputs = [Tone(i) for i in [100, 1000, 10000] * Hz]
+    for i in inputs:
+        i.sound.level = 70 * b2h.dB
+
     params_modified = InhParam()
     # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
     params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
