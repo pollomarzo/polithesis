@@ -7,11 +7,11 @@ class Parameters:
 
     @dataclass
     class SYN_WEIGHTS:
-        ANFs2SBCs: float = 2.0
-        ANFs2GBCs: float = 1.0
+        ANFs2SBCs: float = 16.0
+        ANFs2GBCs: float = 8.0
         SBCs2MSO: float = 1
         SBCs2MSO_inh: float = -30
-        SBCs2LSO: float = 16.0
+        SBCs2LSO: float = 8.0
         MNTBCs2MSO: float = -30
         GBCs2MNTBCs: float = 16.0
         MNTBCs2LSO: float = -2.0
@@ -46,8 +46,8 @@ class Parameters:
     n_inhMSOs: int = n_GBCs
     V_m: float = -70  # mV
     V_reset: float = V_m
-    C_m_sbc: int = 3
-    C_m_gcb: int = 2
+    C_m_sbc: int = 1
+    C_m_gcb: int = 1
     cap_nuclei: float = 1  # pF
 
     C_mso: float = 1

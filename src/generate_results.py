@@ -1,9 +1,7 @@
 from pathlib import Path
 from utils.custom_sounds import Tone
 from models.InhModel.InhModel import InhModel
-from models.PpgModel.PpgModel import PpgModel
 from models.InhModel.params import Parameters as InhParam
-from models.PpgModel.params import Parameters as PpgParam
 from consts import Paths, save_current_conf
 from utils.log import logger
 import brian2 as b2, brian2hears as b2h
@@ -38,15 +36,22 @@ if __name__ == "__main__":
     params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
     params_modified.key = "no_inh_MSO"
 
-    params = [params_modified]  # , PpgParam()]
+    params = [InhParam()]  # , PpgParam()]
+    # params = [params_modified, InhParam()]  # , PpgParam()]
     models = [InhModel]  # , PpgModel]
+    # models = [InhModel, InhModel]  # , PpgModel]
     cochleas = COCHLEAS
     result = {}
-
+    num_runs = len(inputs) * len(cochleas) * len(params)
+    current_run = 0
+    logger.info(f"launching {num_runs} trials...")
     for input in inputs:
         for cochlea_key, cochlea in cochleas.items():
             for Model, parameters in zip(models, params):
                 ex_key = ex_key_with_time(input, cochlea_key, Model.key, parameters.key)
+                logger.info(
+                    f">>>>> now testing arch n.{current_run} of {num_runs}, with key {ex_key}"
+                )
                 result = {
                     "basesound": input,
                 }
@@ -80,3 +85,5 @@ if __name__ == "__main__":
                 )
                 with open(result_file, "wb") as f:
                     dill.dump(result, f)
+
+                current_run = current_run + 1
