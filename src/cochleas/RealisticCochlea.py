@@ -15,9 +15,10 @@ from .consts import CFMIN, CFMAX, NUM_CF, ANGLE_TO_IRCAM
 from .anf_response import AnfResponse
 from dataclasses import dataclass
 
-COCHLEA_KEY = "realistic"
+SUBJECT_N = 1
+COCHLEA_KEY = f"realistic_subj{1002 +SUBJECT_N}"
 hrtfdb = IRCAM_LISTEN(Paths.IRCAM_DIR)
-hrtfset = hrtfdb.load_subject(hrtfdb.subjects[0])
+hrtfset = hrtfdb.load_subject(hrtfdb.subjects[SUBJECT_N])
 
 
 def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False):
