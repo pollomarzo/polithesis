@@ -10,11 +10,12 @@ year: 2014
 item-type: Journal Article
 publisher: "Frontiers in Neural Circuits"
 tags:
+- exported
 doi: https://doi.org/10.3389/fncir.2014.00116
 cssclasses: 
 - literature-note
 attachments:
-- /home/paolo/zotero_data/storage/GRA5Q3YD/Grothe_Pecka-2014-The_natural_history_of_sound_localization_in_mammals_â€“_a_story_of_neuronal.pdf
+- /home/paolo/Zotero/storage/GRA5Q3YD/Grothe_Pecka-2014-The_natural_history_of_sound_localization_in_mammals_â€“_a_story_of_neuronal.pdf
 ---
 %% begin notes %%
 ## Key takeaways
@@ -71,17 +72,25 @@ the LSO neurons are strongly modulated by microsecond changes in ITD. so the MSO
 
 - <% tp.file.cursor(4) %>
 
+## Key takeaways
+
+- <% tp.file.cursor(1) %>jump here with ctrl+shift+J
+
+## Connections
+
+- <% tp.file.cursor(4) %>
+
 %% end notes %%
 
-> [!info]- Info 🔗 [**Zotero**](zotero://select/groups/5439920/items/S82Q47FW) | [**DOI**](https://doi.org/10.3389/fncir.2014.00116) | [**PDF-1**](file:////home/paolo/zotero_data/storage/GRA5Q3YD/Grothe_Pecka-2014-The_natural_history_of_sound_localization_in_mammals_â€“_a_story_of_neuronal.pdf)
+> [!info]- Info 🔗 [**Zotero**](zotero://select/groups/5439920/items/S82Q47FW) | [**DOI**](https://doi.org/10.3389/fncir.2014.00116) | [**PDF-1**](file:////home/paolo/Zotero/storage/GRA5Q3YD/Grothe_Pecka-2014-The_natural_history_of_sound_localization_in_mammals_â€“_a_story_of_neuronal.pdf)
 >
 >**Bibliography**: [1]B. Grothe and M. Pecka, “The natural history of sound localization in mammals - a story of neuronal inhibition,” _Front. Neural Circuits._, vol. 8, Oct. 2014, doi: [10.3389/fncir.2014.00116](https://doi.org/10.3389/fncir.2014.00116).
 > 
 > **Authors**::  [[03 - Source notes/People/Benedikt Grothe|Benedikt Grothe]],  [[03 - Source notes/People/Michael Pecka|Michael Pecka]]
 > 
-> **Tags**: 
+> **Tags**: #exported
 > 
-> **Collections**:: [[thesis]]
+> **Collections**:: [[thesis]], [[presentation]]
 
 
 > [!abstract]-
@@ -94,6 +103,65 @@ the LSO neurons are strongly modulated by microsecond changes in ITD. so the MSO
 > ```query
 > content: "@grotheNaturalHistorySound2014" -file:@grotheNaturalHistorySound2014
 > ```
+
+> [!note]- Zotero notes (1)
+> 
+> Notes longer than 20 words.
+>> [!example]- Note 1 | [tldr:](http://zotero.org/groups/5439920/items/ZAJJ75W7)
+>> 
+>> tldr:
+>> 
+>> there are three cues for localizing sounds: 2 for the horizontal (ITD, ILD), one for above-under (HRTFs).
+>> 
+>> ITD range is in sub-millisecond range; ILDs are frequency dependent, high affected most and low unaffected (in near range, ILDs occur for lower as well); if wavelength is shorter than head width, significant ILDs occur.
+>> 
+>> there are 4 factors that could influence exploitation of a cue instead of another:  
+>> 1. middle ear systems that mostly transmit low frequency sounds -> ITDs, and opposite  
+>> 2. big animals -> large ITDs -> possible to be registered  
+>> 3. original tympanic ear is isolated pressure receivers -> max ITD is interaural distance; two middle-ear cavities are acoustically connected -> ITDs are magnified  
+>> 4. acoustic communication can be evolutionary driving force or co-evolved feature (evolutionary feedback system and selection pressure)
+>> 
+>> although two taxons use same cue (e.g. ITDs in birds and mammals), evolutionary histories and neuronal mechanisms are different origin
+>> 
+>> birds (from dinosaurs) hearing evolved to proceess low-frequency signals -> ITD detection
+>> 
+>> mammals -> history of being small -> most small mammals entirely on ILDs, and LSO is homogenous in all terrestrial mammals investigated; MSO has significant differences in shape and size, likely to be related to hearing range of the species
+>> 
+>> ILDs initial processing is in Lateral Superior Olive (LSO), ITD in Medial Superior Olive (MSO)
+>> 
+>> AVCN: antero-ventral cochlear nucleus  
+>> MNTB: medial nucleus of the trapezoid body
+>> 
+>> ILD PROCESSING: LSO is site of binaural convergence; its bipolar neurons integrate excitatory (glutamatergic) inputs from ipsi AVCNwith inh (glycinergic) from ipsi MNTB; the operation between the two inputs gages the relative sound levels (encoded as activity levels of the two inputs) at the two ears within a specific bandwdth. sounds coming from one side generate high exc rates at ipsilateral, while opposite ear generates low inh contralateral. response functions are a sigmoid, with high sensitivity for small changes in ILD along the slope of the function
+>> 
+>>   
+>> [Go to annotation](zotero://open-pdf/groups/5439920/items/GRA5Q3YD?page=7&annotation=CMIR8JLZ)  
+>> ([Grothe and Pecka, 2014, p. 7](zotero://select/groups/5439920/items/S82Q47FW))
+>> 
+>>   
+>> [Go to annotation](zotero://open-pdf/groups/5439920/items/GRA5Q3YD?page=7&annotation=22U28Z6H)  
+>> ([Grothe and Pecka, 2014, p. 7](zotero://select/groups/5439920/items/S82Q47FW))
+>> 
+>> the peak and slope positions of ILD functions are shifted by previous activity levels: representations of spatial positions are likely to change according to the current auditory context rather than being inflexibly coded
+>> 
+>> the integration of exc and ing at the LSO is not averaged over a period of time, but very (how much?) temporally precise. PROBLEM: inhibitory input (1) comes from further away; (2) has an extra synapse (between GBC and MNTB); MNTB pathway is very speedy, and the synapse is one of the shortest measured in the CNS -> physio evidence shows that inh can suppress event he first spike of LSO response
+>> 
+>> ITD as derived from ILD processing: the LSO neurons are strongly modulated by microsecond changes in ITD. so the MSO is a refined MSO: has excitatory also from controlateral (for binaural excitatory concidence detection), and has inhibitory ipsilateral. about this ipsilateral inhibition: [Go to annotation](zotero://open-pdf/groups/5439920/items/GRA5Q3YD?page=10&annotation=MTLX7MHP) “Although more research is required to thoroughly understand the ipsilateral source of inhibition (Leibold, 2010), it is becoming increasingly clear that having two sources of inhibition (instead of just the contralateral source) provides for greater flexibility in modulating the circuit” ([Grothe and Pecka, 2014, p. 10](zotero://select/groups/5439920/items/S82Q47FW))
+>> 
+>>   
+>> [Go to annotation](zotero://open-pdf/groups/5439920/items/GRA5Q3YD?page=10&annotation=STNYAPB3)  
+>> ([Grothe and Pecka, 2014, p. 10](zotero://select/groups/5439920/items/S82Q47FW))
+>> 
+>> also,
+>> 
+>> [Go to annotation](zotero://open-pdf/groups/5439920/items/GRA5Q3YD?page=12&annotation=IRIECZRF) “suggesting that the primary role of MSO and LSO might not be the encoding of absolute sound-source positions in space (in contrast to the avian system, which employs a labeled line code with a consequently sparse output corresponding to any one position in space), but rather of their relative locations compared to other sound-sources” ([Grothe and Pecka, 2014, p. 12](zotero://select/groups/5439920/items/S82Q47FW))
+>> 
+>> there is more interesting research on the dynamics (how previous behavior influences rate)
+>> 
+>> [Go to annotation](zotero://open-pdf/groups/5439920/items/GRA5Q3YD?page=15&annotation=GSDPPHMA) “these findings strongly suggest that the binaural system serves to encode the relative separation of concurrent or subsequent sound-sources rather than to provide an absolute representation of position in space.” ([Grothe and Pecka, 2014, p. 15](zotero://select/groups/5439920/items/S82Q47FW))
+>> 
+>> [Go to annotation](zotero://open-pdf/groups/5439920/items/GRA5Q3YD?page=14&annotation=IJS2W82A) “The primary function of these perceptual shifts seems to be the relative segregation of the adapting and subsequent sound-source, as the reported shifts in location are directed away from the adapter location, i.e., the perceived distance between the sound-sources is increased relative to the actual distance. This interpretation is supported by the finding that the presence of adapting sound-sources increases spatial resolution at the adapter positio” ([Grothe and Pecka, 2014, p. 14](zotero://select/groups/5439920/items/S82Q47FW))
+
 ___
 ## Reading notes
 
@@ -225,5 +293,6 @@ ___
 
 %% end annotations %%
 
-%% Import Date: 2024-04-03T20:46:47.308+02:00 %%
-`BUTTON[update-litnote]`
+`BUTTON[update-litnote-headers]`
+
+%% Import Date: 2024-06-23T17:25:15.327+02:00 %%
