@@ -1,7 +1,5 @@
 import brian2hears as b2h
-from enum import StrEnum
 import brian2 as b2
-import numpy as np
 
 DEFAULT_SOUND_DURATION = 1 * b2.second
 

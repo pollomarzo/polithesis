@@ -16,9 +16,7 @@ from .RealisticCochlea import (
     COCHLEA_KEY as REAL_COC_KEY,
 )
 from .PpgCochlea import tone_to_ppg_spikes as ppg_cochlea, COCHLEA_KEY as PPG_COC_KEY
-import nest
 
-nest.set_verbosity("M_ERROR")
 
 # SOUND_DURATION = 1 * second
 SOUND_FREQUENCIES = [100 * Hz, 1 * kHz, 10 * kHz]
@@ -166,6 +164,9 @@ def generate_all_ANFs(sounds=None, cochleas=COCHLEAS.keys()):
 
 
 def spikes_to_nestgen(anf_response: AnfResponse):
+    import nest
+
+    nest.set_verbosity("M_ERROR")
     anfs_per_ear = {}
     for channel, response_IHC in anf_response.binaural_anf_spiketrain.items():
         anfs = nest.Create("spike_generator", NUM_CF * NUM_ANF_PER_HC)

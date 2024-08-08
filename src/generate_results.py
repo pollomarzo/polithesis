@@ -6,7 +6,13 @@ from consts import Paths, save_current_conf
 from utils.log import logger
 import brian2 as b2, brian2hears as b2h
 from brian2 import Hz
-from cochleas.anf_utils import load_anf_response, COCHLEAS, create_sound_key
+from cochleas.anf_utils import (
+    load_anf_response,
+    COCHLEAS,
+    create_sound_key,
+    REAL_COC_KEY,
+    real_cochlea,
+)
 from cochleas.consts import ANGLES
 from sorcery import dict_of
 import dill
@@ -28,7 +34,7 @@ ex_key_with_time = (
 if __name__ == "__main__":
     inputs = [Tone(i) for i in [100, 1000, 10000] * Hz]
     for i in inputs:
-        i.sound.level = 70 * b2h.dB
+        i.sound.level = 90 * b2h.dB
 
     params_modified = InhParam()
     # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
@@ -40,6 +46,7 @@ if __name__ == "__main__":
     # params = [params_modified, InhParam()]  # , PpgParam()]
     models = [InhModel]  # , PpgModel]
     # models = [InhModel, InhModel]  # , PpgModel]
+    # cochleas = {REAL_COC_KEY: real_cochlea}
     cochleas = COCHLEAS
     result = {}
     num_runs = len(inputs) * len(cochleas) * len(params)

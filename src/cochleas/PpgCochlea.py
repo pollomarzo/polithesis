@@ -7,7 +7,6 @@ from scipy.interpolate import interp1d
 import math
 import scipy.stats as stats
 from utils.custom_sounds import Tone
-import nest
 
 n_IHCs = 3500
 n_ANFs = int(n_IHCs * 10)
@@ -65,6 +64,8 @@ def create_spectro(tone, time_sim):
 
 
 def tone_to_ppg_spikes(sound: Tone, angle: int):
+    import nest
+
     tone_freq = sound.frequency / b2.Hz
     time_sim = int(sound.sound.duration / b2.ms)
     nest.ResetKernel()
