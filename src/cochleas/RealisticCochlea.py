@@ -16,19 +16,24 @@ from .anf_response import AnfResponse
 from dataclasses import dataclass
 
 SUBJECT_N = 1
-COCHLEA_KEY = f"realistic_subj{1002 +SUBJECT_N}"
-hrtfdb = IRCAM_LISTEN(Paths.IRCAM_DIR)
-hrtfset = hrtfdb.load_subject(hrtfdb.subjects[SUBJECT_N])
+COCHLEA_KEY = f"realistic_subj{1002 + SUBJECT_N}"
 
 
-def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False):
+def run_hrtf(sound: Sound | Tone, angle, subj=SUBJECT_N) -> Sound:
     if type(sound) is Tone:
         sound = sound.sound
     # convert to IRCAM angles
     angle = ANGLE_TO_IRCAM[angle]
     # We apply the chosen HRTF to the sound, the output has 2 channels
+    hrtfdb = IRCAM_LISTEN(Paths.IRCAM_DIR)
+    hrtfset = hrtfdb.load_subject(hrtfdb.subjects[subj])
     hrtf = hrtfset(azim=angle, elev=0)
     binaural_sound: Sound = hrtf(sound)
+    return binaural_sound
+
+
+def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False):
+    binaural_sound = run_hrtf(sound, angle)
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     binaural_IHC_response = {}
 
@@ -44,13 +49,16 @@ def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False):
         dv/dt = (I-v)/(1*ms)+0.2*xi*(2/(1*ms))**.5 : 1 (unless refractory)
         I : 1
         """
+        # You can start by thinking of xi as just a Gaussian random variable with mean 0
+        # and standard deviation 1. However, it scales in an unusual way with time and this
+        # gives it units of 1/sqrt(second)
         G = FilterbankGroup(
             ihc,
             "I",
             eqs,
             reset="v=0",
             threshold="v>1",
-            refractory=5 * ms,
+            refractory=1 * ms,
             method="euler",
         )
         # Run, and raster plot of the spikes
