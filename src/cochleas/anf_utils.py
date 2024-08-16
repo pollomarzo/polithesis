@@ -1,4 +1,4 @@
-from brian2 import Hz, kHz
+from brian2 import Hz, kHz, ms
 from brian2hears import Sound, IRCAM_LISTEN, dB
 from .anf_response import AnfResponse
 import numpy as np
@@ -172,6 +172,11 @@ def spikes_to_nestgen(anf_response: AnfResponse):
         anfs = nest.Create("spike_generator", NUM_CF * NUM_ANF_PER_HC)
         # each hair cell is innervated by NUM_ANF_PER_HC nerve fibers
         for ihf_idx, spike_times in response_IHC.items():
+            spike_times = spike_times / ms
+            if ihf_idx % 3500 == 0:
+                logger.debug(
+                    f"current IHF index is {ihf_idx}.\n setting ANF from {NUM_ANF_PER_HC * ihf_idx} to {NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC} to value (ms) {spike_times}"
+                )
             for j in range(
                 NUM_ANF_PER_HC * ihf_idx, NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC
             ):
