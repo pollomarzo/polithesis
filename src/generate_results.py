@@ -27,14 +27,14 @@ b2.seed(42)  # https://brian2.readthedocs.io/en/stable/advanced/random.html
 TIME_SIMULATION = 1000
 create_execution_key = lambda i, c, m, p: f"{create_sound_key(i)}&{c}&{m}&{p}"
 ex_key_with_time = (
-    lambda *args: f"{create_execution_key(*args)}&{datetime.datetime.now().isoformat()[:-7]}"
+    lambda *args: f"{datetime.datetime.now().isoformat()[:-7]}&{create_execution_key(*args)}"
 )
 
 
 if __name__ == "__main__":
-    inputs = [Tone(i) for i in [100, 1000, 10000] * Hz]
-    for i in inputs:
-        i.sound.level = 90 * b2h.dB
+    inputs = [Tone(i) for i in [500 * Hz] * 5]
+    for i, e in enumerate(inputs):
+        e.sound.level = (75 + (5 * i)) * b2h.dB
 
     params_tau40 = InhParam()
     params_tau15 = InhParam()

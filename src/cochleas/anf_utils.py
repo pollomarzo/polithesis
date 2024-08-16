@@ -187,3 +187,17 @@ def spikes_to_nestgen(anf_response: AnfResponse):
         anfs_per_ear[channel] = anfs
 
     return anfs_per_ear
+
+
+class CheckThreshold:
+    def __init__(self, threshold):
+        self.threshold = threshold
+        self.above_threshold = None
+
+    def check(self, amount):
+        if self.above_threshold == None:
+            if amount > self.threshold:
+                self.above_threshold = True
+            else:
+                self.above_threshold = False
+        return self.above_threshold
