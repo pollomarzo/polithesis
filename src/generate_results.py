@@ -36,18 +36,23 @@ if __name__ == "__main__":
     for i in inputs:
         i.sound.level = 90 * b2h.dB
 
-    params_modified = InhParam()
-    # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
-    params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
-    params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
-    params_modified.key = "no_inh_MSO"
+    params_tau40 = InhParam()
+    params_tau15 = InhParam()
+    params_tau15.MSO_TAUS.decay_ex = 0.2
+    params_tau15.MSO_TAUS.decay_in = 0.01
+    params_tau15.key = ".1prec_tau15"
 
-    params = [InhParam()]  # , PpgParam()]
+    # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
+    # params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
+    # params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
+    params_tau40.key = ".1prec_tau40"
+
+    params = [params_tau40]  # , PpgParam()]
     # params = [params_modified, InhParam()]  # , PpgParam()]
     models = [InhModel]  # , PpgModel]
     # models = [InhModel, InhModel]  # , PpgModel]
-    # cochleas = {REAL_COC_KEY: real_cochlea}
-    cochleas = COCHLEAS
+    cochleas = {REAL_COC_KEY: real_cochlea}
+    # cochleas = COCHLEAS
     result = {}
     num_runs = len(inputs) * len(cochleas) * len(params)
     current_run = 0
@@ -65,6 +70,8 @@ if __name__ == "__main__":
                 angle_to_rate = {}
                 for angle in ANGLES:
                     nest.ResetKernel()
+                    nest.SetKernelStatus(parameters.CONFIG.NEST_KERNEL_PARAMS)
+
                     logger.info(f"starting trial for {dict_of(ex_key,angle)}")
                     # this section is cached on disk
                     anf = load_anf_response(input, angle, cochlea_key)

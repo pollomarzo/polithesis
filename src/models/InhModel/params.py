@@ -1,9 +1,18 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class Parameters:
     key = "default_params"
+
+    @dataclass
+    class CONFIG:
+        STORE_POPS: set = field(
+            default_factory=lambda: set(["LSO", "MSO", "ANF", "SBC", "GBC", "MNTBC"])
+        )
+        NEST_KERNEL_PARAMS: dict = field(
+            default_factory=lambda: {"resolution": 0.1, "rng_seed": 42}
+        )
 
     @dataclass
     class SYN_WEIGHTS:
@@ -34,8 +43,8 @@ class Parameters:
     class MSO_TAUS:
         rise_ex: float = 0.2
         rise_in: float = 0.1
-        decay_ex: float = 0.2
-        decay_in: float = 0.01
+        decay_ex: float = 0.5
+        decay_in: float = 0.1
 
     n_ANFs: int = 35000
     SBCs2MSOs: int = int(POP_CONN.ANFs2GBCs / POP_CONN.ANFs2SBCs)
@@ -55,6 +64,7 @@ class Parameters:
     def __init__(self):
         # horrible, but i need each to be an instance so that changes
         # aren't propagated to other instances of Parameters class. it truly is horrifying. sorry
+        self.CONFIG = self.CONFIG()
         self.DELAYS = self.DELAYS()
         self.SYN_WEIGHTS = self.SYN_WEIGHTS()
         self.POP_CONN = self.POP_CONN()
