@@ -1,8 +1,5 @@
 ---
 citekey: yinNeuralMechanismsBinaural2019
-aliases:
-- "Terjung et al. (2019) Neural Mechanisms of Binaural Processing in the Auditory Brainstem"
-book-title: "Comprehensive Physiology"
 title: "Neural Mechanisms of Binaural Processing in the Auditory Brainstem" 
 editor: "Ronald Terjung" 
 authors:
@@ -13,12 +10,12 @@ year: 2019
 item-type: Book Section
 publisher: "Wiley"
 tags:
-- bio
 - exported
+- bio
 cssclasses: 
 - literature-note
 attachments:
-- /home/paolo/zotero_data/storage/R99YJ2CW/Yin_et_al-2019-Neural_Mechanisms_of_Binaural_Processing_in_the_Auditory_Brainstem.pdf
+- /home/paolo/Zotero/storage/R99YJ2CW/Yin_et_al-2019-Neural_Mechanisms_of_Binaural_Processing_in_the_Auditory_Brainstem.pdf
 ---
 %% begin notes %%
 ## Key takeaways
@@ -33,15 +30,15 @@ attachments:
 
 %% end notes %%
 
-> [!info]- Info 🔗 [**Zotero**](zotero://select/groups/5439920/items/KE4SCWB9) | [**PDF-1**](file:////home/paolo/zotero_data/storage/R99YJ2CW/Yin_et_al-2019-Neural_Mechanisms_of_Binaural_Processing_in_the_Auditory_Brainstem.pdf)
+> [!info]- Info 🔗 [**Zotero**](zotero://select/groups/5439920/items/KE4SCWB9) | [**PDF-1**](file:////home/paolo/Zotero/storage/R99YJ2CW/Yin_et_al-2019-Neural_Mechanisms_of_Binaural_Processing_in_the_Auditory_Brainstem.pdf)
 >
 >**Bibliography**: [1]T. C. T. Yin, P. H. Smith, and P. X. Joris, “Neural Mechanisms of Binaural Processing in the Auditory Brainstem,” in _Comprehensive Physiology_, 1st ed., R. Terjung, Ed., Wiley, 2019, pp. 1503–1575. doi: [10.1002/cphy.c180036](https://doi.org/10.1002/cphy.c180036).
 > 
 > **Authors**::  [[03 - Source notes/People/Ronald Terjung|Ronald Terjung]],  [[03 - Source notes/People/Tom C.T. Yin|Tom C.T. Yin]],  [[03 - Source notes/People/Phil H. Smith|Phil H. Smith]],  [[03 - Source notes/People/Philip X. Joris|Philip X. Joris]]
 > 
-> **Tags**: #bio, #exported
+> **Tags**: #exported, #bio
 > 
-> **Collections**:: [[thesis]]
+> **Collections**:: [[thesis]], [[presentation]]
 >
 > **First-page**:: 1503
 > 
@@ -789,8 +786,22 @@ ___
 - **Seems like the sensory acquisition does not have spatial information "per se", so it makes sense that this is not the case**:
 	- & suggest that a spatial map of ITDs is not present [(p. 1561)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1561&annotation=DFUT4PBQ)
 - £ Future work will undoubtedly make use of the development of channel rhodopsin proteins incorporated into specific neurons to turn them on or off, which promises to provide the ability to directly correlate neural responses with behavior. [(p. 1561)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1561&annotation=MB5L87L8)
-%% end annotations %%
+*Imported on [[2024-07-01]] at 15:07*
+- 
+	- & Their very large myelinated axons also exit via the TB, and their primary termination is in the contralateral medial nucleus of the trapezoid body (MNTB) where they form what are reputed to be the largest synapses in the central nervous system, the calyces of Held, on the cell bodies of glycinergic MNTB principal cells [(p. 1514)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1514&annotation=RLZP3SVA): **this is what becomes the contralateral inhibition for MSO!**
+- 
+	- & The primary inhibitory inputs to MSO are from neurons in the MNTB and LNTB on the same side that synapse primarily on the principal cell body [(p. 1521)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1521&annotation=ZVIAVJWS): **ipsilateral because MNTB already receives contralateral input “Their very large myelinated axons also exit via the TB, and their primary termination is in the contralateral medial nucleus of the trapezoid body (MNTB) where they form what are reputed to be the largest synapses in the central nervous system, the calyces of Held, on the cell bodies of glycinergic MNTB principal cells” ([pdf](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=12&annotation=RLZP3SVA))**
+- & requires a precise coincidence of subthreshold EPSPs to spike [(p. 1521)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1521&annotation=YRGGUJ3T)
+- 
+	- £ while the IPSPs have much slower kinetics [(p. 1521)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1521&annotation=HICB6E9X): **BAH see myoga2014 (zotero://open-pdf/groups/5439920/items/92SYWJ5A?page=1&annotation=PAYT9FVC) not THAT much slower**
+- & all cell types receive excitatory inputs from ipsilateral CN and inhibitory inputs from contralateral CN presumably through MNTB cells. [(p. 1522)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1522&annotation=34NCCXJT)
+- & 70% to 80% of LSO cells have a bipolar dendritic tree [(p. 1522)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1522&annotation=UQ4IC6U5)
+- & axonal branching patterns in ICC overlapping with regions innervated by MSO cell axons [(p. 1522)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1522&annotation=NPBBXNIV)
+- & A recent paper describing the responses of both principal and nonprincipal cells in gerbil LSO (176) indicates that, surprisingly it is the nonprincipal cells that can respond in a chopping fashion, while the principal cells have onset PSTHs. [(p. 1522)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1522&annotation=R5HFD9SG)
+- & lagging (rather than leading) IPSPs, hypothesized to be derived from the LNTB, have an advancing (rather than delaying) effect on the EPSPs triggered by the ipsilateral ear. [(p. 1539)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1539&annotation=22MC6HGW)
+- £ Roberts et al. (532) observed early inhibition in response to both ipsilateral and contralateral stimulation, which is not consistent with lagging IPSPs [(p. 1539)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1539&annotation=QFD74236)
+- £ The absolute delays between presentation of the acoustic stimulus and responses evoked in MSO neurons are of the order of 4 ms. There are so many intervening processes (in cochlea, synapses, and axons) where submillisecond delays are generated, that identification of the sources of internal delay tests the technical limits of the present neuroscientific armamentarium. [(p. 1540)](zotero://open-pdf/groups/5439920/items/R99YJ2CW?page=1540&annotation=DKX8LTU6)%% end annotations %%
 
 `BUTTON[update-litnote-headers]`
 
-%% Import Date: 2024-04-04T13:36:56.344+02:00 %%
+%% Import Date: 2024-07-01T15:07:04.846+02:00 %%

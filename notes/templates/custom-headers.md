@@ -1,14 +1,5 @@
 ---
 citekey: {{citekey}}
-aliases:
-- "{%- if creators -%}
-        {{creators[0].lastName}}
-        {%- if creators|length == 2 %} & {{creators[1].lastName}}{% endif -%}
-        {%- if creators|length > 2 %} et al.{% endif -%}
-    {%- endif -%}
-    {%- if date %} ({{date | format("YYYY")}}){% endif -%} 
-    {%- if shortTitle %} {{shortTitle | safe}} {%- else %} {{title | safe}} {%- endif -%}"{% if itemType == "bookSection" %}
-book-title: "{{bookTitle | replace('"',"'")}}"{% endif %}
 title: "{{title | replace('"',"'")}}"
 {%- set camelRegex = r/([a-z])([A-Z])/g %}
 {%- for type, creators in creators | groupby("creatorType") %} 
@@ -194,8 +185,8 @@ ___
 - [ ] **{{annotation.comment | replace("todo ", "")}}**:{% if not annotation.annotatedText %} {{citationLink}}{% else %}
 	{{annotationType.symbol}}{{annotation.annotatedText | replace(r/\s+/g, " ")}} {{citationLink}}{{tagString}}{% endif -%}
 {% elif annotation.comment %}
-- **{{annotation.comment}}**:{% if not annotation.annotatedText %} {{citationLink}}{% else %}
-	{{annotationType.symbol}}{{annotation.annotatedText | replace(r/\s+/g, " ") }} {{citationLink}}{{tagString}}{% endif -%}
+- {% if not annotation.annotatedText %} {{citationLink}}{% else %}
+	{{annotationType.symbol}}{{annotation.annotatedText | replace(r/\s+/g, " ") }} {{citationLink}}{{tagString}}{% endif -%}: **{{annotation.comment}}**
 {%- elif annotation.annotatedText %}
 {{annotationType.symbol}}
 {%- if annotationType.isHeader -%}
