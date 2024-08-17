@@ -302,20 +302,20 @@ class InhModel(SpikingModel):
         for pop_name, pop_data_l, pop_data_r in zip(
             ["ANF", "LSO", "MSO", "GBC", "SBC", "MNTBC"],
             [
-                self.s_rec_r_ANF.get("events"),
-                self.s_rec_r_LSO.get("events"),
-                self.s_rec_r_MSO.get("events"),
-                self.s_rec_r_GBC.get("events"),
-                self.s_rec_r_SBC.get("events"),
-                self.s_rec_r_MNTBC.get("events"),
-            ],
-            [
                 self.s_rec_l_ANF.get("events"),
                 self.s_rec_l_LSO.get("events"),
                 self.s_rec_l_MSO.get("events"),
                 self.s_rec_l_GBC.get("events"),
                 self.s_rec_l_SBC.get("events"),
                 self.s_rec_l_MNTBC.get("events"),
+            ],
+            [
+                self.s_rec_r_ANF.get("events"),
+                self.s_rec_r_LSO.get("events"),
+                self.s_rec_r_MSO.get("events"),
+                self.s_rec_r_GBC.get("events"),
+                self.s_rec_r_SBC.get("events"),
+                self.s_rec_r_MNTBC.get("events"),
             ],
         ):
             if pop_name in self.params.CONFIG.STORE_POPS:
