@@ -6,3 +6,5 @@ logs
 IHF_SPIKES
 .vscode
 ANF_SPIKETRAINS
+results/*
+**/*.pic

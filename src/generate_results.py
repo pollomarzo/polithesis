@@ -32,27 +32,30 @@ ex_key_with_time = (
 
 
 if __name__ == "__main__":
-    inputs = [Tone(i) for i in [500 * Hz] * 5]
+    inputs = [Tone(i) for i in [333, 500, 800] * Hz]
     for i, e in enumerate(inputs):
-        e.sound.level = (75 + (5 * i)) * b2h.dB
+        e.sound.level = 100 * b2h.dB
 
     params_tau40 = InhParam()
     params_tau15 = InhParam()
+    params_tauXX = InhParam()
+
     params_tau15.MSO_TAUS.decay_ex = 0.2
     params_tau15.MSO_TAUS.decay_in = 0.01
-    params_tau15.key = ".1prec_tau15"
+    params_tau15.key = "tau15"
+
+    params_tauXX.MSO_TAUS.decay_ex = 0.35
+    params_tauXX.MSO_TAUS.decay_in = 0.05
+    params_tauXX.key = "tauXX"
 
     # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
     # params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
     # params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
-    params_tau40.key = ".1prec_tau40"
+    params_tau40.key = "tau40"
 
-    params = [params_tau40]  # , PpgParam()]
-    # params = [params_modified, InhParam()]  # , PpgParam()]
-    models = [InhModel]  # , PpgModel]
-    # models = [InhModel, InhModel]  # , PpgModel]
+    params = [params_tau40]
+    models = [InhModel]
     cochleas = {REAL_COC_KEY: real_cochlea}
-    # cochleas = COCHLEAS
     result = {}
     num_runs = len(inputs) * len(cochleas) * len(params)
     current_run = 0

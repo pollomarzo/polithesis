@@ -15,7 +15,7 @@ from .consts import CFMIN, CFMAX, NUM_CF, ANGLE_TO_IRCAM
 from .anf_response import AnfResponse
 from dataclasses import dataclass
 
-SUBJECT_N = 1
+SUBJECT_N = 2
 COCHLEA_KEY = f"realistic_subj{1002 + SUBJECT_N}"
 
 
@@ -32,7 +32,7 @@ def run_hrtf(sound: Sound | Tone, angle, subj=SUBJECT_N) -> Sound:
     return binaural_sound
 
 
-def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False):
+def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False, noise_factor=0.2):
     binaural_sound = run_hrtf(sound, angle)
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     binaural_IHC_response = {}
@@ -45,8 +45,8 @@ def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False):
         # cochlea modeled as halfwave rectified -> 1/3 power law
         ihc = FunctionFilterbank(gfb, lambda x: 3 * clip(x, 0, Inf) ** (1.0 / 3.0))
         # Leaky integrate-and-fire model with noise and refractoriness
-        eqs = """
-        dv/dt = (I-v)/(1*ms)+0.2*xi*(2/(1*ms))**.5 : 1 (unless refractory)
+        eqs = f"""
+        dv/dt = (I-v)/(1*ms)+{noise_factor}*xi*(2/(1*ms))**.5 : 1 (unless refractory)
         I : 1
         """
         # You can start by thinking of xi as just a Gaussian random variable with mean 0
