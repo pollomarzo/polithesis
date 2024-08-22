@@ -14,12 +14,18 @@ from utils.log import logger
 from .consts import CFMIN, CFMAX, NUM_CF, ANGLE_TO_IRCAM
 from .anf_response import AnfResponse
 from dataclasses import dataclass
+from joblib import Memory
+from sorcery import dict_of
+from os import makedirs
 
-SUBJECT_N = 2
-COCHLEA_KEY = f"realistic_subj{1002 + SUBJECT_N}"
+COCHLEA_KEY = f"realistic"
+CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
+makedirs(CACHE_DIR, exist_ok=True)
+
+memory = Memory(location=CACHE_DIR, verbose=0)
 
 
-def run_hrtf(sound: Sound | Tone, angle, subj=SUBJECT_N) -> Sound:
+def run_hrtf(sound: Sound | Tone, angle, subj) -> Sound:
     if type(sound) is Tone:
         sound = sound.sound
     # convert to IRCAM angles
@@ -32,8 +38,18 @@ def run_hrtf(sound: Sound | Tone, angle, subj=SUBJECT_N) -> Sound:
     return binaural_sound
 
 
-def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False, noise_factor=0.2):
-    binaural_sound = run_hrtf(sound, angle)
+# plot_spikes won't work much with cache...
+@memory.cache
+def sound_to_spikes(
+    sound: Sound | Tone, angle, params: dict, plot_spikes=False
+) -> AnfResponse:
+    subj_number = params["subj_number"]
+    noise_factor = params["noise_factor"]
+    refractory_period = params["refractory_period"] * ms
+    logger.debug(
+        f"genenerating spikes for {dict_of(sound,angle,plot_spikes,subj_number,noise_factor,refractory_period)}"
+    )
+    binaural_sound = run_hrtf(sound, angle, subj=subj_number)
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     binaural_IHC_response = {}
 
@@ -58,7 +74,7 @@ def sound_to_spikes(sound: Sound | Tone, angle, plot_spikes=False, noise_factor=
             eqs,
             reset="v=0",
             threshold="v>1",
-            refractory=1 * ms,
+            refractory=refractory_period,
             method="euler",
         )
         # Run, and raster plot of the spikes

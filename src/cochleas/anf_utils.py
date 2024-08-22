@@ -14,8 +14,15 @@ from .consts import NUM_CF, IRCAM_HRTF_ANGLES, ANGLES, NUM_ANF_PER_HC
 from .RealisticCochlea import (
     sound_to_spikes as real_cochlea,
     COCHLEA_KEY as REAL_COC_KEY,
+    memory as CACHE_REAL,
 )
-from .PpgCochlea import tone_to_ppg_spikes as ppg_cochlea, COCHLEA_KEY as PPG_COC_KEY
+from .PpgCochlea import (
+    tone_to_ppg_spikes as ppg_cochlea,
+    COCHLEA_KEY as PPG_COC_KEY,
+    memory as CACHE_PPG,
+)
+from joblib.memory import MemorizedFunc
+from models.InhModel.params import Parameters
 
 
 # SOUND_DURATION = 1 * second
@@ -46,27 +53,33 @@ def generate_possible_sounds():
     return sounds
 
 
-def load_anf_response(tone: Tone, angle: int, cochlea_key=PPG_COC_KEY):
-    filepath = (
-        Path(Paths.ANF_SPIKES_DIR)
-        / Path(cochlea_key)
-        / Path(create_sound_key(tone))
-        / Path(f"{create_sound_key(tone)}_{angle}deg.pic")
+def load_anf_response(
+    tone: Tone,
+    angle: int,
+    cochlea_key: str,
+    params: dict,
+    ignore_cache=False,
+):
+    cochlea_func: MemorizedFunc = COCHLEAS[cochlea_key]
+    params = params[cochlea_key]
+    if not cochlea_func.check_call_in_cache(tone, angle, params) and not ignore_cache:
+        logger.info(f"saved ANF not found. generation will take some time...")
+
+    logger.info(
+        f"generating ANF for {
+        dict_of(tone,angle,cochlea_key,params)}"
     )
-    if os.path.isfile(filepath):
-        with open(filepath, "rb") as f:
-            anf: AnfResponse = pickle.load(f)
-        return anf
-    else:
-        logger.info(
-            f"saved ANF for {dict_of(tone,angle,cochlea_key)} not found. generating... "
-        )
-        anf = COCHLEAS[cochlea_key](tone, angle)
-        filepath.parent.mkdir(exist_ok=True, parents=True)
-        with open(filepath, "wb") as f:
-            pickle.dump(anf, f)
-        logger.debug(f"anf correctly cached for next execution")
-        return anf
+    if ignore_cache:
+        cochlea_func = cochlea_func.call  # forces execution
+
+    try:
+        anf = cochlea_func(tone, angle, params)
+    except TypeError as e:
+        if "unexpected" in e.args[0]:
+            logger.error(f"{e}, please check the signature of cochlea")
+        raise e
+
+    return anf
 
 
 def generate_all_ANFs(sounds=None, cochleas=COCHLEAS.keys()):

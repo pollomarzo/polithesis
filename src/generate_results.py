@@ -29,6 +29,9 @@ create_execution_key = lambda i, c, m, p: f"{create_sound_key(i)}&{c}&{m}&{p}"
 ex_key_with_time = (
     lambda *args: f"{datetime.datetime.now().isoformat()[:-7]}&{create_execution_key(*args)}"
 )
+# Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
+# params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
+# params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
 
 
 if __name__ == "__main__":
@@ -36,26 +39,16 @@ if __name__ == "__main__":
     for i, e in enumerate(inputs):
         e.sound.level = 100 * b2h.dB
 
-    params_tau40 = InhParam()
-    params_tau15 = InhParam()
-    params_tauXX = InhParam()
+    params_default = InhParam()
+    params_no_noise_cochlea = InhParam(key="no_noise_cochlea")
+    params_no_noise_cochlea.cochlea["realistic"]["noise_factor"] = 0.2
+    params_hrtf_2 = InhParam(key="hrtf_2")
+    params_no_noise_cochlea.cochlea["realistic"]["subj_number"] = 1
 
-    params_tau15.MSO_TAUS.decay_ex = 0.2
-    params_tau15.MSO_TAUS.decay_in = 0.01
-    params_tau15.key = "tau15"
-
-    params_tauXX.MSO_TAUS.decay_ex = 0.35
-    params_tauXX.MSO_TAUS.decay_in = 0.05
-    params_tauXX.key = "tauXX"
-
-    # Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
-    # params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
-    # params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
-    params_tau40.key = "tau40"
-
-    params = [params_tau40]
-    models = [InhModel]
+    params = [params_default, params_no_noise_cochlea, params_hrtf_2]
+    models = [InhModel, InhModel, InhModel]
     cochleas = {REAL_COC_KEY: real_cochlea}
+    # cochleas = COCHLEAS
     result = {}
     num_runs = len(inputs) * len(cochleas) * len(params)
     current_run = 0
@@ -77,7 +70,9 @@ if __name__ == "__main__":
 
                     logger.info(f"starting trial for {dict_of(ex_key,angle)}")
                     # this section is cached on disk
-                    anf = load_anf_response(input, angle, cochlea_key)
+                    anf = load_anf_response(
+                        input, angle, cochlea_key, parameters.cochlea
+                    )
                     logger.info("anf loaded. Creating model...")
 
                     model = Model(parameters, anf)

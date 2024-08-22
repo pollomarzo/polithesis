@@ -7,12 +7,20 @@ from scipy.interpolate import interp1d
 import math
 import scipy.stats as stats
 from utils.custom_sounds import Tone
+from joblib import Memory
+from sorcery import dict_of
+from os import makedirs
+from .consts import NUM_CF as N_IHCs, CFMIN, CFMAX
+from consts import Paths
 
-n_IHCs = 3500
-n_ANFs = int(n_IHCs * 10)
+
+n_ANFs = int(N_IHCs * 10)
 # cochlea array of frequencies
 coch_freqs = np.round(
-    np.logspace(np.log(20), np.log(20000), num=n_IHCs, base=np.exp(1)), 2
+    np.logspace(
+        np.log(CFMIN / b2.Hz), np.log(CFMAX / b2.Hz), num=N_IHCs, base=np.exp(1)
+    ),
+    2,
 )
 # [nr. of spikes], num of spikes for each pulse packet (PPG parameter)
 ild_values = [
@@ -29,6 +37,10 @@ v_sound = 33000  # [cm/s]
 r_angle_to_level = interp1d(x_values, ild_values, kind="linear")
 l_angle_to_level = interp1d(x_values[::-1], ild_values, kind="linear")
 COCHLEA_KEY = "ppg"
+CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
+makedirs(CACHE_DIR, exist_ok=True)
+
+memory = Memory(location=CACHE_DIR, verbose=0)
 
 
 def create_spectro(tone, time_sim):
@@ -63,17 +75,18 @@ def create_spectro(tone, time_sim):
     return spectro
 
 
-def tone_to_ppg_spikes(sound: Tone, angle: int):
+@memory.cache
+def tone_to_ppg_spikes(sound: Tone, angle: int, params: dict):
     import nest
 
     tone_freq = sound.frequency / b2.Hz
     time_sim = int(sound.sound.duration / b2.ms)
     nest.ResetKernel()
-    gen_l = nest.Create("pulsepacket_generator", n_IHCs, params={"sdev": sdev})
-    gen_r = nest.Create("pulsepacket_generator", n_IHCs, params={"sdev": sdev})
+    gen_l = nest.Create("pulsepacket_generator", N_IHCs, params={"sdev": sdev})
+    gen_r = nest.Create("pulsepacket_generator", N_IHCs, params={"sdev": sdev})
 
-    parrot_l = nest.Create("parrot_neuron", n_IHCs)
-    parrot_r = nest.Create("parrot_neuron", n_IHCs)
+    parrot_l = nest.Create("parrot_neuron", N_IHCs)
+    parrot_r = nest.Create("parrot_neuron", N_IHCs)
 
     s_rec_l = nest.Create("spike_recorder")
     s_rec_r = nest.Create("spike_recorder")
@@ -124,5 +137,6 @@ def tone_to_ppg_spikes(sound: Tone, angle: int):
         for i, t in zip(events["senders"], events["times"]):
             spiketrains[side][i - start].append(t)
     logger.debug(f"spiketrains completed")
+
     nest.ResetKernel()
     return AnfResponse(spiketrains, sound.sound, sound.sound)

@@ -3,7 +3,20 @@ from dataclasses import dataclass, field
 
 @dataclass
 class Parameters:
-    key = "default_params"
+    key: str = "default_params"
+
+    cochlea: dict[str, dict[str, float]] = field(
+        default_factory=lambda: (
+            {
+                "realistic": {
+                    "subj_number": 0,
+                    "noise_factor": 0.2,
+                    "refractory_period": 1,  # ms
+                },
+                "ppg": {},
+            }
+        )
+    )
 
     @dataclass
     class CONFIG:
@@ -61,7 +74,7 @@ class Parameters:
 
     C_mso: float = 1
 
-    def __init__(self):
+    def __post_init__(self):
         # horrible, but i need each to be an instance so that changes
         # aren't propagated to other instances of Parameters class. it truly is horrifying. sorry
         self.CONFIG = self.CONFIG()
