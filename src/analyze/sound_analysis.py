@@ -34,29 +34,28 @@ def itd(left: Sound, right: Sound, display=False):
     logger.info(f"calculated ITD of ${itd}. check graphical output for confirmation.")
 
     if display:
-        plt.subplot(211)
+        fig, [left_plot, right_plot] = plt.subplots(2, 1)
         plotted_range_start = left_start_time - 1 * ms
         plotted_range_end = left_start_time + 3 * ms
         plotted_left = left[plotted_range_start:plotted_range_end]
 
-        plt.plot(plotted_left.times + plotted_range_start, plotted_left, ".-")
-        plt.axvline(left_start_time / second, color="red")
+        left_plot.plot(plotted_left.times + plotted_range_start, plotted_left, ".-")
+        left_plot.axvline(left_start_time / second, color="red")
 
         if right_start_time < left_start_time:
             highlight = left[right_start_time:left_start_time]
-            plt.plot(highlight.times + right_start_time, highlight, "r.")
+            left_plot.plot(highlight.times + right_start_time, highlight, "r.")
 
-        plt.subplot(212)
         plotted_right = right[plotted_range_start:plotted_range_end]
 
-        plt.plot(plotted_right.times + plotted_range_start, plotted_right, ".-")
-        plt.axvline(right_start_time / second, color="red")
+        right_plot.plot(plotted_right.times + plotted_range_start, plotted_right, ".-")
+        right_plot.axvline(right_start_time / second, color="red")
 
         if left_start_time < right_start_time:
             highlight = right[left_start_time:right_start_time]
-            plt.plot(highlight.times + left_start_time, highlight, "r.")
+            right_plot.plot(highlight.times + left_start_time, highlight, "r.")
 
-        plt.show()
+        fig.show()
 
     return itd
 
