@@ -4,8 +4,10 @@ channels:
 dependencies:
 - brian2
 - dill
+- ipykernel
 - ipympl
 - ipywidgets
+- joblib
 - jupyter
 - nest-simulator
 - scipy
