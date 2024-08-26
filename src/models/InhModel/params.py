@@ -9,7 +9,7 @@ class Parameters:
         default_factory=lambda: (
             {
                 "realistic": {
-                    "subj_number": 0,
+                    "subj_number": 1,
                     "noise_factor": 0.2,
                     "refractory_period": 1,  # ms
                 },
@@ -24,7 +24,11 @@ class Parameters:
             default_factory=lambda: set(["LSO", "MSO", "ANF", "SBC", "GBC", "MNTBC"])
         )
         NEST_KERNEL_PARAMS: dict = field(
-            default_factory=lambda: {"resolution": 0.1, "rng_seed": 42}
+            default_factory=lambda: {
+                "resolution": 0.1,
+                "rng_seed": 42,
+                "total_num_virtual_procs": 16,
+            }
         )
 
     @dataclass
@@ -46,11 +50,17 @@ class Parameters:
     @dataclass
     class DELAYS:  # ms
         GBCs2MNTBCs: float = 0.45
-        SBCs2MSO_exc_ipsi: float = 1
-        SBCs2MSO_inh_ipsi: float = 1.3
-        SBCs2MSO_exc_contra: float = 1
-        MNTBCs2MSO_inh_contra: float = 0.44
-        LNTBCs2MSO_inh_ipsi: float = 1.3
+        SBCs2MSO_exc_ipsi: float = 1  # MSO ipsilateral excitation
+        LNTBCs2MSO_inh_ipsi: float = 1.3  # MSO ipsilateral inhibition (mirrors SBC)
+        # SBCs2MSO_inh_ipsi: float = 1  # doesn't exist, MSO ipsilateral inhibition
+        SBCs2MSO_exc_contra: float = 1  # MSO contralateral excitation
+        MNTBCs2MSO_inh_contra: float = 0.44  # MSO contralateral inhibition
+        ## 'myoga' approximated for extra synapse
+        # GBCs2MNTBCs: float = 0.45
+        # SBCs2MSO_exc_ipsi: float = 2.1
+        # LNTBCs2MSO_inh_ipsi: float = 2.3
+        # SBCs2MSO_exc_contra: float = 1.4
+        # MNTBCs2MSO_inh_contra: float = 0.55
 
     @dataclass
     class MSO_TAUS:

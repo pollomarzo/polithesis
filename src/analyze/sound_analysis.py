@@ -112,4 +112,4 @@ def ild(left: Sound, right: Sound, orig: Sound, display=False):
         plt.tight_layout()
         # plt.subplots_adjust(hspace=0.6)
         plt.show()
-    return (diff, right_freq)
+    return (diff, left_sp - right_sp)
