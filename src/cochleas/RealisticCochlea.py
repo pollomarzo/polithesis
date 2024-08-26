@@ -1,5 +1,4 @@
-from enum import Enum
-from brian2 import clip, Inf, ms, Hz, kHz, plot, show, run, SpikeMonitor
+from brian2 import clip, Inf, ms, plot, show, run, SpikeMonitor
 from brian2hears import (
     Sound,
     Gammatone,
@@ -13,7 +12,6 @@ from utils.custom_sounds import Tone
 from utils.log import logger
 from .consts import CFMIN, CFMAX, NUM_CF, ANGLE_TO_IRCAM
 from .anf_response import AnfResponse
-from dataclasses import dataclass
 from joblib import Memory
 from sorcery import dict_of
 from os import makedirs

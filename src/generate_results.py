@@ -19,6 +19,8 @@ import dill
 import datetime
 import nest
 import nest.voltage_trace
+from timeit import default_timer as timer
+from datetime import timedelta
 
 nest.set_verbosity("M_ERROR")
 
@@ -35,15 +37,15 @@ ex_key_with_time = (
 
 
 if __name__ == "__main__":
-    inputs = [Tone(i) for i in [333, 500, 800] * Hz]
+    inputs = [Tone(i) for i in [100, 333, 500, 800, 1000, 10000] * Hz]
     for i, e in enumerate(inputs):
         e.sound.level = 100 * b2h.dB
 
-    params_default = InhParam()
-    params_no_noise_cochlea = InhParam(key="no_noise_cochlea")
-    params_no_noise_cochlea.cochlea["realistic"]["noise_factor"] = 0.2
-    params_hrtf_2 = InhParam(key="hrtf_2")
-    params_no_noise_cochlea.cochlea["realistic"]["subj_number"] = 1
+    params_default = InhParam("origdelay")
+    params_no_noise_cochlea = InhParam(key="origdelay_nonoisecochlea")
+    params_no_noise_cochlea.cochlea["realistic"]["noise_factor"] = 0
+    params_hrtf_2 = InhParam(key="origdelay_hrtf2")
+    params_hrtf_2.cochlea["realistic"]["subj_number"] = 2
 
     params = [params_default, params_no_noise_cochlea, params_hrtf_2]
     models = [InhModel, InhModel, InhModel]
@@ -53,9 +55,11 @@ if __name__ == "__main__":
     num_runs = len(inputs) * len(cochleas) * len(params)
     current_run = 0
     logger.info(f"launching {num_runs} trials...")
+    times = {}
     for input in inputs:
         for cochlea_key, cochlea in cochleas.items():
             for Model, parameters in zip(models, params):
+                start = timer()
                 ex_key = ex_key_with_time(input, cochlea_key, Model.key, parameters.key)
                 logger.info(
                     f">>>>> now testing arch n.{current_run} of {num_runs}, with key {ex_key}"
@@ -99,3 +103,7 @@ if __name__ == "__main__":
                     dill.dump(result, f)
 
                 current_run = current_run + 1
+                end = timer()
+                times[ex_key] = timedelta(seconds=end - start)
+logger.debug(times)
+logger.info({k: str(v) for k, v in times.items()})
