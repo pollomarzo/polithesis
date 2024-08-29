@@ -21,7 +21,9 @@ class Parameters:
     @dataclass
     class CONFIG:
         STORE_POPS: set = field(
-            default_factory=lambda: set(["LSO", "MSO", "ANF", "SBC", "GBC", "MNTBC"])
+            default_factory=lambda: set(
+                ["LSO", "MSO", "ANF", "SBC", "GBC", "LNTBC", "MNTBC"]
+            )
         )
         NEST_KERNEL_PARAMS: dict = field(
             default_factory=lambda: {
@@ -39,8 +41,10 @@ class Parameters:
         SBCs2MSO_inh: float = -30
         SBCs2LSO: float = 8.0
         MNTBCs2MSO: float = -30
+        GBCs2LNTBCs: float = 16.0
         GBCs2MNTBCs: float = 16.0
-        MNTBCs2LSO: float = -2.0
+        MNTBCs2LSO: float = -5.0
+        LNTBCs2MSO: float = -5.0
 
     @dataclass
     class POP_CONN:
@@ -49,25 +53,26 @@ class Parameters:
 
     @dataclass
     class DELAYS:  # ms
+        DELTA_IPSI: float = 0.2
+        DELTA_CONTRA: float = -0.4
         GBCs2MNTBCs: float = 0.45
-        SBCs2MSO_exc_ipsi: float = 1  # MSO ipsilateral excitation
-        LNTBCs2MSO_inh_ipsi: float = 1.3  # MSO ipsilateral inhibition (mirrors SBC)
+        GBCs2LNTBCs: float = 0.45
+        SBCs2MSO_exc_ipsi: float = 2  # MSO ipsilateral excitation
+        LNTBCs2MSO_inh_ipsi: float = (
+            1.44 + DELTA_IPSI
+        )  # MSO ipsilateral inhibition (mirrors SBC)
         # SBCs2MSO_inh_ipsi: float = 1  # doesn't exist, MSO ipsilateral inhibition
-        SBCs2MSO_exc_contra: float = 1  # MSO contralateral excitation
-        MNTBCs2MSO_inh_contra: float = 0.44  # MSO contralateral inhibition
-        ## 'myoga' approximated for extra synapse
-        # GBCs2MNTBCs: float = 0.45
-        # SBCs2MSO_exc_ipsi: float = 2.1
-        # LNTBCs2MSO_inh_ipsi: float = 2.3
-        # SBCs2MSO_exc_contra: float = 1.4
-        # MNTBCs2MSO_inh_contra: float = 0.55
+        SBCs2MSO_exc_contra: float = 2  # MSO contralateral excitation
+        MNTBCs2MSO_inh_contra: float = (
+            1.44 + DELTA_CONTRA
+        )  # MSO contralateral inhibition
 
     @dataclass
     class MSO_TAUS:
         rise_ex: float = 0.2
-        rise_in: float = 0.1
+        rise_in: float = 0.2
         decay_ex: float = 0.5
-        decay_in: float = 0.1
+        decay_in: float = 1.5
 
     n_ANFs: int = 35000
     SBCs2MSOs: int = int(POP_CONN.ANFs2GBCs / POP_CONN.ANFs2SBCs)
@@ -75,6 +80,7 @@ class Parameters:
     n_SBCs: int = int(n_ANFs / POP_CONN.ANFs2SBCs)
     n_GBCs: int = int(n_ANFs / POP_CONN.ANFs2GBCs)
     n_MSOs: int = n_GBCs
+    n_LSOs: int = n_GBCs
     n_inhMSOs: int = n_GBCs
     V_m: float = -70  # mV
     V_reset: float = V_m

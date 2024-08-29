@@ -43,6 +43,12 @@ class InhModel(SpikingModel):
         l_GBCs = nest.Create(
             "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
+        r_LNTBCs = nest.Create(
+            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
+        )
+        l_LNTBCs = nest.Create(
+            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
+        )
         r_MNTBCs = nest.Create(
             "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
@@ -75,12 +81,12 @@ class InhModel(SpikingModel):
         )
         r_LSO = nest.Create(
             "iaf_cond_alpha",
-            P.n_GBCs,
-            params={"C_m": P.cap_nuclei, "V_reset": P.V_reset},
+            P.n_LSOs,
+            params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
         )
         l_LSO = nest.Create(
             "iaf_cond_alpha",
-            P.n_GBCs,
+            P.n_LSOs,
             params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
         )
 
@@ -94,6 +100,8 @@ class InhModel(SpikingModel):
         self.s_rec_l_SBC = nest.Create("spike_recorder")
         self.s_rec_r_GBC = nest.Create("spike_recorder")
         self.s_rec_l_GBC = nest.Create("spike_recorder")
+        self.s_rec_r_LNTBC = nest.Create("spike_recorder")
+        self.s_rec_l_LNTBC = nest.Create("spike_recorder")
         self.s_rec_r_MNTBC = nest.Create("spike_recorder")
         self.s_rec_l_MNTBC = nest.Create("spike_recorder")
 
@@ -111,6 +119,8 @@ class InhModel(SpikingModel):
         nest.Connect(l_SBCs, self.s_rec_l_SBC, "all_to_all")
         nest.Connect(r_GBCs, self.s_rec_r_GBC, "all_to_all")
         nest.Connect(l_GBCs, self.s_rec_l_GBC, "all_to_all")
+        nest.Connect(r_LNTBCs, self.s_rec_r_LNTBC, "all_to_all")
+        nest.Connect(l_LNTBCs, self.s_rec_l_LNTBC, "all_to_all")
         nest.Connect(r_MNTBCs, self.s_rec_r_MNTBC, "all_to_all")
         nest.Connect(l_MNTBCs, self.s_rec_l_MNTBC, "all_to_all")
 
@@ -151,10 +161,29 @@ class InhModel(SpikingModel):
                 syn_spec={"weight": P.SYN_WEIGHTS.ANFs2GBCs},
             )
 
+        # GBCs to LNTBCs
+        nest.Connect(
+            r_GBCs,
+            r_LNTBCs,
+            "one_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.GBCs2LNTBCs,
+                "delay": P.DELAYS.GBCs2LNTBCs,
+            },
+        )
+        nest.Connect(
+            l_GBCs,
+            l_LNTBCs,
+            "one_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.GBCs2LNTBCs,
+                "delay": P.DELAYS.GBCs2LNTBCs,
+            },
+        )
         # GBCs to MNTBCs
         nest.Connect(
             r_GBCs,
-            r_MNTBCs,
+            l_MNTBCs,
             "one_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.GBCs2MNTBCs,
@@ -163,7 +192,7 @@ class InhModel(SpikingModel):
         )
         nest.Connect(
             l_GBCs,
-            l_MNTBCs,
+            r_MNTBCs,
             "one_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.GBCs2MNTBCs,
@@ -172,9 +201,9 @@ class InhModel(SpikingModel):
         )
 
         # MSO
+        # From SBCs (excitation):
         for i in range(P.n_MSOs):
             # r_MSO
-            #   From SBCs (excitation):
             #       ipsi
             nest.Connect(
                 r_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
@@ -195,20 +224,7 @@ class InhModel(SpikingModel):
                     "delay": P.DELAYS.SBCs2MSO_exc_contra,
                 },
             )
-            # From LNTBCs (mirrors SBC) (inhibition), ipsi
-            nest.Connect(
-                r_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
-                r_MSO[i],
-                "all_to_all",
-                syn_spec={
-                    "weight": P.SYN_WEIGHTS.SBCs2MSO_inh,
-                    "delay": P.DELAYS.LNTBCs2MSO_inh_ipsi,
-                },
-            )
-            # From MNTBCs (inh) contra outside of loop
-
             # l_MSO
-            # From SBCs (excitation):
             #       ipsi
             nest.Connect(
                 l_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
@@ -229,21 +245,29 @@ class InhModel(SpikingModel):
                     "delay": P.DELAYS.SBCs2MSO_exc_contra,
                 },
             )
-            # From LNTBCs (mirrors SBC) (inhibition) ipsi
-            nest.Connect(
-                l_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
-                l_MSO[i],
-                "all_to_all",
-                syn_spec={
-                    "weight": P.SYN_WEIGHTS.SBCs2MSO_inh,
-                    "delay": P.DELAYS.LNTBCs2MSO_inh_ipsi,
-                },
-            )
-            # From MNTBCs (inh) contra outside of loop
-
+        # From LNTBCs (inhibition), ipsi
+        nest.Connect(
+            r_LNTBCs,
+            r_MSO,
+            "one_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.LNTBCs2MSO,
+                "delay": P.DELAYS.LNTBCs2MSO_inh_ipsi,
+            },
+        )
+        # From LNTBCs (inhibition) ipsi
+        nest.Connect(
+            l_LNTBCs,
+            l_MSO,
+            "one_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.LNTBCs2MSO,
+                "delay": P.DELAYS.LNTBCs2MSO_inh_ipsi,
+            },
+        )
         # From MNTBCs (inhibition) contra
         nest.Connect(
-            l_MNTBCs,
+            r_MNTBCs,
             r_MSO,
             "one_to_one",
             syn_spec={
@@ -254,7 +278,7 @@ class InhModel(SpikingModel):
         # From MNTBCs (inhibition) contra
         nest.Connect(
             r_MNTBCs,
-            l_MSO,
+            r_MSO,
             "one_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.MNTBCs2MSO,
@@ -263,7 +287,7 @@ class InhModel(SpikingModel):
         )
 
         # LSO
-        for i in range(0, P.n_GBCs):
+        for i in range(P.n_LSOs):
             nest.Connect(
                 r_SBCs[P.SBCs2LSOs * i : P.SBCs2LSOs * (i + 1)],
                 r_LSO[i],
@@ -279,13 +303,13 @@ class InhModel(SpikingModel):
 
         nest.Connect(
             r_MNTBCs,
-            l_LSO,
+            r_LSO,
             "one_to_one",
             syn_spec={"weight": P.SYN_WEIGHTS.MNTBCs2LSO},
         )
         nest.Connect(
             l_MNTBCs,
-            r_LSO,
+            l_LSO,
             "one_to_one",
             syn_spec={"weight": P.SYN_WEIGHTS.MNTBCs2LSO},
         )
@@ -294,19 +318,16 @@ class InhModel(SpikingModel):
         nest.Simulate(time)
 
     def analyze(self):
-        # LSO
-        # n_spikes_r_lso = len(data_r_LSO["times"])  # / (C.time_sim) * 1000
-        # n_spikes_l_lso = len(data_l_LSO["times"])  # / (C.time_sim) * 1000
-
         result = {"L": {}, "R": {}}
         for pop_name, pop_data_l, pop_data_r in zip(
-            ["ANF", "LSO", "MSO", "GBC", "SBC", "MNTBC"],
+            ["ANF", "LSO", "MSO", "GBC", "SBC", "LNTBC", "MNTBC"],
             [
                 self.s_rec_l_ANF.get("events"),
                 self.s_rec_l_LSO.get("events"),
                 self.s_rec_l_MSO.get("events"),
                 self.s_rec_l_GBC.get("events"),
                 self.s_rec_l_SBC.get("events"),
+                self.s_rec_l_LNTBC.get("events"),
                 self.s_rec_l_MNTBC.get("events"),
             ],
             [
@@ -315,10 +336,14 @@ class InhModel(SpikingModel):
                 self.s_rec_r_MSO.get("events"),
                 self.s_rec_r_GBC.get("events"),
                 self.s_rec_r_SBC.get("events"),
+                self.s_rec_r_LNTBC.get("events"),
                 self.s_rec_r_MNTBC.get("events"),
             ],
         ):
-            if pop_name in self.params.CONFIG.STORE_POPS:
+            if (
+                pop_name in self.params.CONFIG.STORE_POPS
+                or self.params.CONFIG.STORE_POPS == []
+            ):
                 result["L"][pop_name] = pop_data_l
                 result["R"][pop_name] = pop_data_r
 
