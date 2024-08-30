@@ -255,6 +255,16 @@ class InhModel(SpikingModel):
                 "delay": P.DELAYS.LNTBCs2MSO_inh_ipsi,
             },
         )
+        # From MNTBCs (inhibition) contra
+        nest.Connect(
+            r_MNTBCs,
+            r_MSO,
+            "one_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.MNTBCs2MSO,
+                "delay": P.DELAYS.MNTBCs2MSO_inh_contra,
+            },
+        )
         # From LNTBCs (inhibition) ipsi
         nest.Connect(
             l_LNTBCs,
@@ -267,18 +277,8 @@ class InhModel(SpikingModel):
         )
         # From MNTBCs (inhibition) contra
         nest.Connect(
-            r_MNTBCs,
-            r_MSO,
-            "one_to_one",
-            syn_spec={
-                "weight": P.SYN_WEIGHTS.MNTBCs2MSO,
-                "delay": P.DELAYS.MNTBCs2MSO_inh_contra,
-            },
-        )
-        # From MNTBCs (inhibition) contra
-        nest.Connect(
-            r_MNTBCs,
-            r_MSO,
+            l_MNTBCs,
+            l_MSO,
             "one_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.MNTBCs2MSO,

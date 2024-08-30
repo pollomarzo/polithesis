@@ -37,13 +37,12 @@ class Parameters:
     class SYN_WEIGHTS:
         ANFs2SBCs: float = 16.0
         ANFs2GBCs: float = 8.0
-        SBCs2MSO: float = 1
-        SBCs2MSO_inh: float = -30
-        SBCs2LSO: float = 8.0
-        MNTBCs2MSO: float = -30
         GBCs2LNTBCs: float = 16.0
         GBCs2MNTBCs: float = 16.0
-        MNTBCs2LSO: float = -5.0
+        MNTBCs2MSO: float = -5.0
+        MNTBCs2LSO: float = -12.0
+        SBCs2LSO: float = 4.0
+        SBCs2MSO: float = 1
         LNTBCs2MSO: float = -5.0
 
     @dataclass
@@ -58,11 +57,11 @@ class Parameters:
         GBCs2MNTBCs: float = 0.45
         GBCs2LNTBCs: float = 0.45
         SBCs2MSO_exc_ipsi: float = 2  # MSO ipsilateral excitation
+        SBCs2MSO_exc_contra: float = 2  # MSO contralateral excitation
         LNTBCs2MSO_inh_ipsi: float = (
             1.44 + DELTA_IPSI
         )  # MSO ipsilateral inhibition (mirrors SBC)
         # SBCs2MSO_inh_ipsi: float = 1  # doesn't exist, MSO ipsilateral inhibition
-        SBCs2MSO_exc_contra: float = 2  # MSO contralateral excitation
         MNTBCs2MSO_inh_contra: float = (
             1.44 + DELTA_CONTRA
         )  # MSO contralateral inhibition
