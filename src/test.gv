@@ -1,0 +1,69 @@
+digraph {
+    subgraph cluster_Left_Hemisphere {
+        node [color = white; style = filled; ordering = in;];
+        color = lightgrey;
+        style = filled;
+        l_SBCs [group = A;];
+        l_GBCs [group = A;];
+        l_ANFs -> parrot_l_ANFs [label = "";];
+        parrot_l_ANFs -> l_SBCs [label = "w: 16.0";];
+        parrot_l_ANFs -> l_GBCs [label = "w: 8.0";];
+        l_GBCs -> l_LNTBCs [label = "w: 16.0\nd: 0.45";];
+        l_SBCs -> l_MSO [label = "w: 1\nd: 2";];
+        l_LNTBCs -> l_MSO [label = "w: -5.0\nd: 1.64";];
+        l_MNTBCs -> l_MSO [label = "w: -5.0\nd: 1.04";];
+        l_SBCs -> l_LSO [label = "w: 4.0";];
+        l_MNTBCs -> l_LSO [label = "w: -12.0";];
+        subgraph {
+            rank = same;
+            edge [style = invis;];
+            l_SBCs -> l_GBCs;
+        }
+        subgraph {
+            rank = same;
+            edge [style = invis;];
+            l_MNTBCs -> l_LNTBCs;
+            rankdir = LR;
+        }
+        subgraph {
+            rank = same;
+            edge [style = invis;];
+            l_MSO -> l_LSO;
+            rankdir = LR;
+        }
+    }
+    subgraph cluster_Right_Hemisphere {
+        node [color = lightgrey; style = filled; ordering = in;];
+        color = blue;
+        r_ANFs -> parrot_r_ANFs [label = "";];
+        parrot_r_ANFs -> r_SBCs [label = "w: 16.0";];
+        parrot_r_ANFs -> r_GBCs [label = "w: 8.0";];
+        r_GBCs -> r_LNTBCs [label = "w: 16.0\nd: 0.45";];
+        r_SBCs -> r_MSO [label = "w: 1\nd: 2";];
+        r_LNTBCs -> r_MSO [label = "w: -5.0\nd: 1.64";];
+        r_MNTBCs -> r_MSO [label = "w: -5.0\nd: 1.04";];
+        r_SBCs -> r_LSO [label = "w: 4.0";];
+        r_MNTBCs -> r_LSO [label = "w: -12.0";];
+        subgraph {
+            rank = same;
+            edge [style = invis;];
+            r_SBCs -> r_GBCs;
+        }
+        // subgraph {
+        //     rank = same;
+        //     edge [style = invis;];
+        //     r_MNTBCs -> r_LNTBCs;
+        //     rankdir = LR;
+        // }
+        subgraph {
+            rank = same;
+            edge [style = invis;];
+            r_MSO -> r_LSO;
+            rankdir = LR;
+        }
+    }
+    r_SBCs -> l_MSO [label = "w: 1\nd: 2";];
+    r_GBCs -> l_MNTBCs [label = "w: 16.0\nd: 0.45"; decorate = true; headlabel = "5"; taillabel = "5:1"; labeldistance = 2;];
+    l_GBCs -> r_MNTBCs [label = "w: 16.0\nd: 0.45"; decorate = true;];
+    l_SBCs -> r_MSO [label = "w: 1\nd: 2";];
+}
