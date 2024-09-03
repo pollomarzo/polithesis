@@ -71,7 +71,6 @@ def load_anf_response(
     )
     if ignore_cache:
         cochlea_func = cochlea_func.call  # forces execution
-
     try:
         anf = cochlea_func(tone, angle, params)
     except TypeError as e:

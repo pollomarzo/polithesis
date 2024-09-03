@@ -31,24 +31,22 @@ create_execution_key = lambda i, c, m, p: f"{create_sound_key(i)}&{c}&{m}&{p}"
 ex_key_with_time = (
     lambda *args: f"{datetime.datetime.now().isoformat()[:-7]}&{create_execution_key(*args)}"
 )
-# Pecka et al, Glycinergic Inhibition, https://doi.org/10.1523/JNEUROSCI.1660-08.2008
-# params_modified.SYN_WEIGHTS.SBCs2MSO_inh = 0
-# params_modified.SYN_WEIGHTS.MNTBCs2MSO = 0
 
 
 if __name__ == "__main__":
-    inputs = [Tone(i) for i in [100, 333, 500, 800, 1000, 10000] * Hz]
+    inputs = [Tone(i) for i in [100] * Hz]
+    # inputs = [Tone(i) for i in [100, 333] * Hz]
     for i, e in enumerate(inputs):
-        e.sound.level = 100 * b2h.dB
+        e.sound.level = 110 * b2h.dB
 
-    params_default = InhParam("origdelay")
-    params_no_noise_cochlea = InhParam(key="origdelay_nonoisecochlea")
-    params_no_noise_cochlea.cochlea["realistic"]["noise_factor"] = 0
-    params_hrtf_2 = InhParam(key="origdelay_hrtf2")
-    params_hrtf_2.cochlea["realistic"]["subj_number"] = 2
+    # params = InhParam("-2inh3excMSO")
+    # params.SYN_WEIGHTS.LNTBCs2MSO = params.SYN_WEIGHTS.MNTBCs2MSO = -2.0
+    # params.SYN_WEIGHTS.SBCs2MSO = 3
+    params2 = InhParam("hrtf2")
+    params2.cochlea["realistic"]["subj_number"] = 2
+    params = [params2]
 
-    params = [params_default, params_no_noise_cochlea, params_hrtf_2]
-    models = [InhModel, InhModel, InhModel]
+    models = [InhModel]
     cochleas = {REAL_COC_KEY: real_cochlea}
     # cochleas = COCHLEAS
     result = {}

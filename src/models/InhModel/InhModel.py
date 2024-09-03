@@ -7,6 +7,9 @@ from ..SpikingModel import SpikingModel
 from inspect import getsource
 from utils.custom_sounds import Tone
 import nest
+from utils.CustomConnections import connect
+
+# import nest
 
 
 class InhModel(SpikingModel):
@@ -106,63 +109,59 @@ class InhModel(SpikingModel):
         self.s_rec_l_MNTBC = nest.Create("spike_recorder")
 
         # real ANFs (generators) to parrots
-        nest.Connect(r_ANFs, parrot_r_ANFs, "one_to_one")
-        nest.Connect(l_ANFs, parrot_l_ANFs, "one_to_one")
+        connect(r_ANFs, parrot_r_ANFs, "one_to_one")
+        connect(l_ANFs, parrot_l_ANFs, "one_to_one")
         # Devices
-        nest.Connect(parrot_r_ANFs, self.s_rec_r_ANF, "all_to_all")
-        nest.Connect(parrot_l_ANFs, self.s_rec_l_ANF, "all_to_all")
-        nest.Connect(r_MSO, self.s_rec_r_MSO, "all_to_all")
-        nest.Connect(l_MSO, self.s_rec_l_MSO, "all_to_all")
-        nest.Connect(r_LSO, self.s_rec_r_LSO, "all_to_all")
-        nest.Connect(l_LSO, self.s_rec_l_LSO, "all_to_all")
-        nest.Connect(r_SBCs, self.s_rec_r_SBC, "all_to_all")
-        nest.Connect(l_SBCs, self.s_rec_l_SBC, "all_to_all")
-        nest.Connect(r_GBCs, self.s_rec_r_GBC, "all_to_all")
-        nest.Connect(l_GBCs, self.s_rec_l_GBC, "all_to_all")
-        nest.Connect(r_LNTBCs, self.s_rec_r_LNTBC, "all_to_all")
-        nest.Connect(l_LNTBCs, self.s_rec_l_LNTBC, "all_to_all")
-        nest.Connect(r_MNTBCs, self.s_rec_r_MNTBC, "all_to_all")
-        nest.Connect(l_MNTBCs, self.s_rec_l_MNTBC, "all_to_all")
+        connect(parrot_r_ANFs, self.s_rec_r_ANF, "all_to_all")
+        connect(parrot_l_ANFs, self.s_rec_l_ANF, "all_to_all")
+        connect(r_MSO, self.s_rec_r_MSO, "all_to_all")
+        connect(l_MSO, self.s_rec_l_MSO, "all_to_all")
+        connect(r_LSO, self.s_rec_r_LSO, "all_to_all")
+        connect(l_LSO, self.s_rec_l_LSO, "all_to_all")
+        connect(r_SBCs, self.s_rec_r_SBC, "all_to_all")
+        connect(l_SBCs, self.s_rec_l_SBC, "all_to_all")
+        connect(r_GBCs, self.s_rec_r_GBC, "all_to_all")
+        connect(l_GBCs, self.s_rec_l_GBC, "all_to_all")
+        connect(r_LNTBCs, self.s_rec_r_LNTBC, "all_to_all")
+        connect(l_LNTBCs, self.s_rec_l_LNTBC, "all_to_all")
+        connect(r_MNTBCs, self.s_rec_r_MNTBC, "all_to_all")
+        connect(l_MNTBCs, self.s_rec_l_MNTBC, "all_to_all")
 
         # ANFs to SBCs
-        for i in range(P.n_SBCs):
-            nest.Connect(
-                parrot_r_ANFs[
-                    P.POP_CONN.ANFs2SBCs * i : P.POP_CONN.ANFs2SBCs * (i + 1)
-                ],
-                r_SBCs[i],
-                "all_to_all",
-                syn_spec={"weight": P.SYN_WEIGHTS.ANFs2SBCs},
-            )
-            nest.Connect(
-                parrot_l_ANFs[
-                    P.POP_CONN.ANFs2SBCs * i : P.POP_CONN.ANFs2SBCs * (i + 1)
-                ],
-                l_SBCs[i],
-                "all_to_all",
-                syn_spec={"weight": P.SYN_WEIGHTS.ANFs2SBCs},
-            )
+        connect(
+            parrot_r_ANFs,
+            r_SBCs,
+            "x_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.ANFs2SBCs},
+            num_sources=P.POP_CONN.ANFs2SBCs,
+        )
+        connect(
+            parrot_l_ANFs,
+            l_SBCs,
+            "x_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.ANFs2SBCs},
+            num_sources=P.POP_CONN.ANFs2SBCs,
+        )
+
         # ANFs to GBCs
-        for i in range(P.n_GBCs):
-            nest.Connect(
-                parrot_r_ANFs[
-                    P.POP_CONN.ANFs2GBCs * i : P.POP_CONN.ANFs2GBCs * (i + 1)
-                ],
-                r_GBCs[i],
-                "all_to_all",
-                syn_spec={"weight": P.SYN_WEIGHTS.ANFs2GBCs},
-            )
-            nest.Connect(
-                parrot_l_ANFs[
-                    P.POP_CONN.ANFs2GBCs * i : P.POP_CONN.ANFs2GBCs * (i + 1)
-                ],
-                l_GBCs[i],
-                "all_to_all",
-                syn_spec={"weight": P.SYN_WEIGHTS.ANFs2GBCs},
-            )
+        connect(
+            parrot_r_ANFs,
+            r_GBCs,
+            "x_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.ANFs2GBCs},
+            num_sources=P.POP_CONN.ANFs2GBCs,
+        )
+
+        connect(
+            parrot_l_ANFs,
+            l_GBCs,
+            "x_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.ANFs2GBCs},
+            num_sources=P.POP_CONN.ANFs2GBCs,
+        )
 
         # GBCs to LNTBCs
-        nest.Connect(
+        connect(
             r_GBCs,
             r_LNTBCs,
             "one_to_one",
@@ -171,7 +170,7 @@ class InhModel(SpikingModel):
                 "delay": P.DELAYS.GBCs2LNTBCs,
             },
         )
-        nest.Connect(
+        connect(
             l_GBCs,
             l_LNTBCs,
             "one_to_one",
@@ -181,7 +180,7 @@ class InhModel(SpikingModel):
             },
         )
         # GBCs to MNTBCs
-        nest.Connect(
+        connect(
             r_GBCs,
             l_MNTBCs,
             "one_to_one",
@@ -190,7 +189,7 @@ class InhModel(SpikingModel):
                 "delay": P.DELAYS.GBCs2MNTBCs,
             },
         )
-        nest.Connect(
+        connect(
             l_GBCs,
             r_MNTBCs,
             "one_to_one",
@@ -202,51 +201,53 @@ class InhModel(SpikingModel):
 
         # MSO
         # From SBCs (excitation):
-        for i in range(P.n_MSOs):
-            # r_MSO
-            #       ipsi
-            nest.Connect(
-                r_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
-                r_MSO[i],
-                "all_to_all",
-                syn_spec={
-                    "weight": P.SYN_WEIGHTS.SBCs2MSO,
-                    "delay": P.DELAYS.SBCs2MSO_exc_ipsi,
-                },
-            )
-            #       contra
-            nest.Connect(
-                l_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
-                r_MSO[i],
-                "all_to_all",
-                syn_spec={
-                    "weight": P.SYN_WEIGHTS.SBCs2MSO,
-                    "delay": P.DELAYS.SBCs2MSO_exc_contra,
-                },
-            )
-            # l_MSO
-            #       ipsi
-            nest.Connect(
-                l_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
-                l_MSO[i],
-                "all_to_all",
-                syn_spec={
-                    "weight": P.SYN_WEIGHTS.SBCs2MSO,
-                    "delay": P.DELAYS.SBCs2MSO_exc_ipsi,
-                },
-            )
-            #       contra
-            nest.Connect(
-                r_SBCs[P.SBCs2MSOs * i : P.SBCs2MSOs * (i + 1)],
-                l_MSO[i],
-                "all_to_all",
-                syn_spec={
-                    "weight": P.SYN_WEIGHTS.SBCs2MSO,
-                    "delay": P.DELAYS.SBCs2MSO_exc_contra,
-                },
-            )
+        # r_MSO
+        #       ipsi
+        connect(
+            r_SBCs,
+            r_MSO,
+            "x_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.SBCs2MSO,
+                "delay": P.DELAYS.SBCs2MSO_exc_ipsi,
+            },
+            num_sources=P.SBCs2MSOs,
+        )
+        #       contra
+        connect(
+            l_SBCs,
+            r_MSO,
+            "x_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.SBCs2MSO,
+                "delay": P.DELAYS.SBCs2MSO_exc_contra,
+            },
+        )
+        # l_MSO
+        #       ipsi
+        connect(
+            l_SBCs,
+            l_MSO,
+            "x_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.SBCs2MSO,
+                "delay": P.DELAYS.SBCs2MSO_exc_ipsi,
+            },
+            num_sources=P.SBCs2MSOs,
+        )
+        #       contra
+        connect(
+            r_SBCs,
+            l_MSO,
+            "x_to_one",
+            syn_spec={
+                "weight": P.SYN_WEIGHTS.SBCs2MSO,
+                "delay": P.DELAYS.SBCs2MSO_exc_contra,
+            },
+            num_sources=P.SBCs2MSOs,
+        )
         # From LNTBCs (inhibition), ipsi
-        nest.Connect(
+        connect(
             r_LNTBCs,
             r_MSO,
             "one_to_one",
@@ -256,7 +257,7 @@ class InhModel(SpikingModel):
             },
         )
         # From MNTBCs (inhibition) contra
-        nest.Connect(
+        connect(
             r_MNTBCs,
             r_MSO,
             "one_to_one",
@@ -266,7 +267,7 @@ class InhModel(SpikingModel):
             },
         )
         # From LNTBCs (inhibition) ipsi
-        nest.Connect(
+        connect(
             l_LNTBCs,
             l_MSO,
             "one_to_one",
@@ -276,7 +277,7 @@ class InhModel(SpikingModel):
             },
         )
         # From MNTBCs (inhibition) contra
-        nest.Connect(
+        connect(
             l_MNTBCs,
             l_MSO,
             "one_to_one",
@@ -287,27 +288,28 @@ class InhModel(SpikingModel):
         )
 
         # LSO
-        for i in range(P.n_LSOs):
-            nest.Connect(
-                r_SBCs[P.SBCs2LSOs * i : P.SBCs2LSOs * (i + 1)],
-                r_LSO[i],
-                "all_to_all",
-                syn_spec={"weight": P.SYN_WEIGHTS.SBCs2LSO},
-            )
-            nest.Connect(
-                l_SBCs[P.SBCs2LSOs * i : P.SBCs2LSOs * (i + 1)],
-                l_LSO[i],
-                "all_to_all",
-                syn_spec={"weight": P.SYN_WEIGHTS.SBCs2LSO},
-            )
+        connect(
+            r_SBCs,
+            r_LSO,
+            "x_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.SBCs2LSO},
+            num_sources=P.SBCs2LSOs,
+        )
+        connect(
+            l_SBCs,
+            l_LSO,
+            "x_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.SBCs2LSO},
+            num_sources=P.SBCs2LSOs,
+        )
 
-        nest.Connect(
+        connect(
             r_MNTBCs,
             r_LSO,
             "one_to_one",
             syn_spec={"weight": P.SYN_WEIGHTS.MNTBCs2LSO},
         )
-        nest.Connect(
+        connect(
             l_MNTBCs,
             l_LSO,
             "one_to_one",
