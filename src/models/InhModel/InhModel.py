@@ -6,7 +6,7 @@ from utils.log import logger
 from ..SpikingModel import SpikingModel
 from inspect import getsource
 from utils.custom_sounds import Tone
-import nest
+from utils.nestclient import nest
 from utils.CustomConnections import connect
 
 # import nest

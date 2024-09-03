@@ -105,7 +105,7 @@ def generate_all_ANFs(sounds=None, cochleas=COCHLEAS.keys()):
 
 
 def spikes_to_nestgen(anf_response: AnfResponse):
-    import nest
+    from utils.nestclient import nest
 
     nest.set_verbosity("M_ERROR")
     anfs_per_ear = {}
