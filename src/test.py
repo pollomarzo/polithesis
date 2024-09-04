@@ -1,5 +1,4 @@
 from analyze.graph import generate_flow_chart
-import graphviz as gv
 
 if __name__ == "__main__":
     # D.render(view=False)
