@@ -1,3 +1,4 @@
+from typing import List
 from PIL import Image
 from analyze.graph import generate_flow_chart
 import graphviz
@@ -191,13 +192,15 @@ def generate_network_vis(res, filename):
     dot = generate_flow_chart(
         res["conf"]["model_desc"]["networkdef"],
         res["conf"]["parameters"],
-        "fakeConnect",
+        "connect",
     )
     src = graphviz.Source(dot)
     src.render(outfile=filename, format="png", cleanup=True)
 
 
-def paths(result_dir, filename):
+def paths(result_file_path: PurePath):
+    filename = result_file_path.name
+    result_dir = result_file_path.parent
     return [
         result_dir / "rate_vs_angle.png",
         result_dir / "ild_itd.png",
@@ -206,29 +209,30 @@ def paths(result_dir, filename):
     ]
 
 
-def generate_complete(res, result_dir, filename, cleanup=True):
-    RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(result_dir, filename)
-    fig = draw_rate_vs_angle(res, filename)
+def generate_single_result(result_filepath: PurePath, cleanup=True):
+    with open(result_filepath, "rb") as f:
+        res = dill.load(f, ignore=True)
+    RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(result_filepath)
+    fig = draw_rate_vs_angle(res, result_filepath.name)
     fig.savefig(RATE_VS_ANGLE)
 
-    itd_ild_fig = draw_ITD_ILD(res, filename)
+    itd_ild_fig = draw_ITD_ILD(res, result_filepath.name)
     itd_ild_fig.savefig(ILD_ITD)
 
     generate_network_vis(res, NETVIS)
 
-    merge_rows_files([RATE_VS_ANGLE, ILD_ITD, NETVIS], RESULT, True)
+    merge_rows_files([RATE_VS_ANGLE, ILD_ITD, NETVIS], RESULT, 1, cleanup)
     return 1
 
 
-def generate_multi_inputs_single_net(results_paths, result_dir, cleanup=True):
-    filenames = [f.name for f in results_paths]
-
+def generate_multi_inputs_single_net(results_paths: List[PurePath], cleanup=True):
     img_paths = []
-    for path, filename in zip(results_paths, filenames):
+    for path in results_paths:
+        filename = path.name
         logger.debug(f"now working on result file {path}")
         with open(path, "rb") as f:
             res = dill.load(f, ignore=True)
-        RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(result_dir, filename)
+        RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(path)
         fig = draw_rate_vs_angle(res, filename)
         fig.savefig(RATE_VS_ANGLE)
         itd_ild_fig = draw_ITD_ILD(res, filename)
@@ -237,7 +241,7 @@ def generate_multi_inputs_single_net(results_paths, result_dir, cleanup=True):
         img_paths.append(RESULT)
     plt.close("all")
 
-    _, _, NETVIS, RESULT = paths(result_dir, filenames[0])
+    _, _, NETVIS, RESULT = paths(results_paths[0])
 
     logger.debug(f"creating network vis using result file {results_paths[0]}")
     with open(results_paths[0], "rb") as f:
@@ -245,12 +249,15 @@ def generate_multi_inputs_single_net(results_paths, result_dir, cleanup=True):
     generate_network_vis(res, NETVIS)
     img_paths.append(NETVIS)
 
-    report_name = f"{PurePath(result_dir).name}&{filenames[0].split('&')[0]}.png"
+    report_name = (
+        f"{results_paths[0].parent.name}&{results_paths[0].name.split('&')[0]}.png"
+    )
     logger.debug(f"creating final image with name {report_name}...")
 
     result = merge_rows_files(
         img_paths,
-        result_dir / report_name,
+        results_paths[0].parent / report_name,
         3 if len(results_paths) <= 5 else 4,
         cleanup,
     )
+    return result

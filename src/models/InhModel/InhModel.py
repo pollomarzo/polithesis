@@ -222,6 +222,7 @@ class InhModel(SpikingModel):
                 "weight": P.SYN_WEIGHTS.SBCs2MSO,
                 "delay": P.DELAYS.SBCs2MSO_exc_contra,
             },
+            num_sources=P.SBCs2MSOs,
         )
         # l_MSO
         #       ipsi
