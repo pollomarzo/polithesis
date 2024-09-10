@@ -1,3 +1,4 @@
+from collections import defaultdict
 import brian2hears as b2h
 import brian2 as b2
 import numpy as np
@@ -82,6 +83,7 @@ def tone_to_ppg_spikes(sound: Tone, angle: int, params: dict):
     tone_freq = sound.frequency / b2.Hz
     time_sim = int(sound.sound.duration / b2.ms)
     nest.ResetKernel()
+    nest.SetKernelStatus(params["nest"])
     gen_l = nest.Create("pulsepacket_generator", N_IHCs, params={"sdev": sdev})
     gen_r = nest.Create("pulsepacket_generator", N_IHCs, params={"sdev": sdev})
 
@@ -124,18 +126,22 @@ def tone_to_ppg_spikes(sound: Tone, angle: int, params: dict):
             logger.debug(f"ANF simulation: step n. {t}")
         nest.Simulate(1)
 
-    x = {
-        "L": [parrot_l, s_rec_l.get("events")],
-        "R": [parrot_r, s_rec_r.get("events")],
-    }
     spiketrains = {"L": {}, "R": {}}
     logger.debug(f"shifting spiketrain IDs into [1,n_ANFs] range of IDs...")
-    for side in spiketrains.keys():
-        spiketrains[side] = {i: [] for i in range(3500)}
-        parrot, events = x[side]
-        start = parrot[0].get("global_id")
-        for i, t in zip(events["senders"], events["times"]):
-            spiketrains[side][i - start].append(t)
+    old2new_id = {
+        "L": {i: e for e, i in enumerate([i.get("global_id") for i in parrot_l])},
+        "R": {i: e for e, i in enumerate([i.get("global_id") for i in parrot_r])},
+    }
+    logger.debug(f"created translation")
+
+    for side, events in {
+        "L": s_rec_l.get("events"),
+        "R": s_rec_r.get("events"),
+    }.items():
+        spiketrains[side] = defaultdict(list)
+        for old_id, data in zip(events["senders"], events["times"]):
+            new_id = old2new_id[side][old_id]
+            spiketrains[side][new_id].append(data * b2.ms)
     logger.debug(f"spiketrains completed")
 
     nest.ResetKernel()

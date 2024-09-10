@@ -62,8 +62,10 @@ def load_anf_response(
 ):
     cochlea_func: MemorizedFunc = COCHLEAS[cochlea_key]
     params = params[cochlea_key]
-    if not cochlea_func.check_call_in_cache(tone, angle, params) and not ignore_cache:
+    if not cochlea_func.check_call_in_cache(tone, angle, params):
         logger.info(f"saved ANF not found. generation will take some time...")
+    if ignore_cache:
+        logger.info(f"ignoring cache. generation will take some time...")
 
     logger.info(
         f"generating ANF for {

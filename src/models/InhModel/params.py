@@ -13,7 +13,13 @@ class Parameters:
                     "noise_factor": 0.2,
                     "refractory_period": 1,  # ms
                 },
-                "ppg": {},
+                "ppg": {
+                    "nest": {
+                        "resolution": 0.1,
+                        "rng_seed": 42,
+                        "total_num_virtual_procs": 16,
+                    }
+                },
             }
         )
     )
