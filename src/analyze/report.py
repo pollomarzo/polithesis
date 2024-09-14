@@ -226,15 +226,18 @@ def generate_single_result(result_filepath: PurePath, cleanup=True):
     return 1
 
 
+from utils.log import tqdm
+
+
 def generate_multi_inputs_single_net(results_paths: List[PurePath], cleanup=True):
     img_paths = []
-    for path in results_paths:
+    for path in tqdm(results_paths, desc="single imgs"):
         filename = path.name
         logger.debug(f"now working on result file {path}")
         with open(path, "rb") as f:
             res = dill.load(f, ignore=True)
         RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(path)
-        fig = draw_rate_vs_angle(res, filename)
+        fig = draw_rate_vs_angle(res, filename, True, True, True)
         fig.savefig(RATE_VS_ANGLE)
         itd_ild_fig = draw_ITD_ILD(res, filename)
         itd_ild_fig.savefig(ILD_ITD)

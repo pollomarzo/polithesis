@@ -318,7 +318,14 @@ class InhModel(SpikingModel):
         )
 
     def simulate(self, time: float | int):
-        nest.Simulate(time)
+        # split in time chunks
+        TIME_PER_CHUNK_TQDM = 100
+        chunks = time // TIME_PER_CHUNK_TQDM
+        for chunk in tqdm(
+            [*list(range(chunks)), time - chunks * TIME_PER_CHUNK_TQDM],
+            desc="  ⮡ simulation",
+        ):
+            nest.Simulate(chunk)
 
     def analyze(self):
         result = {"L": {}, "R": {}}

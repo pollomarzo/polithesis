@@ -11,6 +11,7 @@ dependencies:
 - jupyter
 - nest-simulator
 - scipy
+- tqdm
 - pip:
   - sorcery
   - brian2hears
