@@ -1,26 +1,24 @@
-from pathlib import Path
-from utils.custom_sounds import Tone
-from models.InhModel.InhModel import InhModel
-from models.InhModel.params import Parameters as InhParam
-from consts import Paths, save_current_conf
-from utils.log import logger
-import brian2 as b2, brian2hears as b2h
-from brian2 import Hz
-from cochleas.anf_utils import (
-    load_anf_response,
-    COCHLEAS,
-    create_sound_key,
-    REAL_COC_KEY,
-    real_cochlea,
-)
-from cochleas.consts import ANGLES
-from sorcery import dict_of
-import dill
 import datetime
+from datetime import timedelta
+from pathlib import Path
+from timeit import default_timer as timer
+
+import brian2 as b2
+import brian2hears as b2h
+import dill
 import nest
 import nest.voltage_trace
-from timeit import default_timer as timer
-from datetime import timedelta
+from brian2 import Hz
+from sorcery import dict_of
+
+from analyze.report import generate_multi_inputs_single_net, generate_single_result
+from cochleas.anf_utils import COCHLEAS, create_sound_key, load_anf_response
+from cochleas.consts import ANGLES
+from consts import Paths, save_current_conf
+from models.InhModel.InhModel import InhModel
+from models.InhModel.params import Parameters as InhParam
+from utils.custom_sounds import Tone
+from utils.log import logger, tqdm
 
 nest.set_verbosity("M_ERROR")
 

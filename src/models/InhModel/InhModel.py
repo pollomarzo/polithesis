@@ -1,15 +1,15 @@
+from inspect import getsource
+
+import nest
 import numpy as np
 
 from cochleas.anf_utils import AnfResponse, spikes_to_nestgen
-from .params import Parameters
-from utils.log import logger
-from ..SpikingModel import SpikingModel
-from inspect import getsource
 from utils.custom_sounds import Tone
-import nest
 from utils.CustomConnections import connect
+from utils.log import logger, tqdm
 
-# import nest
+from ..SpikingModel import SpikingModel
+from .params import Parameters
 
 
 class InhModel(SpikingModel):

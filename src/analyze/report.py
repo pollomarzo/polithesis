@@ -1,20 +1,21 @@
-from typing import List
-from PIL import Image
-from analyze.graph import generate_flow_chart
-import graphviz
-import consts as C
-import matplotlib.pyplot as plt
-from utils.log import logger
 import logging
-from utils.custom_sounds import Tone
-from cochleas.RealisticCochlea import run_hrtf
-from analyze import sound_analysis as SA
-from pathlib import PurePath
-import numpy as np
 from contextlib import ExitStack
 from itertools import batched
-import dill
 from math import ceil
+from pathlib import PurePath
+from typing import List
+
+import dill
+import graphviz
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
+
+from analyze import sound_analysis as SA
+from analyze.graph import generate_flow_chart
+from cochleas.RealisticCochlea import run_hrtf
+from utils.custom_sounds import Tone
+from utils.log import logger
 
 plt.rcParams["axes.grid"] = True
 plt.rcParams["figure.figsize"] = (6, 3)
