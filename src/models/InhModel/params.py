@@ -20,6 +20,11 @@ class Parameters:
                         "total_num_virtual_procs": 16,
                     }
                 },
+                "DRNL": {
+                    "subj_number": 1,
+                    "noise_factor": 0,
+                    "refractory_period": 1,  # ms
+                },
             }
         )
     )
