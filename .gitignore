@@ -8,3 +8,4 @@ IHF_SPIKES
 ANF_SPIKETRAINS
 results/*
 **/*.pic
+myoga_cache
