@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "4d7f7986f0f4f8d9",
+        "id": "78b18a19a73f75ae",
         "type": "tabs",
         "children": [
           {
-            "id": "4b3b66f7c8173636",
+            "id": "ae32c78965c3bbd9",
             "type": "leaf",
+            "pinned": true,
             "state": {
-              "type": "pdf",
+              "type": "markdown",
               "state": {
-                "file": "YIN_mind_map.pdf"
-              }
+                "file": "thesis overview.md",
+                "mode": "source",
+                "source": false
+              },
+              "pinned": true
             }
           }
         ]
@@ -83,7 +87,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "YIN_mind_map.pdf",
+                "file": "thesis overview.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -100,7 +104,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "YIN_mind_map.pdf",
+                "file": "thesis overview.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -123,7 +127,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "YIN_mind_map.pdf"
+                "file": "thesis overview.md"
               }
             }
           }
@@ -146,8 +150,11 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "4b3b66f7c8173636",
+  "active": "ae32c78965c3bbd9",
   "lastOpenFiles": [
+    "YIN_mind_map.pdf",
+    "wunderlichDemonstratingAdvantagesNeuromorphic2019.md",
+    "thesis overview.md",
     "technical deets.md",
     "plasticity.md",
     "Pasted image 20240725163445.png",
@@ -156,7 +163,6 @@
     "cochlea modeling.md",
     "templates/custom-headers.md",
     "myogaGlycinergicInhibitionTunes2014a.md",
-    "YIN_mind_map.pdf",
     "Inhibition critical issues.md",
     "Smith.md",
     "zotero.md",
@@ -179,7 +185,6 @@
     "nest.md",
     "struct.md",
     "grotheMechanismsSoundLocalization2010.md",
-    "wunderlichDemonstratingAdvantagesNeuromorphic2019.md",
     "templates/ZI-main.md",
     "media/zotero/wunderlichDemonstratingAdvantagesNeuromorphic2019",
     "test.md",
@@ -187,7 +192,6 @@
     "templates/custom-headers.njk",
     "media/zotero/grotheMechanismsSoundLocalization2010",
     "templates/runImport.md",
-    "templates/basic.md",
     "media/zotero/grotheNaturalHistorySound2014",
     "media/zotero/yinNeuralMechanismsBinaural2019",
     "media/zotero",
