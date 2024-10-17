@@ -9,9 +9,10 @@ class Parameters:
         default_factory=lambda: (
             {
                 "realistic": {
-                    "subj_number": 1,
+                    "subj_number": 2,
                     "noise_factor": 0.2,
                     "refractory_period": 1,  # ms
+                    "amplif_factor": 15,
                 },
                 "ppg": {
                     "nest": {
@@ -20,7 +21,7 @@ class Parameters:
                         "total_num_virtual_procs": 16,
                     }
                 },
-                "DRNL": {
+                "DCGC": {
                     "subj_number": 1,
                     "noise_factor": 0,
                     "refractory_period": 1,  # ms
@@ -33,7 +34,8 @@ class Parameters:
     class CONFIG:
         STORE_POPS: set = field(
             default_factory=lambda: set(
-                ["LSO", "MSO", "ANF", "SBC", "GBC", "LNTBC", "MNTBC"]
+                # ["LSO", "MSO", "ANF", "SBC", "GBC", "LNTBC", "MNTBC"]
+                []  # all
             )
         )
         NEST_KERNEL_PARAMS: dict = field(

@@ -1,10 +1,13 @@
 import logging
+from collections import defaultdict
 from contextlib import ExitStack
 from itertools import batched
 from math import ceil
 from pathlib import PurePath
-from typing import List
+from typing import Iterable, List
 
+import brian2 as b2
+import brian2hears as b2h
 import dill
 import graphviz
 import matplotlib.pyplot as plt
@@ -13,14 +16,26 @@ from PIL import Image
 
 from analyze import sound_analysis as SA
 from analyze.graph import generate_flow_chart
+from cochleas.consts import CFMAX, CFMIN
 from cochleas.RealisticCochlea import run_hrtf
 from utils.custom_sounds import Tone
-from utils.log import logger
+from utils.log import logger, tqdm
 
 plt.rcParams["axes.grid"] = True
 plt.rcParams["figure.figsize"] = (6, 3)
 
 PLTWIDTH = 8
+
+
+def flatten(items):
+    """Yield items from any nested iterable.
+    from https://stackoverflow.com/a/40857703
+    """
+    for x in items:
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            yield from flatten(x)
+        else:
+            yield x
 
 
 def merge_in_column(images):
@@ -79,63 +94,217 @@ def merge_rows_files(filepaths, destination_path=None, img_per_row=4, cleanup=Tr
     return merged
 
 
-def draw_rate_vs_angle(data, filename, show_lso=True, show_mso=True, rate=True):
+## draw_rate_vs_angle helpers
+
+
+def avg_fire_rate_actv_neurons(x):
+    active_neurons = set(x["senders"])
+    return (len(x["times"]) / len(active_neurons)) if len(active_neurons) > 0 else 0
+
+
+def firing_neurons_distribution(x):
+    n2s = defaultdict(int)
+    for sender in x["senders"]:
+        n2s[sender] += 1
+    return list(n2s.values())
+
+
+def shift_senders(x, hist_logscale=False):
+    "returns list of 'senders' with ids shifted to [0,num_neurons]. optionally ids are CFs"
+    if hist_logscale:
+        cf = b2h.erbspace(CFMIN, CFMAX, len(x["global_ids"])) / b2.Hz
+        old2newid = {oldid: cf[i] for i, oldid in enumerate(x["global_ids"])}
+    else:
+        old2newid = {oldid: i for i, oldid in enumerate(x["global_ids"])}
+    return [old2newid[i] for i in x["senders"]]
+
+
+def draw_hist(
+    ax, senders_renamed, angles, num_neurons, max_spikes_single_neuron, logscale=True
+):
+    """draws a low opacity horizontal histogram for each angle position
+
+    includes a secondary y-axis, optionally logarithmic.
+    if logscale, expects senders to be renamed to CFs
+    """
+    histogram_height = 0.25
+    bin_count = 50
+    alpha = 0.3
+    if logscale:
+        bins = b2h.erbspace(CFMIN, CFMAX, bin_count) / b2.Hz
+
+        for j, angle in enumerate(angles):
+            left_data = senders_renamed["L"][j]
+            right_data = senders_renamed["R"][j]
+
+            left_hist, _ = np.histogram(left_data, bins=bins)
+            right_hist, _ = np.histogram(right_data, bins=bins)
+            left_hist_normalized = (
+                left_hist / max_spikes_single_neuron * histogram_height
+            )
+            right_hist_normalized = (
+                right_hist / max_spikes_single_neuron * histogram_height
+            )
+
+            ax.barh(
+                bins[:-1],
+                -left_hist_normalized,
+                height=np.diff(bins),  # bins have different sizes
+                left=angle,
+                color="C0",
+                alpha=alpha,
+                align="edge",
+            )
+            ax.barh(
+                bins[:-1],
+                right_hist_normalized,
+                height=np.diff(bins),
+                left=angle,
+                color="C1",
+                alpha=alpha,
+                align="edge",
+            )
+        ax.set_yscale("log")
+        ax.set_ylim(CFMIN, CFMAX)
+        yticks = [20, 100, 500, 1000, 5000, 10000, 20000]
+        ax.set_yticks(yticks)
+        ax.set_yticklabels([f"{freq} Hz" for freq in yticks])
+        ax.set_ylabel("approx CF (Hz)")
+    else:
+        bins = np.linspace(0, num_neurons, bin_count)
+
+        for j, angle in enumerate(angles):
+            left_data = senders_renamed["L"][j]
+            right_data = senders_renamed["R"][j]
+
+            left_hist, _ = np.histogram(left_data, bins=bins)
+            right_hist, _ = np.histogram(right_data, bins=bins)
+            left_hist_normalized = (
+                left_hist / max_spikes_single_neuron * histogram_height
+            )
+            right_hist_normalized = (
+                right_hist / max_spikes_single_neuron * histogram_height
+            )
+
+            ax.barh(
+                bins[:-1],
+                -left_hist_normalized,
+                height=num_neurons / bin_count,
+                left=angle,
+                color="C0",
+                alpha=alpha,
+                align="edge",
+            )
+            ax.barh(
+                bins[:-1],
+                right_hist_normalized,
+                height=num_neurons / bin_count,
+                left=angle,
+                color="C1",
+                alpha=alpha,
+                align="edge",
+            )
+        ax.set_ylabel("neuron id")
+    ax.yaxis.set_minor_locator(plt.NullLocator())  # remove minor ticks
+
+
+def draw_rate_vs_angle(
+    data, filename, show_lso=True, show_mso=True, rate=True, hist_logscale=True
+):
+    version = data["angle_to_rate"][0].get("version", None)
     angle_to_rate = data["angle_to_rate"]
     name = data["conf"]["model_desc"]["name"]
     sound_key = data["conf"]["sound_key"]
-    # cochlea = data["conf"]["cochlea_type"]
+    show_pops = ["LSO", "MSO", "ICC"]
+    if not show_lso:
+        show_pops.remove("LSO")
+    if not show_mso:
+        show_pops.remove("MSO")
 
     angles = list(angle_to_rate.keys())
+    sides = ["L", "R"]
 
-    def average_firing_rate(x):
-        active_neurons = set(x["senders"] if rate else x)
-        return (len(x["times"]) / len(active_neurons)) if len(active_neurons) > 0 else 0
+    with plt.ioff():
+        fig, ax = plt.subplots(len(show_pops), figsize=(8, 2 * len(show_pops)))
 
-    arr_n_spikes_r_lso = [
-        average_firing_rate(x["R"]["LSO"]) for angle, x in angle_to_rate.items()
-    ]
-    arr_n_spikes_l_lso = [
-        average_firing_rate(x["L"]["LSO"]) for angle, x in angle_to_rate.items()
-    ]
-    arr_n_spikes_r_mso = [
-        average_firing_rate(x["R"]["MSO"]) for angle, x in angle_to_rate.items()
-    ]
-    arr_n_spikes_l_mso = [
-        average_firing_rate(x["L"]["MSO"]) for angle, x in angle_to_rate.items()
-    ]
+    for i, pop in enumerate(show_pops):
+        num_active = {
+            side: [len(set(angle_to_rate[angle][side][pop])) for angle in angles]
+            for side in sides
+        }
+        tot_spikes = {
+            side: [len(angle_to_rate[angle][side][pop]["times"]) for angle in angles]
+            for side in sides
+        }
+        active_neuron_rate = {
+            side: [
+                avg_fire_rate_actv_neurons(angle_to_rate[angle][side][pop])
+                for angle in angles
+            ]
+            for side in sides
+        }
+        distr = {
+            side: [
+                firing_neurons_distribution(angle_to_rate[angle][side][pop])
+                for angle in angles
+            ]
+            for side in sides
+        }
 
-    lso = {
-        "spikes": [arr_n_spikes_r_lso, arr_n_spikes_l_lso],
-        "show": show_lso,
-        "label": "lso",
-    }
-    mso = {
-        "spikes": [arr_n_spikes_r_mso, arr_n_spikes_l_mso],
-        "show": show_mso,
-        "label": "mso",
-    }
-    data = []
-    for i in [lso, mso]:
-        if i["show"]:
-            data.append(i)
-    num_subplots = len(data)
-    fig, ax = plt.subplots(num_subplots, figsize=(PLTWIDTH, 2 * num_subplots))
-    if type(ax) is not np.ndarray:
-        ax = [ax]
-    for axis, d in zip(ax, data):
-        axis.plot(angles, d["spikes"][0], ".-", label=f"right {d["label"]}")
-        axis.plot(angles, d["spikes"][1], ".-", label=f"left {d["label"]}")
-        axis.set_ylabel("actv neur spk/sec (Hz)" if rate else "total pop spk/sec")
-        _ = axis.legend()
-    # fig.suptitle(f"{name} with {sound_key}")
+        if version > 2:  # needed for global ids
+            senders_renamed = {
+                side: [
+                    shift_senders(angle_to_rate[angle][side][pop], hist_logscale)
+                    for angle in angles
+                ]
+                for side in sides
+            }
+
+        ax[i].plot(angles, active_neuron_rate["L"], label=f"left  {pop}")
+        ax[i].plot(angles, active_neuron_rate["R"], label=f"right {pop}")
+        ax[i].set_ylabel("actv neur spk/sec (Hz)" if rate else "total pop spk/sec")
+        _ = ax[i].legend()
+
+        v = ax[i].twinx()
+        v.grid(visible=False)  # or use linestyle='--'
+        draw_hist(
+            v,
+            senders_renamed,
+            angles,
+            num_neurons=len(angle_to_rate[0]["L"][pop]["global_ids"]),
+            max_spikes_single_neuron=max(flatten(distr.values())),
+            logscale=hist_logscale,
+        )
+
+        # v.set_ylabel("spike distribution")
+        # parts = [
+        #     v.violinplot(
+        #         distr["L"],
+        #         positions=angles,
+        #         widths=10,
+        #         side="low",
+        #         showextrema=True,
+        #         showmedians=True,
+        #     ),
+        #     v.violinplot(
+        #         distr["R"],
+        #         positions=angles,
+        #         widths=10,
+        #         side="high",
+        #         showextrema=True,
+        #         showmedians=True,
+        #     ),
+        # ]
+        # for pc in flatten([parts[0].values(), parts[1].values()]):
+        #     pc.set_alpha(0.3)
+
     plt.suptitle(filename)
     plt.setp([ax], xticks=angles)
-
     plt.tight_layout()
     return fig
 
 
-def draw_ITD_ILD(data, selected):
+def draw_ITD_ILD(data):
     previous_level = logger.level
     # itd and ild functions are VERY verbose
     logger.setLevel(logging.WARNING)
@@ -217,16 +386,13 @@ def generate_single_result(result_filepath: PurePath, cleanup=True):
     fig = draw_rate_vs_angle(res, result_filepath.name)
     fig.savefig(RATE_VS_ANGLE)
 
-    itd_ild_fig = draw_ITD_ILD(res, result_filepath.name)
+    itd_ild_fig = draw_ITD_ILD(res)
     itd_ild_fig.savefig(ILD_ITD)
 
     generate_network_vis(res, NETVIS)
 
     merge_rows_files([RATE_VS_ANGLE, ILD_ITD, NETVIS], RESULT, 1, cleanup)
     return 1
-
-
-from utils.log import tqdm
 
 
 def generate_multi_inputs_single_net(results_paths: List[PurePath], cleanup=True):
@@ -237,9 +403,11 @@ def generate_multi_inputs_single_net(results_paths: List[PurePath], cleanup=True
         with open(path, "rb") as f:
             res = dill.load(f, ignore=True)
         RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(path)
-        fig = draw_rate_vs_angle(res, filename, True, True, True)
+        fig = draw_rate_vs_angle(
+            res, filename, True, True, rate=True, hist_logscale=True
+        )
         fig.savefig(RATE_VS_ANGLE)
-        itd_ild_fig = draw_ITD_ILD(res, filename)
+        itd_ild_fig = draw_ITD_ILD(res)
         itd_ild_fig.savefig(ILD_ITD)
         merge_rows_files([RATE_VS_ANGLE, ILD_ITD], RESULT, 1, cleanup)
         img_paths.append(RESULT)

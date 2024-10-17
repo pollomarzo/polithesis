@@ -1,20 +1,23 @@
-from brian2 import clip, Inf, ms, plot, show, run, SpikeMonitor
+from os import makedirs
+
+from brian2 import Inf, SpikeMonitor, clip, ms, plot, run, show
 from brian2hears import (
-    Sound,
-    Gammatone,
-    FunctionFilterbank,
-    FilterbankGroup,
-    erbspace,
     IRCAM_LISTEN,
+    FilterbankGroup,
+    FunctionFilterbank,
+    Gammatone,
+    Sound,
+    erbspace,
 )
+from joblib import Memory
+from sorcery import dict_of
+
 from consts import Paths
 from utils.custom_sounds import Tone
 from utils.log import logger
-from .consts import CFMIN, CFMAX, NUM_CF, ANGLE_TO_IRCAM
+
 from .anf_response import AnfResponse
-from joblib import Memory
-from sorcery import dict_of
-from os import makedirs
+from .consts import ANGLE_TO_IRCAM, CFMAX, CFMIN, NUM_CF
 
 COCHLEA_KEY = f"realistic"
 CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
@@ -44,8 +47,9 @@ def sound_to_spikes(
     subj_number = params["subj_number"]
     noise_factor = params["noise_factor"]
     refractory_period = params["refractory_period"] * ms
+    amplif_factor = params["amplif_factor"]
     logger.debug(
-        f"genenerating spikes for {dict_of(sound,angle,plot_spikes,subj_number,noise_factor,refractory_period)}"
+        f"generating spikes for {dict_of(sound,angle,plot_spikes,subj_number,noise_factor,refractory_period)}"
     )
     binaural_sound = run_hrtf(sound, angle, subj=subj_number)
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
@@ -57,7 +61,9 @@ def sound_to_spikes(
         # To model how hair cells in adjacent frequencies are engaged as well, but less
         gfb = Gammatone(sound, cf)
         # cochlea modeled as halfwave rectified -> 1/3 power law
-        ihc = FunctionFilterbank(gfb, lambda x: 3 * clip(x, 0, Inf) ** (1.0 / 3.0))
+        ihc = FunctionFilterbank(
+            gfb, lambda x: amplif_factor * clip(x, 0, Inf) ** (1.0 / 3.0)
+        )
         # Leaky integrate-and-fire model with noise and refractoriness
         eqs = f"""
         dv/dt = (I-v)/(1*ms)+{noise_factor}*xi*(2/(1*ms))**.5 : 1 (unless refractory)

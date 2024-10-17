@@ -1,35 +1,39 @@
-from brian2 import Hz, kHz, ms
-from brian2hears import Sound, IRCAM_LISTEN, dB
-from .anf_response import AnfResponse
-import numpy as np
-from sorcery import dict_of
-from utils.log import logger
-from consts import Paths
-from pathlib import Path
 import os
-from dataclasses import dataclass
 import pickle
-from utils.custom_sounds import Tone
-from .consts import NUM_CF, IRCAM_HRTF_ANGLES, ANGLES, NUM_ANF_PER_HC
-from .RealisticCochlea import (
-    sound_to_spikes as real_cochlea,
-    COCHLEA_KEY as REAL_COC_KEY,
-    memory as CACHE_REAL,
-)
-from .PpgCochlea import (
-    tone_to_ppg_spikes as ppg_cochlea,
-    COCHLEA_KEY as PPG_COC_KEY,
-    memory as CACHE_PPG,
-)
-from joblib.memory import MemorizedFunc
-from models.InhModel.params import Parameters
+from dataclasses import dataclass
+from pathlib import Path
 
+import numpy as np
+from brian2 import Hz, kHz, ms
+from brian2hears import IRCAM_LISTEN, Sound, dB
+from joblib.memory import MemorizedFunc
+from sorcery import dict_of
+
+from consts import Paths
+from models.InhModel.params import Parameters
+from utils.custom_sounds import Tone
+from utils.log import logger
+
+from .anf_response import AnfResponse
+from .B2Cochlea import COCHLEA_KEY as B2_COC_KEY
+from .B2Cochlea import sound_to_spikes as b2_cochlea
+from .consts import ANGLES, IRCAM_HRTF_ANGLES, NUM_ANF_PER_HC, NUM_CF
+from .PpgCochlea import COCHLEA_KEY as PPG_COC_KEY
+from .PpgCochlea import memory as CACHE_PPG
+from .PpgCochlea import tone_to_ppg_spikes as ppg_cochlea
+from .RealisticCochlea import COCHLEA_KEY as REAL_COC_KEY
+from .RealisticCochlea import memory as CACHE_REAL
+from .RealisticCochlea import sound_to_spikes as real_cochlea
 
 # SOUND_DURATION = 1 * second
 SOUND_FREQUENCIES = [100 * Hz, 1 * kHz, 10 * kHz]
 INFO_FILE_NAME = "info.txt"
 INFO_HEADER = "this directory holds all computed angles, for a specific sound, with a specific cochlear backend. the pickled sound is also available. for cochleas that do not use HRTF, left and right sounds are the same. \n"
-COCHLEAS = {REAL_COC_KEY: real_cochlea, PPG_COC_KEY: ppg_cochlea}
+COCHLEAS = {
+    REAL_COC_KEY: real_cochlea,
+    PPG_COC_KEY: ppg_cochlea,
+    B2_COC_KEY: b2_cochlea,
+}
 
 
 def create_sound_key(sound: Tone):
@@ -116,10 +120,10 @@ def spikes_to_nestgen(anf_response: AnfResponse):
         # each hair cell is innervated by NUM_ANF_PER_HC nerve fibers
         for ihf_idx, spike_times in response_IHC.items():
             spike_times = spike_times / ms
-            if ihf_idx % 3500 == 0:
-                logger.debug(
-                    f"current IHF index is {ihf_idx}.\n setting ANF from {NUM_ANF_PER_HC * ihf_idx} to {NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC} to value (ms) {spike_times}"
-                )
+            # if ihf_idx % 3500 == 0:
+            #     logger.debug(
+            #         f"current IHF index is {ihf_idx}.\n setting ANF from {NUM_ANF_PER_HC * ihf_idx} to {NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC} to value (ms) {spike_times}"
+            #     )
             for j in range(
                 NUM_ANF_PER_HC * ihf_idx, NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC
             ):

@@ -40,7 +40,7 @@ from .anf_response import AnfResponse
 from .consts import ANGLE_TO_IRCAM, CFMAX, CFMIN, NUM_CF
 from .RealisticCochlea import run_hrtf
 
-COCHLEA_KEY = f"DRNL"
+COCHLEA_KEY = f"DCGC"
 CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
 makedirs(CACHE_DIR, exist_ok=True)
 
@@ -56,7 +56,6 @@ def sound_to_spikes(
 ) -> AnfResponse:
     subj_number = params["subj_number"]
     noise_factor = params["noise_factor"]
-    # noise_factor = 0
     refractory_period = params["refractory_period"] * ms
     logger.debug(
         f"genenerating spikes for {dict_of(sound,angle,plot_spikes,subj_number)}"
