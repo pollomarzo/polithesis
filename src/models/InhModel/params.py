@@ -53,8 +53,10 @@ class Parameters:
         MNTBCs2MSO: float = -5.0
         MNTBCs2LSO: float = -12.0
         SBCs2LSO: float = 4.0
-        SBCs2MSO: float = 1
-        LNTBCs2MSO: float = -5.0
+        SBCs2MSO: float = 1.2
+        LNTBCs2MSO: float = -6.0
+        MSO2ICC: float = 10.0
+        LSO2ICC: float = 10.0
 
     @dataclass
     class POP_CONN:
