@@ -1,4 +1,5 @@
 # generated with conda env export, mamba does not export pip package list
+# OUT OF DATE! at the minimum, matplotlib 3.9 needed
 name: hears
 channels:
   - conda-forge

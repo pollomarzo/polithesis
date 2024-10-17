@@ -4,14 +4,18 @@ channels:
 dependencies:
 - brian2
 - dill
+- graphviz
 - ipykernel
 - ipympl
 - ipywidgets
 - joblib
 - jupyter
+- matplotlib # 3.9!!!
+- mplcursors
 - nest-simulator
+- pillow
+- pip
+- python-graphviz
 - scipy
 - tqdm
-- pip:
-  - sorcery
-  - brian2hears
+
