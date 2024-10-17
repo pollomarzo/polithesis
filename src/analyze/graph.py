@@ -1,7 +1,8 @@
-from collections import defaultdict, deque
 import re
-import json5
+from collections import defaultdict, deque
+
 import graphviz as gv
+import json5
 
 dot_template = """
 digraph {
@@ -97,6 +98,10 @@ def code_to_edges(networkdef: str, params: dict, connect_fun_name: str):
             continue
 
         [src, dst, conn_type, syn_spec, num_sources] = parse_function_args(call)
+        # graphviz does not like symbols in names. this would be fixed by enclosing in double quotes
+        # i do not want the "self." inside the name label, so i just remove it altogether
+        src = src.replace("self.", "")
+        dst = dst.replace("self.", "")
         if syn_spec is not None:
             syn_spec = fill_with_params(syn_spec, params)
         if num_sources is not None:
@@ -178,7 +183,10 @@ def generate_flow_chart(networkdef: str, params, connect_fun_name="connect"):
     G = defaultdict(list)
     for [src, dst, conn_type, syn_spec, num_sources] in edges:
         G[src].append(dst)
-    G["src"] = ["l_ANFs", "r_ANFs"]
+    G["src"] = [
+        "l_ANFs",
+        "r_ANFs",
+    ]  # to make it cleaner, connect to whatever node has 0 indegree
 
     distances = max_distance(G, "src")
 

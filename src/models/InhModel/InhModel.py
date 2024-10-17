@@ -14,7 +14,12 @@ from .params import Parameters
 
 class InhModel(SpikingModel):
     name = "Inhibitory model, mso iaf_cond_beta"
-    key = "inh_model"
+    key = "withICC"
+    RESULTS_VERSION_NUMBER = (
+        3
+        # 2 -> include ICC;
+        # 3 -> include LSO, MSO, ICC global IDs
+    )
 
     def __init__(self, params: Parameters, anf: AnfResponse):
         self.params = params
@@ -58,7 +63,7 @@ class InhModel(SpikingModel):
         l_MNTBCs = nest.Create(
             "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
         )
-        r_MSO = nest.Create(
+        self.r_MSO = nest.Create(
             "iaf_cond_beta",
             P.n_MSOs,
             params={
@@ -70,7 +75,7 @@ class InhModel(SpikingModel):
                 "V_reset": P.V_reset,
             },
         )
-        l_MSO = nest.Create(
+        self.l_MSO = nest.Create(
             "iaf_cond_beta",
             P.n_MSOs,
             params={
@@ -82,12 +87,22 @@ class InhModel(SpikingModel):
                 "V_reset": P.V_reset,
             },
         )
-        r_LSO = nest.Create(
+        self.r_LSO = nest.Create(
             "iaf_cond_alpha",
             P.n_LSOs,
             params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
         )
-        l_LSO = nest.Create(
+        self.l_LSO = nest.Create(
+            "iaf_cond_alpha",
+            P.n_LSOs,
+            params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
+        )
+        self.r_ICC = nest.Create(
+            "iaf_cond_alpha",
+            P.n_LSOs,
+            params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
+        )
+        self.l_ICC = nest.Create(
             "iaf_cond_alpha",
             P.n_LSOs,
             params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
@@ -107,6 +122,8 @@ class InhModel(SpikingModel):
         self.s_rec_l_LNTBC = nest.Create("spike_recorder")
         self.s_rec_r_MNTBC = nest.Create("spike_recorder")
         self.s_rec_l_MNTBC = nest.Create("spike_recorder")
+        self.s_rec_l_ICC = nest.Create("spike_recorder")
+        self.s_rec_r_ICC = nest.Create("spike_recorder")
 
         # real ANFs (generators) to parrots
         connect(r_ANFs, parrot_r_ANFs, "one_to_one")
@@ -114,10 +131,10 @@ class InhModel(SpikingModel):
         # Devices
         connect(parrot_r_ANFs, self.s_rec_r_ANF, "all_to_all")
         connect(parrot_l_ANFs, self.s_rec_l_ANF, "all_to_all")
-        connect(r_MSO, self.s_rec_r_MSO, "all_to_all")
-        connect(l_MSO, self.s_rec_l_MSO, "all_to_all")
-        connect(r_LSO, self.s_rec_r_LSO, "all_to_all")
-        connect(l_LSO, self.s_rec_l_LSO, "all_to_all")
+        connect(self.r_MSO, self.s_rec_r_MSO, "all_to_all")
+        connect(self.l_MSO, self.s_rec_l_MSO, "all_to_all")
+        connect(self.r_LSO, self.s_rec_r_LSO, "all_to_all")
+        connect(self.l_LSO, self.s_rec_l_LSO, "all_to_all")
         connect(r_SBCs, self.s_rec_r_SBC, "all_to_all")
         connect(l_SBCs, self.s_rec_l_SBC, "all_to_all")
         connect(r_GBCs, self.s_rec_r_GBC, "all_to_all")
@@ -126,6 +143,8 @@ class InhModel(SpikingModel):
         connect(l_LNTBCs, self.s_rec_l_LNTBC, "all_to_all")
         connect(r_MNTBCs, self.s_rec_r_MNTBC, "all_to_all")
         connect(l_MNTBCs, self.s_rec_l_MNTBC, "all_to_all")
+        connect(self.r_ICC, self.s_rec_r_ICC, "all_to_all")
+        connect(self.l_ICC, self.s_rec_l_ICC, "all_to_all")
 
         # ANFs to SBCs
         connect(
@@ -205,7 +224,7 @@ class InhModel(SpikingModel):
         #       ipsi
         connect(
             r_SBCs,
-            r_MSO,
+            self.r_MSO,
             "x_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.SBCs2MSO,
@@ -216,7 +235,7 @@ class InhModel(SpikingModel):
         #       contra
         connect(
             l_SBCs,
-            r_MSO,
+            self.r_MSO,
             "x_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.SBCs2MSO,
@@ -228,7 +247,7 @@ class InhModel(SpikingModel):
         #       ipsi
         connect(
             l_SBCs,
-            l_MSO,
+            self.l_MSO,
             "x_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.SBCs2MSO,
@@ -239,7 +258,7 @@ class InhModel(SpikingModel):
         #       contra
         connect(
             r_SBCs,
-            l_MSO,
+            self.l_MSO,
             "x_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.SBCs2MSO,
@@ -250,7 +269,7 @@ class InhModel(SpikingModel):
         # From LNTBCs (inhibition), ipsi
         connect(
             r_LNTBCs,
-            r_MSO,
+            self.r_MSO,
             "one_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.LNTBCs2MSO,
@@ -260,7 +279,7 @@ class InhModel(SpikingModel):
         # From MNTBCs (inhibition) contra
         connect(
             r_MNTBCs,
-            r_MSO,
+            self.r_MSO,
             "one_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.MNTBCs2MSO,
@@ -270,7 +289,7 @@ class InhModel(SpikingModel):
         # From LNTBCs (inhibition) ipsi
         connect(
             l_LNTBCs,
-            l_MSO,
+            self.l_MSO,
             "one_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.LNTBCs2MSO,
@@ -280,7 +299,7 @@ class InhModel(SpikingModel):
         # From MNTBCs (inhibition) contra
         connect(
             l_MNTBCs,
-            l_MSO,
+            self.l_MSO,
             "one_to_one",
             syn_spec={
                 "weight": P.SYN_WEIGHTS.MNTBCs2MSO,
@@ -291,14 +310,14 @@ class InhModel(SpikingModel):
         # LSO
         connect(
             r_SBCs,
-            r_LSO,
+            self.r_LSO,
             "x_to_one",
             syn_spec={"weight": P.SYN_WEIGHTS.SBCs2LSO},
             num_sources=P.SBCs2LSOs,
         )
         connect(
             l_SBCs,
-            l_LSO,
+            self.l_LSO,
             "x_to_one",
             syn_spec={"weight": P.SYN_WEIGHTS.SBCs2LSO},
             num_sources=P.SBCs2LSOs,
@@ -306,15 +325,39 @@ class InhModel(SpikingModel):
 
         connect(
             r_MNTBCs,
-            r_LSO,
+            self.r_LSO,
             "one_to_one",
             syn_spec={"weight": P.SYN_WEIGHTS.MNTBCs2LSO},
         )
         connect(
             l_MNTBCs,
-            l_LSO,
+            self.l_LSO,
             "one_to_one",
             syn_spec={"weight": P.SYN_WEIGHTS.MNTBCs2LSO},
+        )
+        connect(
+            self.r_MSO,
+            self.r_ICC,
+            "one_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.MSO2ICC},
+        )
+        connect(
+            self.l_LSO,
+            self.r_ICC,
+            "one_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.LSO2ICC},
+        )
+        connect(
+            self.l_MSO,
+            self.l_ICC,
+            "one_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.MSO2ICC},
+        )
+        connect(
+            self.r_LSO,
+            self.l_ICC,
+            "one_to_one",
+            syn_spec={"weight": P.SYN_WEIGHTS.LSO2ICC},
         )
 
     def simulate(self, time: float | int):
@@ -328,31 +371,51 @@ class InhModel(SpikingModel):
             nest.Simulate(chunk)
 
     def analyze(self):
-        result = {"L": {}, "R": {}}
+        result = {"L": {}, "R": {}, "version": self.RESULTS_VERSION_NUMBER}
         for pop_name, pop_data_l, pop_data_r in zip(
-            ["ANF", "LSO", "MSO", "GBC", "SBC", "LNTBC", "MNTBC"],
+            ["ANF", "GBC", "SBC", "LNTBC", "MNTBC", "LSO", "MSO", "ICC"],
             [
                 self.s_rec_l_ANF.get("events"),
-                self.s_rec_l_LSO.get("events"),
-                self.s_rec_l_MSO.get("events"),
                 self.s_rec_l_GBC.get("events"),
                 self.s_rec_l_SBC.get("events"),
                 self.s_rec_l_LNTBC.get("events"),
                 self.s_rec_l_MNTBC.get("events"),
+                {
+                    **self.s_rec_l_LSO.get("events"),
+                    "global_ids": self.l_LSO.get("global_id"),
+                },
+                {
+                    **self.s_rec_l_MSO.get("events"),
+                    "global_ids": self.l_MSO.get("global_id"),
+                },
+                {
+                    **self.s_rec_l_ICC.get("events"),
+                    "global_ids": self.l_ICC.get("global_id"),
+                },
             ],
             [
                 self.s_rec_r_ANF.get("events"),
-                self.s_rec_r_LSO.get("events"),
-                self.s_rec_r_MSO.get("events"),
                 self.s_rec_r_GBC.get("events"),
                 self.s_rec_r_SBC.get("events"),
                 self.s_rec_r_LNTBC.get("events"),
                 self.s_rec_r_MNTBC.get("events"),
+                {
+                    **self.s_rec_r_LSO.get("events"),
+                    "global_ids": self.r_LSO.get("global_id"),
+                },
+                {
+                    **self.s_rec_r_MSO.get("events"),
+                    "global_ids": self.r_MSO.get("global_id"),
+                },
+                {
+                    **self.s_rec_r_ICC.get("events"),
+                    "global_ids": self.r_ICC.get("global_id"),
+                },
             ],
         ):
             if (
                 pop_name in self.params.CONFIG.STORE_POPS
-                or self.params.CONFIG.STORE_POPS == []
+                or not self.params.CONFIG.STORE_POPS  # not [] == True <- yeah this is python can you believe it
             ):
                 result["L"][pop_name] = pop_data_l
                 result["R"][pop_name] = pop_data_r
