@@ -205,6 +205,7 @@ def draw_hist(
                 align="edge",
             )
         ax.set_ylabel("neuron id")
+        ax.set_ylim(0, num_neurons)
     ax.yaxis.set_minor_locator(plt.NullLocator())  # remove minor ticks
 
 
