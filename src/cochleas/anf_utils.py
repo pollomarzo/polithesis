@@ -11,7 +11,7 @@ from sorcery import dict_of
 
 from consts import Paths
 from models.InhModel.params import Parameters
-from utils.custom_sounds import Tone
+from utils.custom_sounds import Click, Tone, ToneBurst, WhiteNoise
 from utils.log import logger
 
 from .anf_response import AnfResponse
@@ -36,15 +36,28 @@ COCHLEAS = {
 }
 
 
-def create_sound_key(sound: Tone):
-    # when we move to non single frequency sounds we can just pass a descriptive string maybe
+def create_sound_key(sound):
+    add_info = None
     if type(sound) is Tone:
-        frequency = str(sound.frequency).replace(" ", "")
+        add_info = str(sound.frequency).replace(" ", "")
         sound_type = "tone"
         level = int(sound.sound.level)
+    elif type(sound) is ToneBurst:
+        add_info = str(sound.frequency).replace(" ", "")
+        sound_type = "toneburst"
+        level = int(sound.sound.level)
+    elif type(sound) is WhiteNoise:
+        sound_type = "whitenoise"
+        level = int(sound.sound.level)
+    elif type(sound) is Click:
+        sound_type = "click"
+        if sound.peak is not None:
+            level = sound.peak
+        else:
+            level = "XX"
     else:
         raise NotImplementedError(f"sound {sound} is not a Tone")
-    return f"{sound_type}_{frequency}_{level}dB"
+    return f"{sound_type}{f"_{add_info}" if add_info else ""}_{level}dB"
 
 
 def generate_possible_sounds():
@@ -58,7 +71,7 @@ def generate_possible_sounds():
 
 
 def load_anf_response(
-    tone: Tone,
+    sound: Tone | Sound | ToneBurst | Click | WhiteNoise,
     angle: int,
     cochlea_key: str,
     params: dict,
@@ -66,19 +79,19 @@ def load_anf_response(
 ):
     cochlea_func: MemorizedFunc = COCHLEAS[cochlea_key]
     params = params[cochlea_key]
-    if not cochlea_func.check_call_in_cache(tone, angle, params):
+    if not cochlea_func.check_call_in_cache(sound, angle, params):
         logger.info(f"saved ANF not found. generation will take some time...")
     if ignore_cache:
         logger.info(f"ignoring cache. generation will take some time...")
 
     logger.info(
         f"generating ANF for {
-        dict_of(tone,angle,cochlea_key,params)}"
+        dict_of(sound,angle,cochlea_key,params)}"
     )
     if ignore_cache:
         cochlea_func = cochlea_func.call  # forces execution
     try:
-        anf = cochlea_func(tone, angle, params)
+        anf = cochlea_func(sound, angle, params)
     except TypeError as e:
         if "unexpected" in e.args[0]:
             logger.error(f"{e}, please check the signature of cochlea")
@@ -119,11 +132,7 @@ def spikes_to_nestgen(anf_response: AnfResponse):
         anfs = nest.Create("spike_generator", NUM_CF * NUM_ANF_PER_HC)
         # each hair cell is innervated by NUM_ANF_PER_HC nerve fibers
         for ihf_idx, spike_times in response_IHC.items():
-            spike_times = spike_times / ms
-            # if ihf_idx % 3500 == 0:
-            #     logger.debug(
-            #         f"current IHF index is {ihf_idx}.\n setting ANF from {NUM_ANF_PER_HC * ihf_idx} to {NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC} to value (ms) {spike_times}"
-            #     )
+            spike_times = [time / ms for time in spike_times if time > 0]
             for j in range(
                 NUM_ANF_PER_HC * ihf_idx, NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC
             ):
