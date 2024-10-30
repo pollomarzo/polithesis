@@ -1,35 +1,8 @@
 from os import makedirs
 
 import numpy as np
-from brian2 import (
-    Hz,
-    Inf,
-    SpikeMonitor,
-    clip,
-    flipud,
-    imshow,
-    kHz,
-    ms,
-    plot,
-    run,
-    second,
-    show,
-)
-from brian2hears import (
-    DCGC,
-    DRNL,
-    IRCAM_LISTEN,
-    FilterbankGroup,
-    FunctionFilterbank,
-    Gammatone,
-    MiddleEar,
-    Sound,
-    TanCarney,
-    ZhangSynapse,
-    dB,
-    erbspace,
-    set_default_samplerate,
-)
+from brian2 import Hz, SpikeMonitor, kHz, ms, plot, run, show
+from brian2hears import MiddleEar, Sound, TanCarney, ZhangSynapse, erbspace
 from joblib import Memory
 from scipy import signal
 from sorcery import dict_of
@@ -39,7 +12,7 @@ from utils.custom_sounds import Tone, ToneBurst
 from utils.log import logger, tqdm
 
 from .anf_response import AnfResponse
-from .consts import ANGLE_TO_IRCAM, CFMAX, CFMIN, NUM_CF
+from .consts import CFMAX, CFMIN, NUM_CF
 from .RealisticCochlea import run_hrtf
 
 COCHLEA_KEY = f"DCGC"
