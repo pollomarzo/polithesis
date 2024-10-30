@@ -40,72 +40,145 @@ class InhModel(SpikingModel):
         parrot_r_ANFs = nest.Create("parrot_neuron", len(r_ANFs))
 
         r_SBCs = nest.Create(
-            "iaf_cond_alpha", P.n_SBCs, params={"C_m": P.C_m_sbc, "V_reset": P.V_reset}
+            "iaf_cond_alpha",
+            P.n_SBCs,
+            params={
+                "C_m": P.MEMB_CAPS.SBC,
+                "V_reset": P.V_reset,
+                "g_L": 7,
+            },
         )
         l_SBCs = nest.Create(
-            "iaf_cond_alpha", P.n_SBCs, params={"C_m": P.C_m_sbc, "V_reset": P.V_reset}
+            "iaf_cond_alpha",
+            P.n_SBCs,
+            params={
+                "C_m": P.MEMB_CAPS.SBC,
+                "V_reset": P.V_reset,
+                "g_L": 7,
+            },
         )
         r_GBCs = nest.Create(
-            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
+            "iaf_cond_alpha",
+            P.n_GBCs,
+            params={
+                "C_m": P.MEMB_CAPS.GBC,
+                "V_reset": P.V_reset,
+                "g_L": 7,
+            },
         )
         l_GBCs = nest.Create(
-            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
+            "iaf_cond_alpha",
+            P.n_GBCs,
+            params={
+                "C_m": P.MEMB_CAPS.GBC,
+                "V_reset": P.V_reset,
+                "g_L": 7,
+            },
         )
+        # TODO why is C_m so low???
         r_LNTBCs = nest.Create(
-            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
+            "iaf_cond_alpha",
+            P.n_GBCs,
+            params={
+                "C_m": P.MEMB_CAPS.GBC,
+                "V_reset": P.V_reset,
+                "g_L": 7,
+            },
         )
         l_LNTBCs = nest.Create(
-            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
+            "iaf_cond_alpha",
+            P.n_GBCs,
+            params={
+                "C_m": P.MEMB_CAPS.GBC,
+                "V_reset": P.V_reset,
+                "g_L": 7,
+            },
         )
         r_MNTBCs = nest.Create(
-            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
+            "iaf_cond_alpha",
+            P.n_GBCs,
+            params={
+                "C_m": P.MEMB_CAPS.GBC,
+                "V_reset": P.V_reset,
+                "g_L": 7,
+            },
         )
         l_MNTBCs = nest.Create(
-            "iaf_cond_alpha", P.n_GBCs, params={"C_m": P.C_m_gcb, "V_reset": P.V_reset}
+            "iaf_cond_alpha",
+            P.n_GBCs,
+            params={
+                "C_m": P.MEMB_CAPS.GBC,
+                "V_reset": P.V_reset,
+                "g_L": 7,
+            },
         )
         self.r_MSO = nest.Create(
             "iaf_cond_beta",
             P.n_MSOs,
             params={
-                "C_m": P.cap_nuclei,
+                "C_m": P.MEMB_CAPS.MSO,
                 "tau_rise_ex": P.MSO_TAUS.rise_ex,
                 "tau_rise_in": P.MSO_TAUS.rise_in,
                 "tau_decay_ex": P.MSO_TAUS.decay_ex,
                 "tau_decay_in": P.MSO_TAUS.decay_in,
                 "V_reset": P.V_reset,
+                # "V_th": -57,
+                "g_L": 80,
             },
         )
         self.l_MSO = nest.Create(
             "iaf_cond_beta",
             P.n_MSOs,
             params={
-                "C_m": P.cap_nuclei,
+                "C_m": P.MEMB_CAPS.MSO,
                 "tau_rise_ex": P.MSO_TAUS.rise_ex,
                 "tau_rise_in": P.MSO_TAUS.rise_in,
                 "tau_decay_ex": P.MSO_TAUS.decay_ex,
                 "tau_decay_in": P.MSO_TAUS.decay_in,
                 "V_reset": P.V_reset,
+                # "V_th": -57,
+                "g_L": 80,
             },
         )
         self.r_LSO = nest.Create(
             "iaf_cond_alpha",
             P.n_LSOs,
-            params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
+            params={
+                "C_m": P.MEMB_CAPS.LSO,
+                "V_m": P.V_m,
+                "V_reset": P.V_reset,
+                "g_L": 6,
+            },
         )
         self.l_LSO = nest.Create(
             "iaf_cond_alpha",
             P.n_LSOs,
-            params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
+            params={
+                "C_m": P.MEMB_CAPS.LSO,
+                "V_m": P.V_m,
+                "V_reset": P.V_reset,
+                "g_L": 6,
+            },
         )
         self.r_ICC = nest.Create(
             "iaf_cond_alpha",
             P.n_LSOs,
-            params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
+            params={
+                "C_m": P.MEMB_CAPS.ICC,
+                "V_m": P.V_m,
+                "V_reset": P.V_reset,
+                "g_L": 6,
+            },
         )
         self.l_ICC = nest.Create(
             "iaf_cond_alpha",
             P.n_LSOs,
-            params={"C_m": P.cap_nuclei, "V_m": P.V_m, "V_reset": P.V_reset},
+            params={
+                "C_m": P.MEMB_CAPS.ICC,
+                "V_m": P.V_m,
+                "V_reset": P.V_reset,
+                "g_L": 6,
+            },
         )
 
         self.s_rec_r_ANF = nest.Create("spike_recorder")
