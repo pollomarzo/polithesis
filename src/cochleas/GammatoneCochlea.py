@@ -13,21 +13,21 @@ from joblib import Memory
 from sorcery import dict_of
 
 from consts import Paths
-from utils.custom_sounds import Tone
+from utils.custom_sounds import Tone, ToneBurst
 from utils.log import logger
 
 from .anf_response import AnfResponse
 from .consts import ANGLE_TO_IRCAM, CFMAX, CFMIN, NUM_CF
 
-COCHLEA_KEY = f"realistic"
+COCHLEA_KEY = f"gammatone"
 CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
 makedirs(CACHE_DIR, exist_ok=True)
 
 memory = Memory(location=CACHE_DIR, verbose=0)
 
 
-def run_hrtf(sound: Sound | Tone, angle, subj) -> Sound:
-    if type(sound) is Tone:
+def run_hrtf(sound: Sound | Tone | ToneBurst, angle, subj) -> Sound:
+    if type(sound) is not Sound:  # assume good faith, ok to fail otherwise
         sound = sound.sound
     # convert to IRCAM angles
     angle = ANGLE_TO_IRCAM[angle]

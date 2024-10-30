@@ -13,9 +13,9 @@ from utils.log import logger, tqdm
 
 from .anf_response import AnfResponse
 from .consts import CFMAX, CFMIN, NUM_CF
-from .RealisticCochlea import run_hrtf
+from .GammatoneCochlea import run_hrtf
 
-COCHLEA_KEY = f"DCGC"
+COCHLEA_KEY = f"TanCarney"
 CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
 makedirs(CACHE_DIR, exist_ok=True)
 

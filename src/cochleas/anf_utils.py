@@ -15,15 +15,15 @@ from utils.custom_sounds import Tone
 from utils.log import logger
 
 from .anf_response import AnfResponse
-from .B2Cochlea import COCHLEA_KEY as B2_COC_KEY
-from .B2Cochlea import sound_to_spikes as b2_cochlea
 from .consts import ANGLES, IRCAM_HRTF_ANGLES, NUM_ANF_PER_HC, NUM_CF
+from .GammatoneCochlea import COCHLEA_KEY as REAL_COC_KEY
+from .GammatoneCochlea import memory as CACHE_REAL
+from .GammatoneCochlea import sound_to_spikes as real_cochlea
 from .PpgCochlea import COCHLEA_KEY as PPG_COC_KEY
 from .PpgCochlea import memory as CACHE_PPG
 from .PpgCochlea import tone_to_ppg_spikes as ppg_cochlea
-from .RealisticCochlea import COCHLEA_KEY as REAL_COC_KEY
-from .RealisticCochlea import memory as CACHE_REAL
-from .RealisticCochlea import sound_to_spikes as real_cochlea
+from .TanCarneyCochlea import COCHLEA_KEY as B2_COC_KEY
+from .TanCarneyCochlea import sound_to_spikes as b2_cochlea
 
 # SOUND_DURATION = 1 * second
 SOUND_FREQUENCIES = [100 * Hz, 1 * kHz, 10 * kHz]

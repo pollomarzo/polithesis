@@ -17,7 +17,7 @@ from PIL import Image
 from analyze import sound_analysis as SA
 from analyze.graph import generate_flow_chart
 from cochleas.consts import CFMAX, CFMIN
-from cochleas.RealisticCochlea import run_hrtf
+from cochleas.GammatoneCochlea import run_hrtf
 from utils.custom_sounds import Tone
 from utils.log import logger, tqdm
 
@@ -317,7 +317,7 @@ def draw_ITD_ILD(data):
         binaural_sound = run_hrtf(
             tone,
             angle,
-            data["conf"]["parameters"]["cochlea"]["realistic"]["subj_number"],
+            data["conf"]["parameters"]["cochlea"]["gammatone"]["subj_number"],
         )
         left = binaural_sound.left
         right = binaural_sound.right

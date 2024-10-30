@@ -8,7 +8,7 @@ class Parameters:
     cochlea: dict[str, dict[str, float]] = field(
         default_factory=lambda: (
             {
-                "realistic": {
+                "gammatone": {
                     "subj_number": 2,
                     "noise_factor": 0.2,
                     "refractory_period": 1,  # ms
@@ -21,10 +21,9 @@ class Parameters:
                         "total_num_virtual_procs": 16,
                     }
                 },
-                "DCGC": {
+                "TanCarney": {
                     "subj_number": 1,
-                    "noise_factor": 0,
-                    "refractory_period": 1,  # ms
+                    "cochlea_params": None,
                 },
             }
         )
