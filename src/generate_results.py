@@ -81,50 +81,19 @@ def create_save_result_object(
 if __name__ == "__main__":
     # c = Click(duration=300 * b2.ms, peak=90 * b2h.dB)
     # w = WhiteNoise(duration=300 * b2.ms, level=90 * b2h.dB)
-    inputs = [ToneBurst(frequency=i) for i in [600] * b2.Hz]
+    inputs = [Tone(i, 200 * b2.ms) for i in [1000] * b2.Hz]
     for e in inputs:
-        e.sound.level = 80 * b2h.dB
+        e.sound.level = 70 * b2h.dB
 
-    # tcparam = TCParam("41SBCs2LSO18")
-    # notes; LSO has a weird notch at 1khz, not sure what to do. might need more inhibition AND higher sbc exc. results at 100, 800Hz are very good. MSO needs a little more exc and some more MNTB i think
-    # tcparam = TCParam("41SBCs2LSO20SBC2MSO19MNTB2LSO-35")
-    # notes: still weird notch, LSO is too strong, basically only thing that matters. which is good, because it would be just making things worse
-    # params = []
-    # for noise in [60, 70]:
-    #     tcparam = TCParam(f"hrtf4noise{noise}")
-    #     tcparam.cochlea["TanCarney"]["omni_noise_level"] = noise
-    #     params.append(tcparam)
-    # p1 = PPGParam("17")
-    # p1 = InhParam("onlyITD")
-    p2 = TCParam("verifytancarney")
-    # p2 = PPGParam("highergl+highersbc")
-    # p2.SYN_WEIGHTS.SBCs2MSOipsi = 5
-    # p2.SYN_WEIGHTS.SBCs2MSOcontra = 5
-
-    # p3 = PPGParam("highergl+highersbc+higherinh")
-    # p3.SYN_WEIGHTS.SBCs2MSOipsi = 5
-    # p3.SYN_WEIGHTS.SBCs2MSOcontra = 5
-    # p3.SYN_WEIGHTS.MNTBCs2MSO = -30
-    # p3.SYN_WEIGHTS.LNTBCs2MSO = -20
-
-    # p4 = PPGParam("highergl+highersbc+higherinh+lowercm")
-    # p4.SYN_WEIGHTS.SBCs2MSOipsi = 5
-    # p4.SYN_WEIGHTS.SBCs2MSOcontra = 5
-    # p4.SYN_WEIGHTS.MNTBCs2MSO = -30
-    # p4.SYN_WEIGHTS.LNTBCs2MSO = -20
-    # p4.MEMB_CAPS.MSO = 15
+    p2 = PPGParam("ppgcheck")
 
     params = [p2]
 
-    # Bushy Cells receive multiple inputs from auditory nerve fibers via specialized end-bulb synapses
-    # MNTB cells typically receive a single, massive input from one GBC via the calyx of Held synapse
-    # MNTB cells act as sign-inverters, converting excitatory input to precisely-timed inhibitory output
-
     models = [InhModel, InhModel, InhModel, InhModel, InhModel, InhModel]
     cochleas = [
+        (PPG_COC_KEY, ppg_cochlea),
         # (GAMMATONE_COC_KEY, gammatone_cochlea),
-        (B2_COC_KEY, b2_cochlea),
-        # (PPG_COC_KEY, ppg_cochlea),
+        # (B2_COC_KEY, b2_cochlea),
     ]
     # cochleas = {PPG_COC_KEY: ppg_cochlea}
     # cochleas = {B2_COC_KEY: b2_cochlea}
