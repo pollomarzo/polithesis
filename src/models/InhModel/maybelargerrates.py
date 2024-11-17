@@ -9,7 +9,7 @@ class Parameters:
         default_factory=lambda: (
             {
                 "gammatone": {
-                    "subj_number": "headless",
+                    "subj_number": 7,
                     "noise_factor": 0.3,
                     "refractory_period": 1,  # ms
                     "amplif_factor": 7,
@@ -22,13 +22,13 @@ class Parameters:
                     }
                 },
                 "TanCarney": {
-                    "subj_number": "headless",
+                    "subj_number": 7,
                     "cochlea_params": None,
                     "rng_seed": 42,
                     "omni_noise_level": 10,
                 },
                 "DCGC": {
-                    "subj_number": "headless",
+                    "subj_number": 7,
                     "cochlea_params": {"c1": -2.96},
                     "amplif_factor": 15,
                     "noise_factor": 0.2,
@@ -129,31 +129,19 @@ class Parameters:
 
     @dataclass
     class SYN_WEIGHTS:
-        ANFs2SBCs: float = 24.0
-        ANFs2GBCs: float = 6.0
-        GBCs2LNTBCs: float = 40.0
-        GBCs2MNTBCs: float = 40.0
-        MNTBCs2MSO: float = -40.0
-        MNTBCs2LSO: float = -40.0
+        ANFs2SBCs: float = 35.0
+        ANFs2GBCs: float = 7.0
+        GBCs2LNTBCs: float = 20.0
+        GBCs2MNTBCs: float = 30.0
         SBCs2LSO: float = 10.0
-        SBCs2MSO: float = 13.0
-        LNTBCs2MSO: float = -40.0
+        MNTBCs2LSO: float = -10.0
+        # MNTBCs2LSO: float = -50.0
+        MNTBCs2MSO: float = -100.0
+        LNTBCs2MSO: float = -105.0
+        SBCs2MSOipsi: float = 14.0
+        SBCs2MSOcontra: float = 14.0
         MSO2ICC: float = 20.0
         LSO2ICC: float = 20.0
-
-    # @dataclass
-    # class SYN_WEIGHTS:
-    #     ANFs2SBCs: float = 16.0
-    #     ANFs2GBCs: float = 8.0
-    #     GBCs2LNTBCs: float = 16.0
-    #     GBCs2MNTBCs: float = 16.0
-    #     MNTBCs2MSO: float = -5.0
-    #     MNTBCs2LSO: float = -12.0
-    #     SBCs2LSO: float = 4.0
-    #     SBCs2MSO: float = 1
-    #     LNTBCs2MSO: float = -5.0
-    #     MSO2ICC: float = 10.0
-    #     LSO2ICC: float = 10.0
 
     @dataclass
     class MEMB_CAPS:
@@ -166,8 +154,8 @@ class Parameters:
         MNTBC: int = 15
         LNTBC: int = 15
         MSO: float = 20
-        LSO: float = 20
-        ICC: float = 15
+        LSO: float = 30
+        ICC: float = 20
         # default leak conductance (g_L) at 16.6667 nS gives with C_m = 1 pF:
         # Membrane time constant τ = C_m/g_L ≈ 0.06 ms
         # if C_m = 15 pF => τ ≈ 0.9 ms
@@ -175,13 +163,13 @@ class Parameters:
     @dataclass
     class G_LEAK:
         # default: float = 16.67
-        SBC: int = 210
-        GBC: int = 200
-        LNTBC: int = 50
-        MNTBC: int = 50
-        MSO: float = 180
-        LSO: float = 30
-        ICC: float = 6
+        SBC: int = 40
+        GBC: int = 25
+        LNTBC: int = 25
+        MNTBC: int = 25
+        MSO: float = 50
+        LSO: float = 20
+        ICC: float = 20
 
     def __post_init__(self):
         # horrible, but i need each to be an instance so that changes

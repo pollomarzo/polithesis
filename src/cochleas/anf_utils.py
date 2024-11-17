@@ -16,9 +16,11 @@ from utils.log import logger
 
 from .anf_response import AnfResponse
 from .consts import ANGLES, IRCAM_HRTF_ANGLES, NUM_ANF_PER_HC, NUM_CF
-from .GammatoneCochlea import COCHLEA_KEY as REAL_COC_KEY
+from .DCGC import COCHLEA_KEY as DCGC_COC_KEY
+from .DCGC import sound_to_spikes as DCGC_cochlea
+from .GammatoneCochlea import COCHLEA_KEY as GAMMATONE_COC_KEY
 from .GammatoneCochlea import memory as CACHE_REAL
-from .GammatoneCochlea import sound_to_spikes as real_cochlea
+from .GammatoneCochlea import sound_to_spikes as gammatone_cochlea
 from .PpgCochlea import COCHLEA_KEY as PPG_COC_KEY
 from .PpgCochlea import memory as CACHE_PPG
 from .PpgCochlea import tone_to_ppg_spikes as ppg_cochlea
@@ -30,9 +32,10 @@ SOUND_FREQUENCIES = [100 * Hz, 1 * kHz, 10 * kHz]
 INFO_FILE_NAME = "info.txt"
 INFO_HEADER = "this directory holds all computed angles, for a specific sound, with a specific cochlear backend. the pickled sound is also available. for cochleas that do not use HRTF, left and right sounds are the same. \n"
 COCHLEAS = {
-    REAL_COC_KEY: real_cochlea,
+    GAMMATONE_COC_KEY: gammatone_cochlea,
     PPG_COC_KEY: ppg_cochlea,
     B2_COC_KEY: b2_cochlea,
+    DCGC_COC_KEY: DCGC_cochlea,
 }
 
 
@@ -128,18 +131,22 @@ def spikes_to_nestgen(anf_response: AnfResponse):
 
     nest.set_verbosity("M_ERROR")
     anfs_per_ear = {}
-    for channel, response_IHC in anf_response.binaural_anf_spiketrain.items():
-        anfs = nest.Create("spike_generator", NUM_CF * NUM_ANF_PER_HC)
-        # each hair cell is innervated by NUM_ANF_PER_HC nerve fibers
-        for ihf_idx, spike_times in response_IHC.items():
-            spike_times = [time / ms for time in spike_times if time > 0]
-            for j in range(
-                NUM_ANF_PER_HC * ihf_idx, NUM_ANF_PER_HC * ihf_idx + NUM_ANF_PER_HC
-            ):
-                nest.SetStatus(
-                    anfs[j],
-                    params={"spike_times": spike_times, "allow_offgrid_times": True},
-                )
+    for channel, response_ANF in anf_response.binaural_anf_spiketrain.items():
+        s = []
+        # make sure all ANFs have a spiking array and no zero-time spikes are present
+        for i in range(NUM_CF * NUM_ANF_PER_HC):
+            spiketimes = response_ANF.get(i, [] * ms)
+            s.append(spiketimes[spiketimes != 0] / ms)
+
+        anfs = nest.Create(
+            "spike_generator",
+            NUM_CF * NUM_ANF_PER_HC,
+            params={
+                "spike_times": s,
+                # "spike_times": [i[i != 0] / ms for i in response_ANF.values()],
+                "allow_offgrid_times": [True] * NUM_CF * NUM_ANF_PER_HC,
+            },
+        )
         anfs_per_ear[channel] = anfs
 
     return anfs_per_ear

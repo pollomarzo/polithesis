@@ -88,6 +88,13 @@ def fill_with_params(p: str, params: dict):
     return json5.loads(p)
 
 
+def clean_var_name(varname: str):
+    varname = varname.replace('"]["', "_")
+    for c in ["self.", "pops", "[", "]", '"']:
+        varname = varname.replace(c, "")
+    return varname
+
+
 def code_to_edges(networkdef: str, params: dict, connect_fun_name: str):
     "split code into a list of edges"
     connect_calls = networkdef.split(connect_fun_name)[1:]
@@ -100,8 +107,8 @@ def code_to_edges(networkdef: str, params: dict, connect_fun_name: str):
         [src, dst, conn_type, syn_spec, num_sources] = parse_function_args(call)
         # graphviz does not like symbols in names. this would be fixed by enclosing in double quotes
         # i do not want the "self." inside the name label, so i just remove it altogether
-        src = src.replace("self.", "")
-        dst = dst.replace("self.", "")
+        src = clean_var_name(src)
+        dst = clean_var_name(dst)
         if syn_spec is not None:
             syn_spec = fill_with_params(syn_spec, params)
         if num_sources is not None:
@@ -184,8 +191,8 @@ def generate_flow_chart(networkdef: str, params, connect_fun_name="connect"):
     for [src, dst, conn_type, syn_spec, num_sources] in edges:
         G[src].append(dst)
     G["src"] = [
-        "l_ANFs",
-        "r_ANFs",
+        "L_ANF",
+        "R_ANF",
     ]  # to make it cleaner, connect to whatever node has 0 indegree
 
     distances = max_distance(G, "src")
@@ -193,18 +200,18 @@ def generate_flow_chart(networkdef: str, params, connect_fun_name="connect"):
     # split distances in left and right
     dist_left, dist_right = {}, {}
     for k, v in distances.items():
-        if "l_" in k:
+        if "L_" in k:
             dist_left[k] = v
-        elif "r_" in k:
+        elif "R_" in k:
             dist_right[k] = v
 
     # split subgraphs from overall (we need two clusters with only left-left
     # and only right-right edges, then a final section with all mixed edges)
     only_left, only_right, mixed = [], [], []
     for edge in edges:
-        if "l_" in edge[0] and "l_" in edge[1]:
+        if "L_" in edge[0] and "l_" in edge[1]:
             only_left.append(edge)
-        elif "r_" in edge[0] and "r_" in edge[1]:
+        elif "R_" in edge[0] and "r_" in edge[1]:
             only_right.append(edge)
         else:
             mixed.append(edge)

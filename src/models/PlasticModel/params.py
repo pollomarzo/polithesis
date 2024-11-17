@@ -9,10 +9,10 @@ class Parameters:
         default_factory=lambda: (
             {
                 "gammatone": {
-                    "subj_number": "headless",
-                    "noise_factor": 0.3,
+                    "subj_number": 1,
+                    "noise_factor": 0.2,
                     "refractory_period": 1,  # ms
-                    "amplif_factor": 7,
+                    "amplif_factor": 15,
                 },
                 "ppg": {
                     "nest": {
@@ -22,18 +22,15 @@ class Parameters:
                     }
                 },
                 "TanCarney": {
-                    "subj_number": "headless",
+                    "subj_number": 2,
                     "cochlea_params": None,
-                    "rng_seed": 42,
-                    "omni_noise_level": 10,
                 },
                 "DCGC": {
                     "subj_number": "headless",
                     "cochlea_params": {"c1": -2.96},
-                    "amplif_factor": 15,
-                    "noise_factor": 0.2,
+                    "amplif_factor": 20,
+                    "noise_factor": 0.1,
                     "refractory_period": 1,  # ms
-                    "rng_seed": 42,
                 },
             }
         )
@@ -54,6 +51,20 @@ class Parameters:
                 "total_num_virtual_procs": 16,
             }
         )
+
+    @dataclass
+    class SYN_WEIGHTS:
+        ANFs2SBCs: float = 32.0
+        ANFs2GBCs: float = 16.0
+        GBCs2LNTBCs: float = 24.0
+        GBCs2MNTBCs: float = 24.0
+        MNTBCs2MSO: float = -11.0
+        MNTBCs2LSO: float = -18.0
+        SBCs2LSO: float = 8.0
+        SBCs2MSO: float = 5.0
+        LNTBCs2MSO: float = -12.0
+        MSO2ICC: float = 10.0
+        LSO2ICC: float = 10.0
 
     @dataclass
     class POP_CONN:
@@ -95,8 +106,8 @@ class Parameters:
         # def MNTBCs2MSO_inh_contra(self):
         #     return 1.44 + self.DELTA_CONTRA
 
-        DELTA_IPSI: float = 0.2
-        DELTA_CONTRA: float = -0.4
+        DELTA_IPSI: float = -0.5
+        DELTA_CONTRA: float = 0.1
         GBCs2MNTBCs: float = 0.45
         GBCs2LNTBCs: float = 0.45
         SBCs2MSO_exc_ipsi: float = 2  # MSO ipsilateral excitation
@@ -128,44 +139,14 @@ class Parameters:
     V_reset: float = V_m
 
     @dataclass
-    class SYN_WEIGHTS:
-        ANFs2SBCs: float = 24.0
-        ANFs2GBCs: float = 6.0
-        GBCs2LNTBCs: float = 40.0
-        GBCs2MNTBCs: float = 40.0
-        MNTBCs2MSO: float = -40.0
-        MNTBCs2LSO: float = -40.0
-        SBCs2LSO: float = 10.0
-        SBCs2MSO: float = 13.0
-        LNTBCs2MSO: float = -40.0
-        MSO2ICC: float = 20.0
-        LSO2ICC: float = 20.0
-
-    # @dataclass
-    # class SYN_WEIGHTS:
-    #     ANFs2SBCs: float = 16.0
-    #     ANFs2GBCs: float = 8.0
-    #     GBCs2LNTBCs: float = 16.0
-    #     GBCs2MNTBCs: float = 16.0
-    #     MNTBCs2MSO: float = -5.0
-    #     MNTBCs2LSO: float = -12.0
-    #     SBCs2LSO: float = 4.0
-    #     SBCs2MSO: float = 1
-    #     LNTBCs2MSO: float = -5.0
-    #     MSO2ICC: float = 10.0
-    #     LSO2ICC: float = 10.0
-
-    @dataclass
     class MEMB_CAPS:
         # default: float = 250
         # C_m_sbc: int = 1
         # C_m_gcb: int = 1
         # C_mso: float = 1
-        SBC: int = 15
-        GBC: int = 15
-        MNTBC: int = 15
-        LNTBC: int = 15
-        MSO: float = 20
+        SBC: int = 12
+        GBC: int = 12
+        MSO: float = 15
         LSO: float = 20
         ICC: float = 15
         # default leak conductance (g_L) at 16.6667 nS gives with C_m = 1 pF:
@@ -175,12 +156,12 @@ class Parameters:
     @dataclass
     class G_LEAK:
         # default: float = 16.67
-        SBC: int = 210
-        GBC: int = 200
-        LNTBC: int = 50
-        MNTBC: int = 50
-        MSO: float = 180
-        LSO: float = 30
+        SBC: int = 7
+        GBC: int = 7
+        LNTBC: int = 7
+        MNTBC: int = 7
+        MSO: float = 80
+        LSO: float = 6
         ICC: float = 6
 
     def __post_init__(self):

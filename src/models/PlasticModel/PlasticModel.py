@@ -13,10 +13,10 @@ from .params import Parameters
 
 
 class InhModel(SpikingModel):
-    name = "Inhibitory model, mso iaf_cond_beta"
-    key = "withICC"
+    name = "Plastc model, mso iaf_cond_beta"
+    key = "plastic"
     RESULTS_VERSION_NUMBER = (
-        4
+        3
         # 2 -> include ICC;
         # 3 -> include LSO, MSO, ICC global IDs
     )
@@ -25,7 +25,6 @@ class InhModel(SpikingModel):
         self.params = params
         logger.debug("creating spike generator according to input IHC response...")
         anfs_per_ear = spikes_to_nestgen(anf)
-        logger.debug(anfs_per_ear)
         self.anf = anf
         logger.debug("creating rest of network...")
         self.create_network(params, anfs_per_ear)
@@ -35,7 +34,7 @@ class InhModel(SpikingModel):
         return {"name": self.name, "networkdef": getsource(self.create_network)}
 
     def create_network(self, P: Parameters, anfs_per_ear):
-        self.pops = {"L": {}, "R": {}}
+        self.pops = {"L": {"ANF": anfs_per_ear["L"]}, "R": {"ANF": anfs_per_ear["R"]}}
         self.recs = {"L": {}, "R": {}}
         for side in ["L", "R"]:
             self.pops[side]["ANF"] = anfs_per_ear[side]
@@ -49,7 +48,6 @@ class InhModel(SpikingModel):
                     "C_m": P.MEMB_CAPS.SBC,
                     "V_reset": P.V_reset,
                     "g_L": P.G_LEAK.SBC,
-                    # "t_ref": 3,
                 },
             )
             self.pops[side]["GBC"] = nest.Create(
@@ -59,14 +57,13 @@ class InhModel(SpikingModel):
                     "C_m": P.MEMB_CAPS.GBC,
                     "V_reset": P.V_reset,
                     "g_L": P.G_LEAK.GBC,
-                    # "t_ref": 3,
                 },
             )
             self.pops[side]["LNTBC"] = nest.Create(
                 "iaf_cond_alpha",
                 P.n_GBCs,
                 params={
-                    "C_m": P.MEMB_CAPS.LNTBC,
+                    "C_m": P.MEMB_CAPS.GBC,
                     "V_reset": P.V_reset,
                     "g_L": P.G_LEAK.LNTBC,
                 },
@@ -75,7 +72,7 @@ class InhModel(SpikingModel):
                 "iaf_cond_alpha",
                 P.n_GBCs,
                 params={
-                    "C_m": P.MEMB_CAPS.MNTBC,
+                    "C_m": P.MEMB_CAPS.GBC,
                     "V_reset": P.V_reset,
                     "g_L": P.G_LEAK.MNTBC,
                 },
@@ -122,22 +119,22 @@ class InhModel(SpikingModel):
         connect(self.pops["R"]["ANF"], self.pops["R"]["parrot_ANF"], "one_to_one")
         connect(self.pops["L"]["ANF"], self.pops["L"]["parrot_ANF"], "one_to_one")
         # Devices
-        # connect(self.pops["R"]["parrot_ANF"], self.recs["R"]["ANF"], "all_to_all")
-        # connect(self.pops["L"]["parrot_ANF"], self.recs["L"]["ANF"], "all_to_all")
-        # connect(self.pops["R"]["MSO"], self.recs["R"]["MSO"], "all_to_all")
-        # connect(self.pops["L"]["MSO"], self.recs["L"]["MSO"], "all_to_all")
-        # connect(self.pops["R"]["LSO"], self.recs["R"]["LSO"], "all_to_all")
-        # connect(self.pops["L"]["LSO"], self.recs["L"]["LSO"], "all_to_all")
-        # connect(self.pops["R"]["SBC"], self.recs["R"]["SBC"], "all_to_all")
-        # connect(self.pops["L"]["SBC"], self.recs["L"]["SBC"], "all_to_all")
-        # connect(self.pops["R"]["GBC"], self.recs["R"]["GBC"], "all_to_all")
-        # connect(self.pops["L"]["GBC"], self.recs["L"]["GBC"], "all_to_all")
-        # connect(self.pops["R"]["LNTBC"], self.recs["R"]["LNTBC"], "all_to_all")
-        # connect(self.pops["L"]["LNTBC"], self.recs["L"]["LNTBC"], "all_to_all")
-        # connect(self.pops["R"]["MNTBC"], self.recs["R"]["MNTBC"], "all_to_all")
-        # connect(self.pops["L"]["MNTBC"], self.recs["L"]["MNTBC"], "all_to_all")
-        # connect(self.pops["R"]["ICC"], self.recs["R"]["ICC"], "all_to_all")
-        # connect(self.pops["L"]["ICC"], self.recs["L"]["ICC"], "all_to_all")
+        connect(self.pops["R"]["parrot_ANF"], self.recs["R"]["ANF"], "all_to_all")
+        connect(self.pops["L"]["parrot_ANF"], self.recs["L"]["ANF"], "all_to_all")
+        connect(self.pops["R"]["MSO"], self.recs["R"]["MSO"], "all_to_all")
+        connect(self.pops["L"]["MSO"], self.recs["L"]["MSO"], "all_to_all")
+        connect(self.pops["R"]["LSO"], self.recs["R"]["LSO"], "all_to_all")
+        connect(self.pops["L"]["LSO"], self.recs["L"]["LSO"], "all_to_all")
+        connect(self.pops["R"]["SBC"], self.recs["R"]["SBC"], "all_to_all")
+        connect(self.pops["L"]["SBC"], self.recs["L"]["SBC"], "all_to_all")
+        connect(self.pops["R"]["GBC"], self.recs["R"]["GBC"], "all_to_all")
+        connect(self.pops["L"]["GBC"], self.recs["L"]["GBC"], "all_to_all")
+        connect(self.pops["R"]["LNTBC"], self.recs["R"]["LNTBC"], "all_to_all")
+        connect(self.pops["L"]["LNTBC"], self.recs["L"]["LNTBC"], "all_to_all")
+        connect(self.pops["R"]["MNTBC"], self.recs["R"]["MNTBC"], "all_to_all")
+        connect(self.pops["L"]["MNTBC"], self.recs["L"]["MNTBC"], "all_to_all")
+        connect(self.pops["R"]["ICC"], self.recs["R"]["ICC"], "all_to_all")
+        connect(self.pops["L"]["ICC"], self.recs["L"]["ICC"], "all_to_all")
 
         # ANFs to SBCs
         connect(
@@ -357,19 +354,11 @@ class InhModel(SpikingModel):
         # split in time chunks
         TIME_PER_CHUNK_TQDM = 100
         chunks = time // TIME_PER_CHUNK_TQDM
-        logger.debug(
-            f"running simulation for {chunks} chunks of {TIME_PER_CHUNK_TQDM}ms each"
-        )
-
         for chunk in tqdm(
-            [
-                *([TIME_PER_CHUNK_TQDM] * chunks),
-                time - chunks * TIME_PER_CHUNK_TQDM,
-            ],
+            [*list(range(chunks)), time - chunks * TIME_PER_CHUNK_TQDM],
             desc="  ⮡ simulation",
         ):
             nest.Simulate(chunk)
-        logger.debug(f"total bio time elapsed: {nest.biological_time}")
 
     def analyze(self):
         result = {"L": {}, "R": {}, "version": self.RESULTS_VERSION_NUMBER}

@@ -1,11 +1,12 @@
+from dataclasses import asdict, dataclass, is_dataclass
 from inspect import isfunction
-from dataclasses import dataclass, asdict, is_dataclass
 
 
 @dataclass
 class Paths:
     DATA_DIR: str = "../data/"
     IRCAM_DIR: str = DATA_DIR + "IRCAM/"
+    SOFA_DIR: str = DATA_DIR + "SOFA/"
     ANF_SPIKES_DIR: str = DATA_DIR + "ANF_SPIKETRAINS/"
     RESULTS_DIR: str = "../results/"
 

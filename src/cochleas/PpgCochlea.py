@@ -1,42 +1,23 @@
-from collections import defaultdict
-import brian2hears as b2h
-import brian2 as b2
-import numpy as np
-from cochleas.anf_response import AnfResponse
-from utils.log import logger
-from scipy.interpolate import interp1d
 import math
-import scipy.stats as stats
-from utils.custom_sounds import Tone
-from joblib import Memory
-from sorcery import dict_of
+from collections import defaultdict
 from os import makedirs
-from .consts import NUM_CF as N_IHCs, CFMIN, CFMAX
+
+import brian2 as b2
+import brian2hears as b2h
+import numpy as np
+import scipy.stats as stats
+from joblib import Memory
+from scipy.interpolate import interp1d
+from sorcery import dict_of
+
+from cochleas.anf_response import AnfResponse
 from consts import Paths
+from utils.custom_sounds import Tone
+from utils.log import logger
 
+from .consts import CFMAX, CFMIN, NUM_ANF_PER_HC
+from .consts import NUM_CF as N_IHCs
 
-n_ANFs = int(N_IHCs * 10)
-# cochlea array of frequencies
-coch_freqs = np.round(
-    np.logspace(
-        np.log(CFMIN / b2.Hz), np.log(CFMAX / b2.Hz), num=N_IHCs, base=np.exp(1)
-    ),
-    2,
-)
-# [nr. of spikes], num of spikes for each pulse packet (PPG parameter)
-ild_values = [
-    10,
-    50,
-    100,
-]
-# [ms] Standard Deviation in PPG spikes for each pulse-packet (PPG parameter)
-sdev = 0.1
-x_values = np.array([-90, 0, 90])
-w_head = 22  # [cm]
-v_sound = 33000  # [cm/s]
-
-r_angle_to_level = interp1d(x_values, ild_values, kind="linear")
-l_angle_to_level = interp1d(x_values[::-1], ild_values, kind="linear")
 COCHLEA_KEY = "ppg"
 CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
 makedirs(CACHE_DIR, exist_ok=True)
@@ -44,44 +25,79 @@ makedirs(CACHE_DIR, exist_ok=True)
 memory = Memory(location=CACHE_DIR, verbose=0)
 
 
-def create_spectro(tone, time_sim):
-    channel_x = np.where(coch_freqs >= tone)[0][0]
-    spectro = np.zeros((3500, time_sim))
-    amplitudes = np.round(
-        stats.norm.pdf(np.linspace(-1, 1, 21), 0, 1.0 / (math.sqrt(2 * math.pi) * 1)), 2
-    )  # gaussian profile of amplitudes, with peak_amplitude = 1 for channel_x
-
-    if True:
-        if channel_x < 10:  # truncation of the gaussian profile of amplitudes
-            spectro[channel_x : channel_x + 10 + 1, :] = amplitudes[10:].reshape(
-                11, 1
-            ) * np.ones((11, time_sim))
-            spectro[0 : channel_x + 1, :] = amplitudes[10 - channel_x : 11].reshape(
-                channel_x + 1, 1
-            ) * np.ones((channel_x + 1, time_sim))
-        elif channel_x > 3489:  # truncation of the gaussian profile of amplitudes
-            spectro[channel_x - 10 : channel_x + 1] = amplitudes[:11].reshape(
-                11, 1
-            ) * np.ones((11, time_sim))
-            spectro[channel_x:] = amplitudes[10 : 10 + 3500 - channel_x].reshape(
-                3500 - channel_x, 1
-            ) * np.ones((3500 - channel_x, time_sim))
-        else:
-            spectro[channel_x - 10 : channel_x + 10 + 1, :] = amplitudes.reshape(
-                21, 1
-            ) * np.ones((21, time_sim))
-    else:
-        spectro[channel_x, :] = np.ones(time_sim)
-
-    return spectro
-
-
 @memory.cache
 def tone_to_ppg_spikes(sound: Tone, angle: int, params: dict):
+    def ihc_to_anf(ihc_spikes: dict, ihc_to_spikes=NUM_ANF_PER_HC):
+        anf2spks = {}
+        for i in range(N_IHCs):
+            spks = ihc_spikes.get(i, [])
+            for j in range(ihc_to_spikes * i, ihc_to_spikes * (i + 1)):
+                anf2spks[j] = spks * b2.ms
+
+        return anf2spks
+
     import nest
+
+    n_ANFs = int(N_IHCs * 10)
+    # cochlea array of frequencies
+    coch_freqs = np.round(
+        np.logspace(
+            np.log(CFMIN / b2.Hz), np.log(CFMAX / b2.Hz), num=N_IHCs, base=np.exp(1)
+        ),
+        2,
+    )
+    # [nr. of spikes], num of spikes for each pulse packet (PPG parameter)
+    ild_values = [
+        10,
+        50,
+        100,
+    ]
+    # [ms] Standard Deviation in PPG spikes for each pulse-packet (PPG parameter)
+    sdev = 0.1
+    x_values = np.array([-90, 0, 90])
+    w_head = 22  # [cm]
+    v_sound = 33000  # [cm/s]
+
+    r_angle_to_level = interp1d(x_values, ild_values, kind="linear")
+    l_angle_to_level = interp1d(x_values[::-1], ild_values, kind="linear")
 
     tone_freq = sound.frequency / b2.Hz
     time_sim = int(sound.sound.duration / b2.ms)
+
+    def create_spectro(tone, time_sim):
+        channel_x = np.where(coch_freqs >= tone)[0][0]
+        spectro = np.zeros((3500, time_sim))
+        amplitudes = np.round(
+            stats.norm.pdf(
+                np.linspace(-1, 1, 21), 0, 1.0 / (math.sqrt(2 * math.pi) * 1)
+            ),
+            2,
+        )  # gaussian profile of amplitudes, with peak_amplitude = 1 for channel_x
+
+        if True:
+            if channel_x < 10:  # truncation of the gaussian profile of amplitudes
+                spectro[channel_x : channel_x + 10 + 1, :] = amplitudes[10:].reshape(
+                    11, 1
+                ) * np.ones((11, time_sim))
+                spectro[0 : channel_x + 1, :] = amplitudes[10 - channel_x : 11].reshape(
+                    channel_x + 1, 1
+                ) * np.ones((channel_x + 1, time_sim))
+            elif channel_x > 3489:  # truncation of the gaussian profile of amplitudes
+                spectro[channel_x - 10 : channel_x + 1] = amplitudes[:11].reshape(
+                    11, 1
+                ) * np.ones((11, time_sim))
+                spectro[channel_x:] = amplitudes[10 : 10 + 3500 - channel_x].reshape(
+                    3500 - channel_x, 1
+                ) * np.ones((3500 - channel_x, time_sim))
+            else:
+                spectro[channel_x - 10 : channel_x + 10 + 1, :] = amplitudes.reshape(
+                    21, 1
+                ) * np.ones((21, time_sim))
+        else:
+            spectro[channel_x, :] = np.ones(time_sim)
+
+        return spectro
+
     nest.ResetKernel()
     nest.SetKernelStatus(params["nest"])
     gen_l = nest.Create("pulsepacket_generator", N_IHCs, params={"sdev": sdev})
@@ -141,8 +157,10 @@ def tone_to_ppg_spikes(sound: Tone, angle: int, params: dict):
         spiketrains[side] = defaultdict(list)
         for old_id, data in zip(events["senders"], events["times"]):
             new_id = old2new_id[side][old_id]
-            spiketrains[side][new_id].append(data * b2.ms)
-    logger.debug(f"spiketrains completed")
+            spiketrains[side][new_id].append(data)
+        spiketrains[side] = ihc_to_anf(spiketrains[side])
+
+    logger.debug(f"spiketrains generation completed")
 
     nest.ResetKernel()
     return AnfResponse(spiketrains, sound.sound, sound.sound)

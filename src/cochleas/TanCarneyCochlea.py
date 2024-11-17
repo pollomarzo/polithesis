@@ -1,8 +1,8 @@
 from os import makedirs
 
 import numpy as np
-from brian2 import Hz, SpikeMonitor, kHz, ms, plot, run, show
-from brian2hears import MiddleEar, Sound, TanCarney, ZhangSynapse, erbspace
+from brian2 import Hz, SpikeMonitor, kHz, ms, plot, run, seed, show
+from brian2hears import MiddleEar, Sound, TanCarney, ZhangSynapse, dB, erbspace
 from joblib import Memory
 from scipy import signal
 from sorcery import dict_of
@@ -44,12 +44,19 @@ def sound_to_spikes(
     sound: Sound | Tone | ToneBurst, angle, params: dict, plot_spikes=False
 ) -> AnfResponse:
     subj_number = params["subj_number"]
+    rng_seed = params["rng_seed"]
+    noise_level = params["omni_noise_level"] * dB
+    seed(rng_seed)
     coch_par = params.get("cochlea_params", None)
     logger.debug(
         f"genenerating spikes for {dict_of(sound,angle,plot_spikes,subj_number)}"
     )
+    binaural = run_hrtf(sound, angle, subj=subj_number)
+    logger.debug(f"binaural sound post hrtf level={binaural.level}")
+    noise = Sound.whitenoise(binaural.duration).atlevel(noise_level)
+    logger.debug(f"binaural sound post noise level={binaural.level}")
     # TanCarney needs 50kHz
-    binaural_sound = resample_binaural_sound(run_hrtf(sound, angle, subj=subj_number))
+    binaural_sound = resample_binaural_sound(binaural + noise)
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     binaural_IHC_response = {}
 
@@ -58,7 +65,7 @@ def sound_to_spikes(
     for sound, channel in zip([binaural_sound.left, binaural_sound.right], ["L", "R"]):
         logger.debug(f"working on ear {channel}...")
         ihc = TanCarney(MiddleEar(sound), cf, param=coch_par)
-        G = ZhangSynapse(ihc, cf)
+        G = ZhangSynapse(ihc, cf, n_per_channel=10)
         M = SpikeMonitor(G)
         for chunk in tqdm(range(10), desc="IHCsim"):
             run(sound.duration / 10)

@@ -10,12 +10,12 @@ https://github.com/fomightez/3Dscatter_plot-binder?tab=readme-ov-file
 on 21/08 i moved from manually handled pickle files for caching the results of the cochlea section, to joblib. the reason why i made the change is that i got stung by the fact that the manual cache was not invalidated by changes to the function, so when i tried to zero out noise, the (cached) version with noise was returned instead, rendering my result incorrect. i write this note to remember that although this meant a performance hit, it was not a significant one.
 the previous code read something along these lines:
 ```python
-def load_anf_response(tone, angle, cochlea_key):
+def load_anf_response(tone, angle, cochlea_key, params):
 	filepath = (
         Path(Paths.ANF_SPIKES_DIR)
         / Path(cochlea_key)
         / Path(create_sound_key(tone))
-        / Path(f"{create_sound_key(tone)}_{angle}deg.pic")
+        / Path(f"{create_ex_key(tone, deg, params)}.pic")
     )
     if os.path.isfile(filepath):
         with open(filepath, "rb") as f:
