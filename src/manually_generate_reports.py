@@ -9,14 +9,14 @@ if __name__ == "__main__":
 
     # results_dir = Path(Paths.RESULTS_DIR).absolute() / "amplifcocheffect"
     results_dir = Path(Paths.RESULTS_DIR).absolute() / CURRENT_TEST
-    # folders = [i for i in results_dir.iterdir() if not i.is_file()]
+    folders = [i for i in results_dir.iterdir() if not i.is_file()]
 
-    folders = [
-        Path(Paths.RESULTS_DIR).absolute() / "v_shaped_diff_ICC" / "hrtf_check" / i
-        for i in [
-            "hrtftest",
-        ]
-    ]
+    # folders = [
+    #     Path(Paths.RESULTS_DIR).absolute() / "v_shaped_diff_ICC" / "hrtf_check" / i
+    #     for i in [
+    #         "hrtftest",
+    #     ]
+    # ]
 
     logger.info("generating complete reports")
     for folder in tqdm(folders, desc="overall folders"):
@@ -30,6 +30,10 @@ if __name__ == "__main__":
         logger.info(files)
 
         generate_multi_inputs_single_net(
-            files, rate=False, show_pops=["parrot_ANF"], include_netvis=False
+            files,
+            rate=False,
+            include_netvis=False,
+            cleanup=False,
+            show_pops=["parrot_ANF"],
         )
     logger.info("reports generation complete")
