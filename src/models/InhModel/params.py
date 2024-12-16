@@ -9,7 +9,7 @@ class Parameters:
         default_factory=lambda: (
             {
                 "gammatone": {
-                    "subj_number": "headless",
+                    "subj_number": 7,
                     "noise_factor": 0.3,
                     "refractory_period": 1,  # ms
                     "amplif_factor": 7,
@@ -25,7 +25,7 @@ class Parameters:
                     "subj_number": "headless",
                     "cochlea_params": None,
                     "rng_seed": 42,
-                    "omni_noise_level": 10,
+                    "omni_noise_level": 0,
                 },
                 "DCGC": {
                     "subj_number": "headless",

@@ -8,8 +8,8 @@ dot_template = """
 digraph {
     rankdir = "BT"
     subgraph cluster_Left_Hemisphere {
-        node [color = white; style = filled; ordering = in;];
-        color = gray82;
+        node [color = gray82; style = filled; ordering = in;];
+        color = ivory4;
         style = filled;
 <<<LEFT>>>
     }

@@ -14,17 +14,17 @@ from sorcery import dict_of
 
 from analyze.report import generate_multi_inputs_single_net, generate_single_result
 from cochleas.anf_utils import (
-    B2_COC_KEY,
     COCHLEAS,
     DCGC_COC_KEY,
     GAMMATONE_COC_KEY,
     PPG_COC_KEY,
+    TC_COC_KEY,
     DCGC_cochlea,
-    b2_cochlea,
     create_sound_key,
     gammatone_cochlea,
     load_anf_response,
     ppg_cochlea,
+    tc_cochlea,
 )
 from cochleas.consts import ANGLES
 from consts import Paths, save_current_conf
@@ -76,24 +76,27 @@ def create_save_result_object(
     logger.info(f"\tsaving results for {ex_key} to {result_file.absolute()}...")
     with open(result_file, "wb") as f:
         dill.dump(result, f)
+    del result
 
 
 if __name__ == "__main__":
     # c = Click(duration=300 * b2.ms, peak=90 * b2h.dB)
     # w = WhiteNoise(duration=300 * b2.ms, level=90 * b2h.dB)
-    inputs = [Tone(i, 200 * b2.ms) for i in [1000] * b2.Hz]
+    inputs = [Tone(i, 200 * b2.ms) for i in [500] * b2.Hz]
     for e in inputs:
         e.sound.level = 70 * b2h.dB
 
-    p2 = PPGParam("ppgcheck")
+    p2 = TCParam("checkhigherinhLSO")
+    InhParam()
+    PPGParam()
 
     params = [p2]
 
     models = [InhModel, InhModel, InhModel, InhModel, InhModel, InhModel]
     cochleas = [
-        (PPG_COC_KEY, ppg_cochlea),
+        (TC_COC_KEY, tc_cochlea),
+        # (PPG_COC_KEY, ppg_cochlea),
         # (GAMMATONE_COC_KEY, gammatone_cochlea),
-        # (B2_COC_KEY, b2_cochlea),
     ]
     # cochleas = {PPG_COC_KEY: ppg_cochlea}
     # cochleas = {B2_COC_KEY: b2_cochlea}
@@ -164,7 +167,7 @@ if __name__ == "__main__":
 
         if PLOT_FINAL:
             generate_multi_inputs_single_net(
-                result_paths, cleanup=not PLOT_INTERMEDIATE, rate=True
+                result_paths, cleanup=not PLOT_INTERMEDIATE, rate=False
             )
     trials_pbar.close()
     logger.debug(times)

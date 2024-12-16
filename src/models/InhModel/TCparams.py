@@ -8,33 +8,33 @@ class Parameters:
     cochlea: dict[str, dict[str, float]] = field(
         default_factory=lambda: (
             {
-                "gammatone": {
-                    "subj_number": 7,
-                    "noise_factor": 0.3,
-                    "refractory_period": 1,  # ms
-                    "amplif_factor": 7,
-                },
-                "ppg": {
-                    "nest": {
-                        "resolution": 0.1,
-                        "rng_seed": 42,
-                        "total_num_virtual_procs": 16,
-                    }
-                },
+                # "gammatone": {
+                #     "subj_number": 7,
+                #     "noise_factor": 0.3,
+                #     "refractory_period": 1,  # ms
+                #     "amplif_factor": 7,
+                # },
+                # "ppg": {
+                #     "nest": {
+                #         "resolution": 0.1,
+                #         "rng_seed": 42,
+                #         "total_num_virtual_procs": 16,
+                #     }
+                # },
                 "TanCarney": {
-                    "subj_number": 7,
+                    "subj_number": "headless",
                     "cochlea_params": None,
                     "rng_seed": 42,
                     "omni_noise_level": 0,
                 },
-                "DCGC": {
-                    "subj_number": 7,
-                    "cochlea_params": {"c1": -2.96},
-                    "amplif_factor": 15,
-                    "noise_factor": 0.2,
-                    "refractory_period": 1,  # ms
-                    "rng_seed": 42,
-                },
+                # "DCGC": {
+                #     "subj_number": 7,
+                #     "cochlea_params": {"c1": -2.96},
+                #     "amplif_factor": 15,
+                #     "noise_factor": 0.2,
+                #     "refractory_period": 1,  # ms
+                #     "rng_seed": 42,
+                # },
             }
         )
     )
@@ -133,11 +133,11 @@ class Parameters:
         ANFs2GBCs: float = 7.0
         GBCs2LNTBCs: float = 20.0
         GBCs2MNTBCs: float = 30.0
-        SBCs2LSO: float = 10.0
-        MNTBCs2LSO: float = -10.0
+        SBCs2LSO: float = 5.0
+        MNTBCs2LSO: float = -20.0
         # MNTBCs2LSO: float = -50.0
         MNTBCs2MSO: float = -40.0
-        LNTBCs2MSO: float = -35.0
+        LNTBCs2MSO: float = -40.0
         SBCs2MSO: float = 9.0
         MSO2ICC: float = 20.0
         LSO2ICC: float = 20.0

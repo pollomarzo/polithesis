@@ -25,7 +25,7 @@ from utils.log import logger, tqdm
 plt.rcParams["axes.grid"] = True
 plt.rcParams["figure.figsize"] = (6, 3)
 
-PLTWIDTH = 8
+PLTWIDTH = 10
 
 
 def flatten(items):
@@ -131,7 +131,7 @@ def draw_hist(
     """
     max_histogram_height = 0.25
     bin_count = 50
-    alpha = 0.3
+    alpha = 0.5
     if logscale:
         bins = b2h.erbspace(CFMIN, CFMAX, bin_count) / b2.Hz
 
@@ -210,12 +210,14 @@ def draw_hist(
 
 def draw_rate_vs_angle(
     data,
-    filename,
+    title,
     rate=True,
     hist_logscale=True,
     show_pops=["parrot_ANF", "GBC", "SBC", "LNTBC", "MNTBC", "LSO", "MSO", "ICC"],
+    ylim=None,
+    show_hist=True,
 ):
-    logger.debug(dict_of(filename, show_pops, rate, hist_logscale))
+    logger.debug(dict_of(title, show_pops, rate, hist_logscale))
     version = data["angle_to_rate"][0].get("version", None)
     angle_to_rate = data["angle_to_rate"]
     name = data["conf"]["model_desc"]["name"]
@@ -264,31 +266,138 @@ def draw_rate_vs_angle(
         ax[i].plot(angles, plotted_rate["L"], label=f"left  {pop}")
         ax[i].plot(angles, plotted_rate["R"], label=f"right {pop}")
         ax[i].set_ylabel("actv neur spk/sec (Hz)" if rate else "total pop spks/sec")
-        _ = ax[i].legend()
+        ax[i].set_ylim(ylim)
 
-        v = ax[i].twinx()
-        v.grid(visible=False)  # or use linestyle='--'
-        if version > 2:  # needed for global ids
-            senders_renamed = {
-                side: [
-                    shift_senders(angle_to_rate[angle][side][pop], hist_logscale)
-                    for angle in angles
-                ]
-                for side in sides
-            }
-            max_spikes_single_neuron = max(flatten(distr.values()))
-            draw_hist(
-                v,
-                senders_renamed,
-                angles,
-                num_neurons=len(angle_to_rate[0]["L"][pop]["global_ids"]),
-                max_spikes_single_neuron=max_spikes_single_neuron,
-                logscale=hist_logscale,
-            )
+        if show_hist:
+            v = ax[i].twinx()
+            v.grid(visible=False)  # or use linestyle='--'
+            if version > 2:  # needed for global ids
+                senders_renamed = {
+                    side: [
+                        shift_senders(angle_to_rate[angle][side][pop], hist_logscale)
+                        for angle in angles
+                    ]
+                    for side in sides
+                }
+                max_spikes_single_neuron = max(flatten(distr.values()))
+                draw_hist(
+                    v,
+                    senders_renamed,
+                    angles,
+                    num_neurons=len(angle_to_rate[0]["L"][pop]["global_ids"]),
+                    max_spikes_single_neuron=max_spikes_single_neuron,
+                    logscale=hist_logscale,
+                )
+        # _ = ax[i].legend(loc="lower right")
 
-    plt.suptitle(filename)
+    plt.suptitle(title)
     plt.setp([ax], xticks=angles)
+    [ax.set_xticklabels([f"{i}°" for i in angle_to_rate.keys()]) for ax in ax]
+
     plt.tight_layout()
+    return fig
+
+
+def draw_single_angle_histogram(data, angle, population="SBC", fontsize=16, alpha=0.8):
+    """
+    Draw horizontal histograms of spike distributions across frequencies for a single angle,
+    with left population growing downward and right population growing upward from a central axis.
+
+    Parameters:
+    -----------
+    data : dict
+        The full dataset containing angle_to_rate information
+    angle : float
+        The specific angle to visualize
+    population : str
+        Name of the neural population to visualize
+    fontsize : int
+        Base fontsize for the plot. Other elements will scale relative to this.
+
+    Returns:
+    --------
+    matplotlib.figure.Figure
+        The generated figure
+    """
+    # Constants
+    bin_count = 50
+
+    # Create figure
+    fig, ax = plt.subplots(figsize=(10, 2.42))
+
+    # Get data for this angle and population
+    pop_data = {
+        "L": data["angle_to_rate"][angle]["L"][population],
+        "R": data["angle_to_rate"][angle]["R"][population],
+    }
+
+    # Create logarithmic bins for frequency
+    bins = b2h.erbspace(CFMIN, CFMAX, bin_count) / b2.Hz
+
+    # Process data for histograms
+    senders_renamed = {
+        side: shift_senders(pop_data[side], True)  # True for logscale
+        for side in ["L", "R"]
+    }
+
+    # Create histograms
+    left_hist, _ = np.histogram(senders_renamed["L"], bins=bins)
+    right_hist, _ = np.histogram(senders_renamed["R"], bins=bins)
+
+    # Normalize histograms
+    max_value = max(max(left_hist), max(right_hist))
+    if max_value > 0:  # Avoid division by zero
+        left_hist = left_hist / max_value
+        right_hist = right_hist / max_value
+
+    # Plot histograms - note the negative values for left histogram
+    ax.bar(
+        bins[:-1],
+        -left_hist,
+        width=np.diff(bins),
+        color="C0",
+        alpha=alpha,
+        label="Left",
+        align="edge",
+    )
+    ax.bar(
+        bins[:-1],
+        right_hist,
+        width=np.diff(bins),
+        color="C1",
+        alpha=alpha,
+        label="Right",
+        align="edge",
+    )
+
+    # Configure axes
+    ax.set_xscale("log")
+    ax.set_xlim(CFMIN, CFMAX)
+    xticks = [20, 100, 500, 1000, 5000, 20000]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels([f"{freq} Hz" for freq in xticks], fontsize=fontsize)
+
+    # Set y-axis limits symmetrically around zero
+    ylim = 1.1  # Slightly larger than 1 to give some padding
+    ax.set_ylim(-ylim, ylim)
+    ax.tick_params(axis="y", labelsize=fontsize)  # Set y-tick font size
+
+    # Add horizontal line at y=0
+    ax.axhline(y=0, color="black", linestyle="-", linewidth=0.5)
+
+    # Set font sizes for labels and title
+    ax.set_xlabel("Characteristic Frequency (Hz)", fontsize=fontsize)
+    ax.set_ylabel("Normalized spikes", fontsize=fontsize)
+    # ax.legend(fontsize=fontsize)
+
+    # plt.title(
+    #     f"{population} population response at {angle}° azimuth\n"
+    #     f'Sound: {data["conf"]["sound_key"]}',
+    #     fontsize=fontsize * 1.2,
+    # )  # Title slightly larger
+
+    plt.tight_layout()
+
     return fig
 
 
@@ -324,7 +433,7 @@ def draw_ITD_ILD(data):
         angle_to_itd = {angle: synthetic_angle_to_itd(angle) for angle in angles}
         angle_to_ild = {angle: 0 for angle in angles}
 
-    fig, ild = plt.subplots(1, sharex=True, figsize=(PLTWIDTH, 1.8))
+    fig, ild = plt.subplots(1, sharex=True, figsize=(PLTWIDTH, 2.3))
     fig.suptitle(
         f"diff = max(|spectrum(left)|)-max(|spectrum(right)|), freq={tone.frequency}"
     )
@@ -364,7 +473,7 @@ def generate_network_vis(res, filename):
         "connect",
     )
     src = graphviz.Source(dot)
-    src.render(outfile=filename, format="png", cleanup=True)
+    src.render(outfile=filename, format="png", cleanup=False)
 
 
 def paths(result_file_path: PurePath):
@@ -402,13 +511,18 @@ def generate_single_result(
     return merge_rows_files([RATE_VS_ANGLE, ILD_ITD, NETVIS], RESULT, 1, cleanup)
 
 
+import matplotlib
+
+
 def generate_multi_inputs_single_net(
     results_paths: List[PurePath],
     cleanup=True,
-    rate=True,
+    rate=True,  # plot whole population (False) or active neurons (True)
     include_netvis=True,
     show_pops=["parrot_ANF", "GBC", "SBC", "LNTBC", "MNTBC", "LSO", "MSO", "ICC"],
 ):
+    font = {"size": 13}
+    matplotlib.rc("font", **font)
     logger.debug(
         f"generating report for {results_paths}, with cleanup={cleanup} and rate={rate}"
     )
@@ -452,7 +566,7 @@ def generate_multi_inputs_single_net(
     result = merge_rows_files(
         img_paths,
         results_paths[0].parent / report_name,
-        3 if len(results_paths) <= 6 else 4,
+        2 if len(results_paths) <= 6 else 4,
         cleanup,
     )
     return result

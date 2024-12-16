@@ -24,8 +24,8 @@ from .GammatoneCochlea import sound_to_spikes as gammatone_cochlea
 from .PpgCochlea import COCHLEA_KEY as PPG_COC_KEY
 from .PpgCochlea import memory as CACHE_PPG
 from .PpgCochlea import tone_to_ppg_spikes as ppg_cochlea
-from .TanCarneyCochlea import COCHLEA_KEY as B2_COC_KEY
-from .TanCarneyCochlea import sound_to_spikes as b2_cochlea
+from .TanCarneyCochlea import COCHLEA_KEY as TC_COC_KEY
+from .TanCarneyCochlea import sound_to_spikes as tc_cochlea
 
 # SOUND_DURATION = 1 * second
 SOUND_FREQUENCIES = [100 * Hz, 1 * kHz, 10 * kHz]
@@ -34,7 +34,7 @@ INFO_HEADER = "this directory holds all computed angles, for a specific sound, w
 COCHLEAS = {
     GAMMATONE_COC_KEY: gammatone_cochlea,
     PPG_COC_KEY: ppg_cochlea,
-    B2_COC_KEY: b2_cochlea,
+    TC_COC_KEY: tc_cochlea,
     DCGC_COC_KEY: DCGC_cochlea,
 }
 
@@ -94,7 +94,7 @@ def load_anf_response(
     if ignore_cache:
         cochlea_func = cochlea_func.call  # forces execution
     try:
-        anf = cochlea_func(sound, angle, params)
+        anf = cochlea_func(sound, angle, params, True)
     except TypeError as e:
         if "unexpected" in e.args[0]:
             logger.error(f"{e}, please check the signature of cochlea")

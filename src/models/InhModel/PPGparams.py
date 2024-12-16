@@ -134,14 +134,14 @@ class Parameters:
         GBCs2MNTBCs: float = 16.0
 
         SBCs2LSO: float = 5.0
-        MNTBCs2LSO: float = -6.0
+        MNTBCs2LSO: float = -4.0
 
-        SBCs2MSO: float = 1
-        MNTBCs2MSO: float = -8.0
-        LNTBCs2MSO: float = -7
+        SBCs2MSO: float = 3.1
+        MNTBCs2MSO: float = -20.0
+        LNTBCs2MSO: float = -21
 
-        MSO2ICC: float = 10.0
-        LSO2ICC: float = 10.0
+        MSO2ICC: float = 15.0
+        LSO2ICC: float = 15.0
 
     @dataclass
     class MEMB_CAPS:
@@ -149,20 +149,20 @@ class Parameters:
         # C_m_sbc: int = 1
         # C_m_gcb: int = 1
         # C_mso: float = 1
-        SBC: int = 1
-        GBC: int = 1
-        MNTBC: int = 1
-        LNTBC: int = 1
-        MSO: float = 1
-        LSO: float = 1
-        ICC: float = 1
-        # SBC: int = 15
-        # GBC: int = 15
-        # MNTBC: int = 15
-        # LNTBC: int = 15
-        # MSO: float = 20
-        # LSO: float = 20
-        # ICC: float = 15
+        # SBC: int = 1
+        # GBC: int = 1
+        # MNTBC: int = 1
+        # LNTBC: int = 1
+        # MSO: float = 1
+        # LSO: float = 1
+        # ICC: float = 1
+        SBC: int = 15
+        GBC: int = 15
+        MNTBC: int = 15
+        LNTBC: int = 15
+        MSO: float = 20
+        LSO: float = 20
+        ICC: float = 15
         # default leak conductance (g_L) at 16.6667 nS gives with C_m = 1 pF:
         # Membrane time constant τ = C_m/g_L ≈ 0.06 ms
         # if C_m = 15 pF => τ ≈ 0.9 ms
@@ -170,20 +170,20 @@ class Parameters:
     @dataclass
     class G_LEAK:
         # default: float = 16.67
-        SBC: int = 16.67
-        GBC: int = 16.67
-        LNTBC: int = 16.67
-        MNTBC: int = 16.67
-        MSO: float = 16.67
-        LSO: float = 16.67
-        ICC: float = 16.67
-        # SBC: int = 40
-        # GBC: int = 25
-        # LNTBC: int = 25
-        # MNTBC: int = 25
-        # MSO: float = 50
-        # LSO: float = 40
-        # ICC: float = 40
+        # SBC: int = 16.67
+        # GBC: int = 16.67
+        # LNTBC: int = 16.67
+        # MNTBC: int = 16.67
+        # MSO: float = 16.67
+        # LSO: float = 16.67
+        # ICC: float = 16.67
+        SBC: int = 40
+        GBC: int = 25
+        LNTBC: int = 25
+        MNTBC: int = 25
+        MSO: float = 80
+        LSO: float = 40
+        ICC: float = 40
 
     def __post_init__(self):
         # horrible, but i need each to be an instance so that changes

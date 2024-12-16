@@ -1,0 +1,19 @@
+- mi serve che l'intera rete abbia rate più alti
+- posso abbassare la capacità di membrana? ora è 1pF, ma valore di default 150. normalmente MSO quanto è?
+    - bushy: https://journals.physiology.org/doi/full/10.1152/jn.00127.2002?rfr_dat=cr_pub++0pubmed&url_ver=Z39.88-2003&rfr_id=ori%3Arid%3Acrossref.org
+        - Cm 12pF
+        membrane time constant = (1.69 ± 0.63 ms)
+        τ = C_m/g_L = C_m*R
+        => g_L = 6.7
+    - MSO: https://pmc.ncbi.nlm.nih.gov/articles/PMC3375691/
+        - Cm 410 pF (???)
+        - g_L = 150 nS
+        => time constant = 0.6ms, 0.3ms
+      https://pmc.ncbi.nlm.nih.gov/articles/PMC5133312/
+        - tau = 1
+        - R = 24 Mohm => gL=42nS
+        - Cm = 40
+    - LSO: https://doi.org/10.1111/j.0953-816X.2003.03133.x
+        - C_m = 22 pF
+        - g_L = 5.7
+        - V_th= -32 (?)

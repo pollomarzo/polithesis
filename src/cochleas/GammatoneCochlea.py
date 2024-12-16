@@ -99,7 +99,7 @@ def sound_to_spikes(
         M = SpikeMonitor(G)
         run(sound.duration)
         if plot_spikes:
-            plot(M.t / ms, M.i, ".")
+            plot(M.t / ms, M.i, ".", markersize=1)
             show()
 
         binaural_IHC_response[channel] = M.spike_trains()
