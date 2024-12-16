@@ -9,3 +9,5 @@ ANF_SPIKETRAINS
 results/*
 **/*.pic
 myoga_cache
+data/**/**
+data/Dimensions.xlsx
