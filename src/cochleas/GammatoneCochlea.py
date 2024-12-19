@@ -17,10 +17,10 @@ from sorcery import dict_of
 from consts import Paths
 from utils.custom_sounds import Tone, ToneBurst
 from utils.log import logger
+from utils.manual_fixes_to_b2h.HeadlessDatabase import HeadlessDatabase
 
 from .anf_response import AnfResponse
 from .consts import ANGLE_TO_IRCAM, CFMAX, CFMIN, NUM_ANF_PER_HC, NUM_CF
-from .HeadlessDatabase import HeadlessDatabase
 
 COCHLEA_KEY = f"gammatone"
 CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"

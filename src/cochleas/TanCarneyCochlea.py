@@ -2,7 +2,7 @@ from os import makedirs
 
 import numpy as np
 from brian2 import Hz, SpikeMonitor, kHz, ms, plot, run, seed, show
-from brian2hears import MiddleEar, Sound, TanCarney, ZhangSynapse, dB, erbspace
+from brian2hears import Sound, TanCarney, ZhangSynapse, dB, erbspace
 from joblib import Memory
 from scipy import signal
 from sorcery import dict_of
@@ -10,6 +10,7 @@ from sorcery import dict_of
 from consts import Paths
 from utils.custom_sounds import Tone, ToneBurst
 from utils.log import logger, tqdm
+from utils.manual_fixes_to_b2h.MiddleEar import MiddleEar
 
 from .anf_response import AnfResponse
 from .consts import CFMAX, CFMIN, NUM_CF
