@@ -10,28 +10,13 @@ import dill
 import nest
 import nest.voltage_trace
 from brian2 import Hz
-from sorcery import dict_of
 
-from analyze.report import generate_multi_inputs_single_net, generate_single_result
-from cochleas.anf_utils import (
-    COCHLEAS,
-    DCGC_COC_KEY,
-    GAMMATONE_COC_KEY,
-    PPG_COC_KEY,
-    TC_COC_KEY,
-    DCGC_cochlea,
-    create_sound_key,
-    gammatone_cochlea,
-    load_anf_response,
-    ppg_cochlea,
-    tc_cochlea,
-)
+from cochleas.anf_utils import TC_COC_KEY, create_sound_key, load_anf_response
+
 from cochleas.consts import ANGLES
 from consts import Paths, save_current_conf
-from models.InhModel.InhModel import InhModel
-from models.InhModel.params import Parameters as InhParam
-from models.InhModel.PPGparams import Parameters as PPGParam
-from models.InhModel.TCparams import Parameters as TCParam
+from models.BrainstemModel.BrainstemModel import BrainstemModel
+from models.BrainstemModel.params import Parameters as TCParam
 from utils.custom_sounds import Click, Tone, ToneBurst, WhiteNoise
 from utils.log import logger, tqdm
 
@@ -50,7 +35,7 @@ ex_key_with_time = (
     lambda *args: f"{datetime.datetime.now().isoformat()[:-7]}&{create_execution_key(*args)}"
 )
 
-CURRENT_TEST = "NO_ITD"
+CURRENT_TEST = "test"
 
 
 def create_save_result_object(
@@ -82,24 +67,25 @@ if __name__ == "__main__":
     for e in inputs:
         e.sound.level = 70 * b2h.dB
 
-    params = [TCParam("default")]
-    models = [InhModel]
-    cochleas = [TC_COC_KEY, tc_cochlea]
+    models = [BrainstemModel]
+    params = [TCParam("subject_1")]
+    cochlea_key = TC_COC_KEY
 
-    num_runs = len(inputs) * len(list(zip(cochleas, params)))
+    num_runs = len(inputs) * len(params)
     current_run = 0
     logger.info(f"launching {num_runs} trials...")
     times = {}
     result_dir = Path(Paths.RESULTS_DIR) / CURRENT_TEST
     trials_pbar = tqdm(total=num_runs, desc="trials")
 
-    for Model, param, (cochlea_key, cochlea) in zip(models, params, cochleas):
+    for Model, param in zip(models, params):
         curr_ex = f"{Model.key}&{cochlea_key}&{param.key}"
         curr_result_dir = result_dir / curr_ex
         curr_result_dir.mkdir(exist_ok=True, parents=True)
         result_paths = []
         for input in inputs:
             start = timer()
+            ex_key = ex_key_with_time(input, cochlea_key, Model.key, param.key)
             logger.info(
                 f">>>>> now testing arch n.{current_run+1} of {num_runs}"
             )
@@ -146,14 +132,6 @@ if __name__ == "__main__":
                 times={"start": start, "end": end, "timetaken": timetaken},
             )
 
-            if PLOT_INTERMEDIATE:
-                generate_single_result(result_file)
-            trials_pbar.update()
-
-        if PLOT_FINAL:
-            generate_multi_inputs_single_net(
-                result_paths, cleanup=not PLOT_INTERMEDIATE, rate=False
-            )
     trials_pbar.close()
     logger.debug(times)
     logger.info({k: str(v) for k, v in times.items()})
