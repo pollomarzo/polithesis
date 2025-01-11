@@ -86,7 +86,6 @@ def load_anf_response(
         logger.info(f"saved ANF not found. generation will take some time...")
     if ignore_cache:
         logger.info(f"ignoring cache. generation will take some time...")
-
     logger.info(
         f"generating ANF for {
         dict_of(sound,angle,cochlea_key,params)}"
@@ -94,7 +93,7 @@ def load_anf_response(
     if ignore_cache:
         cochlea_func = cochlea_func.call  # forces execution
     try:
-        anf = cochlea_func(sound, angle, params, True)
+        anf = cochlea_func(sound, angle, params)
     except TypeError as e:
         if "unexpected" in e.args[0]:
             logger.error(f"{e}, please check the signature of cochlea")
