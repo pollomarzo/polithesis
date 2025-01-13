@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+from cochleas.consts import ITD_REMOVAL_STRAT
+
 
 @dataclass
 class Parameters:
@@ -9,7 +11,11 @@ class Parameters:
         default_factory=lambda: (
             {
                 "gammatone": {
-                    "subj_number": 7,
+                    "hrtf_params": {
+                        "subj_number": "headless",
+                        "ild_only": False,
+                        "itd_remove_strategy": ITD_REMOVAL_STRAT.COMPUTED,
+                    },
                     "noise_factor": 0.3,
                     "refractory_period": 1,  # ms
                     "amplif_factor": 7,
@@ -22,18 +28,14 @@ class Parameters:
                     }
                 },
                 "TanCarney": {
-                    "subj_number": "headless",
+                    "hrtf_params": {
+                        "subj_number": 7,
+                        "ild_only": True,
+                        "itd_remove_strategy": ITD_REMOVAL_STRAT.ESTIMATE_FROM_HRTF,
+                    },
                     "cochlea_params": None,
                     "rng_seed": 42,
                     "omni_noise_level": 0,
-                },
-                "DCGC": {
-                    "subj_number": "headless",
-                    "cochlea_params": {"c1": -2.96},
-                    "amplif_factor": 15,
-                    "noise_factor": 0.2,
-                    "refractory_period": 1,  # ms
-                    "rng_seed": 42,
                 },
             }
         )
