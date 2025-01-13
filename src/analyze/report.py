@@ -288,7 +288,7 @@ def draw_rate_vs_angle(
                     max_spikes_single_neuron=max_spikes_single_neuron,
                     logscale=hist_logscale,
                 )
-        # _ = ax[i].legend(loc="lower right")
+        _ = ax[i].legend(loc="lower right")
 
     plt.suptitle(title)
     plt.setp([ax], xticks=angles)
@@ -420,7 +420,12 @@ def draw_ITD_ILD(data):
             binaural_sound = run_hrtf(
                 tone,
                 angle,
-                data["conf"]["parameters"]["cochlea"][coc]["subj_number"],
+                data["conf"]["parameters"]["cochlea"][coc]["hrtf_params"],
+            )
+            print(
+                logger.warning(
+                    data["conf"]["parameters"]["cochlea"][coc]["hrtf_params"]
+                )
             )
             left = binaural_sound.left
             right = binaural_sound.right
@@ -473,7 +478,7 @@ def generate_network_vis(res, filename):
         "connect",
     )
     src = graphviz.Source(dot)
-    src.render(outfile=filename, format="png", cleanup=False)
+    src.render(outfile=filename, format="png", cleanup=True)
 
 
 def paths(result_file_path: PurePath):

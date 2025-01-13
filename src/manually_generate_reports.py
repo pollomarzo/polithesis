@@ -32,8 +32,8 @@ if __name__ == "__main__":
         generate_multi_inputs_single_net(
             files,
             rate=False,
-            include_netvis=False,
-            cleanup=False,
-            show_pops=["parrot_ANF"],
+            include_netvis=True,
+            cleanup=True,
+            # show_pops=["parrot_ANF"],
         )
     logger.info("reports generation complete")

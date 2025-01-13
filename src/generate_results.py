@@ -53,7 +53,7 @@ PLOT_INTERMEDIATE = False
 
 # CURRENT_TEST = "click_white"
 # CURRENT_TEST = "correct_time_simulation"
-CURRENT_TEST = "produce_for_thesis"
+CURRENT_TEST = "check_hrtf_ildonly"
 
 
 def create_save_result_object(
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     for e in inputs:
         e.sound.level = 70 * b2h.dB
 
-    p2 = TCParam("checkhigherinhLSO")
+    p2 = InhParam("checkhrtfildonly")
     InhParam()
     PPGParam()
 
@@ -94,12 +94,10 @@ if __name__ == "__main__":
 
     models = [InhModel, InhModel, InhModel, InhModel, InhModel, InhModel]
     cochleas = [
-        (TC_COC_KEY, tc_cochlea),
+        # (TC_COC_KEY, tc_cochlea),
         # (PPG_COC_KEY, ppg_cochlea),
-        # (GAMMATONE_COC_KEY, gammatone_cochlea),
+        (GAMMATONE_COC_KEY, gammatone_cochlea),
     ]
-    # cochleas = {PPG_COC_KEY: ppg_cochlea}
-    # cochleas = {B2_COC_KEY: b2_cochlea}
     num_runs = len(inputs) * len(list(zip(cochleas, params)))
     current_run = 0
     logger.info(f"launching {num_runs} trials...")

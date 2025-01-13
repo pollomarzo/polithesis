@@ -14,7 +14,7 @@ from utils.manual_fixes_to_b2h.MiddleEar import MiddleEar
 
 from .anf_response import AnfResponse
 from .consts import CFMAX, CFMIN, NUM_CF
-from .GammatoneCochlea import run_hrtf
+from .hrtf_utils import run_hrtf
 
 COCHLEA_KEY = f"TanCarney"
 CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
@@ -44,15 +44,15 @@ def resample_binaural_sound(binaural_sound: Sound):
 def sound_to_spikes(
     sound: Sound | Tone | ToneBurst, angle, params: dict, plot_spikes=False
 ) -> AnfResponse:
-    subj_number = params["subj_number"]
+    hrtf_params = params["hrtf_params"]
     rng_seed = params["rng_seed"]
     noise_level = params["omni_noise_level"] * dB
     seed(rng_seed)
     coch_par = params.get("cochlea_params", None)
     logger.debug(
-        f"genenerating spikes for {dict_of(sound,angle,plot_spikes,subj_number)}"
+        f"genenerating spikes for {dict_of(sound,angle,plot_spikes,hrtf_params)}"
     )
-    binaural = run_hrtf(sound, angle, subj=subj_number)
+    binaural = run_hrtf(sound, angle, hrtf_params)
     logger.debug(f"binaural sound post hrtf level={binaural.level}")
     noise = Sound.whitenoise(binaural.duration).atlevel(noise_level)
     logger.debug(f"binaural sound post noise level={binaural.level}")

@@ -20,27 +20,21 @@ from utils.log import logger
 from utils.manual_fixes_to_b2h.HeadlessDatabase import HeadlessDatabase
 
 from .anf_response import AnfResponse
-from .consts import ANGLE_TO_IRCAM, CFMAX, CFMIN, NUM_ANF_PER_HC, NUM_CF
+from .consts import (
+    ANGLE_TO_IRCAM,
+    CFMAX,
+    CFMIN,
+    ITD_REMOVAL_STRAT,
+    NUM_ANF_PER_HC,
+    NUM_CF,
+)
+from .hrtf_utils import run_hrtf
 
 COCHLEA_KEY = f"gammatone"
 CACHE_DIR = Paths.ANF_SPIKES_DIR + COCHLEA_KEY + "/"
 makedirs(CACHE_DIR, exist_ok=True)
 
 memory = Memory(location=CACHE_DIR, verbose=0)
-
-
-def run_hrtf(sound: Sound | Tone | ToneBurst, angle, subj) -> Sound:
-    if type(sound) is not Sound:  # assume good faith, ok to fail otherwise
-        sound = sound.sound
-    if subj == "headless":
-        hrtfset = HeadlessDatabase(13, azim_max=90).load_subject()
-        hrtf = hrtfset(azim=angle)
-    else:
-        hrtfdb = IRCAM_LISTEN(Paths.IRCAM_DIR)
-        hrtfset = hrtfdb.load_subject(hrtfdb.subjects[subj])
-        hrtf = hrtfset(azim=ANGLE_TO_IRCAM[angle], elev=0)
-    binaural_sound: Sound = hrtf(sound)
-    return binaural_sound
 
 
 def ihc_to_anf(ihc_spikes: dict, ihc_to_spikes=NUM_ANF_PER_HC):
@@ -55,14 +49,14 @@ def ihc_to_anf(ihc_spikes: dict, ihc_to_spikes=NUM_ANF_PER_HC):
 def sound_to_spikes(
     sound: Sound | Tone, angle, params: dict, plot_spikes=False
 ) -> AnfResponse:
-    subj_number = params["subj_number"]
+    hrtf_params = params["hrtf_params"]
     noise_factor = params["noise_factor"]
     refractory_period = params["refractory_period"] * ms
     amplif_factor = params["amplif_factor"]
     logger.debug(
-        f"generating spikes for {dict_of(sound,angle,plot_spikes,subj_number,noise_factor,refractory_period)}"
+        f"generating spikes for {dict_of(sound,angle,plot_spikes,hrtf_params,noise_factor,refractory_period)}"
     )
-    binaural_sound = run_hrtf(sound, angle, subj=subj_number)
+    binaural_sound = run_hrtf(sound, angle, hrtf_params)
     cf = erbspace(CFMIN, CFMAX, NUM_CF)
     binaural_IHC_response = {}
 

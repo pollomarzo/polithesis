@@ -1,11 +1,10 @@
-from brian2 import Hz, kHz, second, Quantity, ms
-from brian2hears import Sound, IRCAM_LISTEN
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from brian2 import Hz, Quantity, kHz, ms, second
+from brian2hears import IRCAM_LISTEN, Sound
+from sorcery import dict_of
+
 from utils.log import logger
-from sorcery import (
-    dict_of,
-)
 
 """
 to calculate ITDs, i need to know when a sound starts. this means when it goes from silence (hence background noise) to signal, which is not obvious!
@@ -23,7 +22,7 @@ def _first_outside_max_variance(sound: Sound):
 
 def itd(left: Sound, right: Sound, display=False):
     logger.debug(f"calculating ITD between following sounds...")
-    logger.debug(dict_of(left, right))
+    # logger.debug(dict_of(left, right))
 
     left_start_idx, left_start_freq, left_start_time = _first_outside_max_variance(left)
     right_start_idx, right_start_freq, right_start_time = _first_outside_max_variance(
@@ -31,7 +30,7 @@ def itd(left: Sound, right: Sound, display=False):
     )
     logger.info(dict_of(left_start_time, right_start_time))
     itd = left_start_time - right_start_time
-    logger.info(f"calculated ITD of ${itd}. check graphical output for confirmation.")
+    logger.info(f"calculated ITD of {itd}. check graphical output for confirmation.")
 
     if display:
         fig, [left_plot, right_plot] = plt.subplots(2, 1)
