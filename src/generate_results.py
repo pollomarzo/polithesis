@@ -13,6 +13,7 @@ from brian2 import Hz
 from sorcery import dict_of
 
 from analyze.report import generate_multi_inputs_single_net, generate_single_result
+from cochleas.anf_response import AnfResponse
 from cochleas.anf_utils import (
     COCHLEAS,
     DCGC_COC_KEY,
@@ -117,13 +118,19 @@ if __name__ == "__main__":
                 f">>>>> now testing arch n.{current_run+1} of {num_runs}, with key {ex_key}"
             )
             angle_to_rate = {}
+            angle_to_hrtfed_sound = {}
             for angle in tqdm(ANGLES, "⮡ angles"):
                 nest.ResetKernel()
                 nest.SetKernelStatus(param.CONFIG.NEST_KERNEL_PARAMS)
 
                 logger.info(f"starting trial for {dict_of(ex_key,angle)}")
                 # this section is cached on disk
-                anf = load_anf_response(input, angle, cochlea_key, param.cochlea)
+                anf: AnfResponse = load_anf_response(
+                    input,
+                    angle,
+                    cochlea_key,
+                    param.cochlea,
+                )
                 logger.info("anf loaded. Creating model...")
 
                 model = Model(param, anf)
@@ -135,6 +142,7 @@ if __name__ == "__main__":
                     f"leftMSO is spiking at {len(model_result['L']['MSO']['times'])/TIME_SIMULATION*1000}Hz"
                 )
                 angle_to_rate[angle] = model_result
+                angle_to_hrtfed_sound[angle] = {"left": anf.left, "right": anf.right}
                 logger.info("trial complete.")
 
             logger.info(f"saving all angles for model {ex_key}...")
@@ -157,6 +165,7 @@ if __name__ == "__main__":
                 filename=filename,
                 simulation_time=TIME_SIMULATION,
                 times={"start": start, "end": end, "timetaken": timetaken},
+                angle_to_hrtfed_sound=angle_to_hrtfed_sound,
             )
 
             if PLOT_INTERMEDIATE:

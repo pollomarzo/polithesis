@@ -73,7 +73,7 @@ def spectrum(sound: Sound):
 
 def ild(left: Sound, right: Sound, orig: Sound, display=False):
     logger.debug(f"calculating ILD between following sounds...")
-    logger.debug(dict_of(left, right))
+    # logger.debug(dict_of(left, right))
     if left.samplerate != right.samplerate:
         raise TypeError(
             f"sounds have different samplerate! {left.samplerate} != {right.samplerate}"

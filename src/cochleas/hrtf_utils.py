@@ -1,3 +1,5 @@
+import math
+
 import brian2 as b2
 import numpy as np
 from brian2 import ms
@@ -57,10 +59,17 @@ def compensate_ITD(
 def run_hrtf(sound: Sound | Tone | ToneBurst, angle, hrtf_params) -> Sound:
     subj = hrtf_params["subj_number"]
     ild_only = hrtf_params["ild_only"]
-
     if type(sound) is not Sound:  # assume good faith, ok to fail otherwise
         sound = sound.sound
+    samplerate = sound.samplerate
+    original_duration = sound.duration
     if subj == "headless":
+        # delay sound to mimic time to reach ear (conservative approximation,
+        # it changes among HRTFs)
+        sound = Sound.sequence(
+            Sound.silence(5 * ms, sound.samplerate),
+            sound,
+        )
         hrtfset = HeadlessDatabase(13, azim_max=90).load_subject()
         hrtf = hrtfset(azim=angle)
     else:
@@ -76,4 +85,5 @@ def run_hrtf(sound: Sound | Tone | ToneBurst, angle, hrtf_params) -> Sound:
             hrtf_params["itd_remove_strategy"],
             show_ITD_plots=hrtf_params.get("show_ITD_plots", False),
         )
+    binaural_sound = binaural_sound.resized(math.floor(original_duration * samplerate))
     return binaural_sound
