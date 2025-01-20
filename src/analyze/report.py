@@ -409,28 +409,39 @@ def synthetic_angle_to_itd(angle, w_head: int = 22, v_sound: int = 33000):
 def draw_ITD_ILD(data):
     previous_level = logger.level
     # itd and ild functions are VERY verbose
-    logger.setLevel(logging.WARNING)
     tone: Tone = data["basesound"]
     angle_to_ild = {}
     angle_to_itd = {}
     angles = list(data["angle_to_rate"].keys())
     coc = data["conf"]["cochlea_type"]
+    angle_to_hrtfed_sound = data.get("angle_to_hrtfed_sound", None)
     if coc != "ppg":
+        logger.debug(
+            f"used cochlea {coc}, with parameters {
+                data["conf"]["parameters"]["cochlea"][coc]["hrtf_params"]
+            }"
+        )
         for angle in angles:
-            binaural_sound = run_hrtf(
-                tone,
-                angle,
-                data["conf"]["parameters"]["cochlea"][coc]["hrtf_params"],
-            )
-            print(
-                logger.warning(
-                    data["conf"]["parameters"]["cochlea"][coc]["hrtf_params"]
+            if angle_to_hrtfed_sound is None:
+                logger.info(
+                    "old result file, does not include HRTFed sounds. Generating (beware of possible differences)..."
                 )
-            )
-            left = binaural_sound.left
-            right = binaural_sound.right
+                binaural_sound = run_hrtf(
+                    tone,
+                    angle,
+                    data["conf"]["parameters"]["cochlea"][coc]["hrtf_params"],
+                )
+                left = binaural_sound.left
+                right = binaural_sound.right
+            else:
+                left, right = (
+                    angle_to_hrtfed_sound[angle]["left"],
+                    angle_to_hrtfed_sound[angle]["right"],
+                )
+            logger.setLevel(logging.WARNING)
             angle_to_itd[angle] = SA.itd(left, right)
             ild_res, all_freq_diff = SA.ild(left, right, tone.sound)
+            logger.setLevel(logging.DEBUG)
             angle_to_ild[angle] = ild_res
 
             # total_diff = np.sum(all_freq_diff)
@@ -538,9 +549,12 @@ def generate_multi_inputs_single_net(
         with open(path, "rb") as f:
             res = dill.load(f, ignore=True)
         RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(path)
+        hrtf_params = res["conf"]["parameters"]["cochlea"][res["conf"]["cochlea_type"]][
+            "hrtf_params"
+        ]
         fig = draw_rate_vs_angle(
             res,
-            f"Tan Carney periph, tone at {res['basesound'].frequency}, HRTF{filename[filename.index('.pic')-1]}",
+            f"Tan Carney periph, tone at {res['basesound'].frequency}, HRTF{hrtf_params['subj_number']}{'ILDonly' if hrtf_params['ild_only'] else ""}",
             rate=rate,
             hist_logscale=True,
             show_pops=show_pops,
