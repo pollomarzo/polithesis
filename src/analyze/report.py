@@ -631,7 +631,7 @@ def generate_multi_inputs_single_net(
     result = merge_rows_files(
         img_paths,
         results_paths[0].parent / report_name,
-        2 if len(results_paths) <= 6 else 4,
+        4 if len(results_paths) <= 6 else 4,
         cleanup,
     )
     return result

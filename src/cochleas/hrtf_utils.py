@@ -3,7 +3,7 @@ import math
 import brian2 as b2
 import numpy as np
 from brian2 import ms
-from brian2hears import IRCAM_LISTEN, Sound
+from brian2hears import IRCAM_LISTEN, Sound, dB
 
 from analyze import sound_analysis as SA
 from consts import Paths
@@ -56,9 +56,79 @@ def compensate_ITD(
     return Sound((left, right), samplerate=samplerate), corrected_itd
 
 
+def calculate_lefttoright_level_diff(freq, angle):
+    azimuth_rad = np.radians(angle)
+    head_radius = 0.0875  # meters
+    speed_of_sound = 343.0  # m/s
+    # Calculate wavelength and ka (wavelength * radius)
+    wavelength = speed_of_sound / (freq / b2.Hz)
+    ka = 2 * np.pi * head_radius / wavelength
+    # Frequency-dependent shadowing effect
+    # Higher ka values (higher frequencies or larger heads) create more shadowing
+    shadowing = np.minimum(20, ka * 2)  # Limited to 20 dB maximum
+    # Calculate ILD based on shadowing and azimuth
+    # The sin term gives directionality, shadowing term scales with frequency
+    ild = shadowing * np.sin(azimuth_rad)
+    # returns left - right difference
+    return -ild * dB
+
+
+def synthetic_ild(sound: Tone, angle: int):
+
+    if type(sound) is not Tone:
+        logger.error(f"selected HRTF synthetic_ild, but it only supports Tones")
+        raise TypeError(f"sound is {type(sound)}, while it should be {Tone}")
+
+    diff = calculate_lefttoright_level_diff(sound.frequency, angle)
+    left = Sound(sound.sound)
+    right = Sound(sound.sound)
+    azimuth_rad = np.radians(angle)
+
+    max_mask = np.abs(np.sin(azimuth_rad))
+    if angle < 0:  # Sound comes from the left
+        # Left ear gets less masking, right ear gets more
+        left_masking_factor = -(1 - max_mask)
+        right_masking_factor = -max_mask
+    else:  # Sound comes from the right
+        # Right ear gets less masking, left ear gets more
+        left_masking_factor = max_mask
+        right_masking_factor = 1 - max_mask
+
+    logger.debug(
+        f"{angle} -> left {diff * left_masking_factor}; right {diff * right_masking_factor}"
+    )
+    logger.debug(
+        f"original ILD: {diff}; new ILD: {diff * left_masking_factor + diff * right_masking_factor}"
+    )
+    # logger.debug(
+    #     f"left {diff} * {left_masking_factor}; right {diff} * {right_masking_factor}"
+    # )
+    left.level += diff * left_masking_factor
+    right.level += diff * right_masking_factor
+
+    return Sound((left, right), samplerate=sound.sound.samplerate)
+
+
+# def synthetic_ild(sound: Tone, angle: int):
+#     if type(sound) is not Tone:
+#         logger.error(f"selected HRTF synthetic_ild, but it only supports Tones")
+#         raise TypeError(f"sound is {type(sound)}, while it should be {Tone}")
+#     if angle is 0:
+#         return Sound((sound.sound, sound.sound), samplerate=sound.sound.samplerate)
+#     diff = calculate_lefttoright_level_diff(sound.frequency, angle)
+#     left = Sound(sound.sound)
+#     right = Sound(sound.sound)
+#     if diff < 0 * dB:
+#         left.level += diff
+#     else:
+#         right.level -= diff
+#     return Sound((left, right), samplerate=sound.sound.samplerate)
+
+
 def run_hrtf(sound: Sound | Tone | ToneBurst, angle, hrtf_params) -> Sound:
     subj = hrtf_params["subj_number"]
     ild_only = hrtf_params["ild_only"]
+    orig_sound = sound
     if type(sound) is not Sound:  # assume good faith, ok to fail otherwise
         sound = sound.sound
     samplerate = sound.samplerate
@@ -72,11 +142,14 @@ def run_hrtf(sound: Sound | Tone | ToneBurst, angle, hrtf_params) -> Sound:
         )
         hrtfset = HeadlessDatabase(13, azim_max=90).load_subject()
         hrtf = hrtfset(azim=angle)
+        binaural_sound: Sound = hrtf(sound)
+    elif subj == "synthetic_ild":
+        binaural_sound: Sound = synthetic_ild(orig_sound, angle)
     else:
         hrtfdb = IRCAM_LISTEN(Paths.IRCAM_DIR)
         hrtfset = hrtfdb.load_subject(hrtfdb.subjects[subj])
         hrtf = hrtfset(azim=ANGLE_TO_IRCAM[angle], elev=0)
-    binaural_sound: Sound = hrtf(sound)
+        binaural_sound: Sound = hrtf(sound)
 
     if ild_only:
         binaural_sound, compensated_itd = compensate_ITD(
