@@ -498,10 +498,11 @@ def draw_ITD_ILD(data):
 
     fig, ild = plt.subplots(1, sharex=True, figsize=(PLTWIDTH, 2.3))
     fig.suptitle(
-        f"diff = max(|spectrum(left)|)-max(|spectrum(right)|), freq={tone.frequency}"
+        f"diff = RMS(left)-RMS(right), freq={tone.frequency}"
+        # f"diff = max(|spectrum(left)|)-max(|spectrum(right)|), freq={tone.frequency}"
     )
 
-    ild.set_ylabel("Power (dB/Hz)", color="r")
+    ild.set_ylabel("Level diff (dB)", color="r")
     ild.plot(
         angles,
         [angle_to_ild[angle] for angle in angles],
