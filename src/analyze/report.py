@@ -597,12 +597,10 @@ def generate_multi_inputs_single_net(
         with open(path, "rb") as f:
             res = dill.load(f, ignore=True)
         RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(path)
-        hrtf_params = res["conf"]["parameters"]["cochlea"][res["conf"]["cochlea_type"]][
-            "hrtf_params"
-        ]
         fig = draw_rate_vs_angle(
             res,
-            f"Tan Carney periph, tone at {res['basesound'].frequency}, HRTF{hrtf_params['subj_number']}{'ILDonly' if hrtf_params['ild_only'] else ""}",
+            # f"Tan Carney periph, tone at {res['basesound'].frequency}, HRTF{hrtf_params['subj_number']}{'ILDonly' if hrtf_params['ild_only'] else ""}",
+            filename,
             rate=rate,
             hist_logscale=True,
             show_pops=show_pops,
