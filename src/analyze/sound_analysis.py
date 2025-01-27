@@ -87,10 +87,10 @@ def ild(left: Sound, right: Sound, orig: Sound, display=False):
     left_sp, left_freq = spectrum(left)
     orig_sp, orig_freq = spectrum(orig)
 
-    # diff = left_sp - right_sp
-    diff = np.max(np.abs(np.array(left))) - np.max(np.abs(np.array(right)))
+    ild_db = left.get_level() - right.get_level()
 
     if display:
+        diff = np.max(np.abs(np.array(left))) - np.max(np.abs(np.array(right)))
         ymax = max(np.max(left_sp), np.max(right_sp), np.max(orig_sp))
         ylim = (-200, ymax * 1.25)
         fig, axs = plt.subplots(2, 2)
@@ -111,4 +111,4 @@ def ild(left: Sound, right: Sound, orig: Sound, display=False):
         plt.tight_layout()
         # plt.subplots_adjust(hspace=0.6)
         plt.show()
-    return (diff, left_sp - right_sp)
+    return (ild_db, left_sp - right_sp)

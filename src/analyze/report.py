@@ -1,4 +1,5 @@
 import logging
+from bisect import bisect_left
 from collections import defaultdict
 from contextlib import ExitStack
 from itertools import batched
@@ -26,6 +27,25 @@ plt.rcParams["axes.grid"] = True
 plt.rcParams["figure.figsize"] = (6, 3)
 
 PLTWIDTH = 10
+
+
+def take_closest(myList, myNumber):
+    """
+    Assumes myList is sorted. Returns closest value to myNumber.
+
+    If two numbers are equally close, return the smallest number.
+    """
+    pos = bisect_left(myList, myNumber)
+    if pos == 0:
+        return (myList[0], 0)
+    if pos == len(myList):
+        return (myList[-1], len(myList))
+    before = myList[pos - 1]
+    after = myList[pos]
+    if after - myNumber < myNumber - before:
+        return (after, pos)
+    else:
+        return (before, pos - 1)
 
 
 def flatten(items):
@@ -122,16 +142,29 @@ def shift_senders(x, hist_logscale=False):
 
 
 def draw_hist(
-    ax, senders_renamed, angles, num_neurons, max_spikes_single_neuron, logscale=True
+    ax,
+    senders_renamed,
+    angles,
+    num_neurons,
+    max_spikes_single_neuron,
+    logscale=True,
+    freq=None,
 ):
     """draws a low opacity horizontal histogram for each angle position
 
     includes a secondary y-axis, optionally logarithmic.
     if logscale, expects senders to be renamed to CFs
+    if freq, include a horizontal line at corresponding frequency
     """
     max_histogram_height = 0.25
     bin_count = 50
     alpha = 0.5
+    freqlinestyle = {
+        "color": "black",
+        "linestyle": ":",
+        "label": "freq_in",
+        "alpha": 0.4,
+    }
     if logscale:
         bins = b2h.erbspace(CFMIN, CFMAX, bin_count) / b2.Hz
 
@@ -168,6 +201,8 @@ def draw_hist(
         yticks = [20, 100, 500, 1000, 5000, 10000, 20000]
         ax.set_yticks(yticks)
         ax.set_yticklabels([f"{freq} Hz" for freq in yticks])
+        if freq is not None:
+            ax.axhline(y=freq / b2.Hz, **freqlinestyle)
         ax.set_ylabel("approx CF (Hz)")
     else:
         bins = np.linspace(0, num_neurons, bin_count)
@@ -205,6 +240,11 @@ def draw_hist(
             )
         ax.set_ylabel("neuron id")
         ax.set_ylim(0, num_neurons)
+
+        if freq is not None:
+            cf = b2h.erbspace(CFMIN, CFMAX, num_neurons)
+            freq, neur_n = take_closest(cf, freq)
+            ax.axhline(y=neur_n)
     ax.yaxis.set_minor_locator(plt.NullLocator())  # remove minor ticks
 
 
@@ -216,11 +256,13 @@ def draw_rate_vs_angle(
     show_pops=["parrot_ANF", "GBC", "SBC", "LNTBC", "MNTBC", "LSO", "MSO", "ICC"],
     ylim=None,
     show_hist=True,
+    show_freq=False,
 ):
     logger.debug(dict_of(title, show_pops, rate, hist_logscale))
     version = data["angle_to_rate"][0].get("version", None)
     angle_to_rate = data["angle_to_rate"]
     name = data["conf"]["model_desc"]["name"]
+    input = data["basesound"]
     sound_key = data["conf"]["sound_key"]
     duration = (
         data.get("simulation_time", data["basesound"].sound.duration / b2.ms) * b2.ms
@@ -287,6 +329,11 @@ def draw_rate_vs_angle(
                     num_neurons=len(angle_to_rate[0]["L"][pop]["global_ids"]),
                     max_spikes_single_neuron=max_spikes_single_neuron,
                     logscale=hist_logscale,
+                    freq=(
+                        input.frequency
+                        if (show_freq and (isinstance(input, Tone)))
+                        else None
+                    ),
                 )
         _ = ax[i].legend(loc="lower right")
 
@@ -451,10 +498,11 @@ def draw_ITD_ILD(data):
 
     fig, ild = plt.subplots(1, sharex=True, figsize=(PLTWIDTH, 2.3))
     fig.suptitle(
-        f"diff = max(|spectrum(left)|)-max(|spectrum(right)|), freq={tone.frequency}"
+        f"diff = RMS(left)-RMS(right), freq={tone.frequency}"
+        # f"diff = max(|spectrum(left)|)-max(|spectrum(right)|), freq={tone.frequency}"
     )
 
-    ild.set_ylabel("Power (dB/Hz)", color="r")
+    ild.set_ylabel("Level diff (dB)", color="r")
     ild.plot(
         angles,
         [angle_to_ild[angle] for angle in angles],
@@ -549,12 +597,10 @@ def generate_multi_inputs_single_net(
         with open(path, "rb") as f:
             res = dill.load(f, ignore=True)
         RATE_VS_ANGLE, ILD_ITD, NETVIS, RESULT = paths(path)
-        hrtf_params = res["conf"]["parameters"]["cochlea"][res["conf"]["cochlea_type"]][
-            "hrtf_params"
-        ]
         fig = draw_rate_vs_angle(
             res,
-            f"Tan Carney periph, tone at {res['basesound'].frequency}, HRTF{hrtf_params['subj_number']}{'ILDonly' if hrtf_params['ild_only'] else ""}",
+            # f"Tan Carney periph, tone at {res['basesound'].frequency}, HRTF{hrtf_params['subj_number']}{'ILDonly' if hrtf_params['ild_only'] else ""}",
+            filename,
             rate=rate,
             hist_logscale=True,
             show_pops=show_pops,
@@ -585,7 +631,7 @@ def generate_multi_inputs_single_net(
     result = merge_rows_files(
         img_paths,
         results_paths[0].parent / report_name,
-        2 if len(results_paths) <= 6 else 4,
+        4 if len(results_paths) <= 6 else 4,
         cleanup,
     )
     return result
