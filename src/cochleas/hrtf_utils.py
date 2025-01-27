@@ -70,41 +70,45 @@ def calculate_lefttoright_level_diff(freq, angle):
     # The sin term gives directionality, shadowing term scales with frequency
     ild = shadowing * np.sin(azimuth_rad)
     # returns left - right difference
-    return -ild * dB
+    return np.abs(ild) * dB
 
 
 def synthetic_ild(sound: Tone, angle: int):
-
     if type(sound) is not Tone:
         logger.error(f"selected HRTF synthetic_ild, but it only supports Tones")
         raise TypeError(f"sound is {type(sound)}, while it should be {Tone}")
 
     diff = calculate_lefttoright_level_diff(sound.frequency, angle)
+    logger.debug(f"ILD calculated as {diff}")
     left = Sound(sound.sound)
     right = Sound(sound.sound)
-    azimuth_rad = np.radians(angle)
+    if angle > 0:
+        left.set_level(left.get_level() - diff)
+    else:
+        right.set_level(right.get_level() - diff)
 
-    max_mask = np.abs(np.sin(azimuth_rad))
-    if angle < 0:  # Sound comes from the left
-        # Left ear gets less masking, right ear gets more
-        left_masking_factor = -(1 - max_mask)
-        right_masking_factor = -max_mask
-    else:  # Sound comes from the right
-        # Right ear gets less masking, left ear gets more
-        left_masking_factor = max_mask
-        right_masking_factor = 1 - max_mask
+    # azimuth_rad = np.radians(angle)
+    # max_mask = np.abs(np.sin(azimuth_rad))
+    # if angle < 0:  # Sound comes from the left
+    #     # Left ear gets less masking, right ear gets more
+    #     left_masking_factor = -(1 - max_mask)
+    #     right_masking_factor = -max_mask
+    # else:  # Sound comes from the right
+    #     # Right ear gets less masking, left ear gets more
+    #     left_masking_factor = max_mask
+    #     right_masking_factor = 1 - max_mask
 
-    logger.debug(
-        f"{angle} -> left {diff * left_masking_factor}; right {diff * right_masking_factor}"
-    )
-    logger.debug(
-        f"original ILD: {diff}; new ILD: {diff * left_masking_factor + diff * right_masking_factor}"
-    )
     # logger.debug(
-    #     f"left {diff} * {left_masking_factor}; right {diff} * {right_masking_factor}"
+    #     f"{angle} -> left {diff * left_masking_factor}; right {diff * right_masking_factor}"
     # )
-    left.level += diff * left_masking_factor
-    right.level += diff * right_masking_factor
+    # logger.debug(
+    #     f"original ILD: {diff}; new ILD: {diff * left_masking_factor + diff * right_masking_factor}"
+    # )
+    # # logger.debug(
+    # #     f"left {diff} * {left_masking_factor}; right {diff} * {right_masking_factor}"
+    # # )
+    # left.level += diff * left_masking_factor
+    # right.level += diff * right_masking_factor
 
     return Sound((left, right), samplerate=sound.sound.samplerate)
 
