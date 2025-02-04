@@ -4,10 +4,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+import matplotlib.pyplot as plt
 from brian2 import Hz, kHz, ms
-from brian2hears import IRCAM_LISTEN, Sound, dB
+from brian2hears import IRCAM_LISTEN, Sound, dB, erbspace
 from joblib.memory import MemorizedFunc
 from sorcery import dict_of
+from cochleas.consts import CFMAX, CFMIN
+from collections import defaultdict
+from bisect import bisect_left
+
 
 from consts import Paths
 from models.InhModel.params import Parameters
@@ -163,3 +168,118 @@ class CheckThreshold:
             else:
                 self.above_threshold = False
         return self.above_threshold
+    
+
+def take_closest(myList, myNumber):
+    """
+    Assumes myList is sorted. Returns closest value to myNumber.
+
+    If two numbers are equally close, return the smallest number.
+    """
+    pos = bisect_left(myList, myNumber)
+    if pos == 0:
+        return (myList[0], 0)
+    if pos == len(myList):
+        return (myList[-1], len(myList))
+    before = myList[pos - 1]
+    after = myList[pos]
+    if after - myNumber < myNumber - before:
+        return (after, pos)
+    else:
+        return (before, pos - 1)
+
+
+def get_spike_phases(spike_times: np.ndarray, frequency: float) -> np.ndarray:
+    times_sec = spike_times
+    return 2 * np.pi * frequency * (times_sec % (1 / frequency))
+
+
+def calculate_vector_strength(spike_times: np.ndarray, frequency: float) -> float:
+    if len(spike_times) == 0:
+        return 0
+    phases = get_spike_phases(spike_times, frequency)
+    x = np.mean(np.cos(phases))
+    y = np.mean(np.sin(phases))
+    return np.sqrt(x**2 + y**2)
+    
+def range_around_center(center, radius, min_val=0, max_val=np.iinfo(np.int64).max):
+    start = max(min_val, center - radius)
+    end = min(max_val + 1, center + radius + 1)
+    return np.arange(start, end)
+
+def calculate_vector_strength_from_result(
+        # result file (loaded)
+        res,
+        angle,
+        side,
+        pop,
+        freq = None, # if None: freq = res['basesound'].frequency
+        cf_target = None,
+        bandwidth=1,
+        n_bins = 7,
+        display=False # if True also return fig, show() in caller function
+        ):
+    
+    spikes = res["angle_to_rate"][angle][side][pop]
+    sender2times = defaultdict(list)
+    for sender, time in zip(spikes["senders"], spikes["times"]):
+        sender2times[sender].append(time)
+    sender2times = {k: np.array(v) / 1000 for k, v in sender2times.items()}
+    num_neurons = len(spikes["global_ids"])
+    cf = erbspace(CFMIN, CFMAX, num_neurons)
+
+    if(freq == None):
+        if(type(res['basesound'])  in (Tone,ToneBurst)):
+            freq = res['basesound'].frequency
+        else:
+            logger.error("Frequency needs to be specified for non-Tone sounds")
+    else:
+        freq = freq * Hz
+
+    if(cf_target == None):    
+        cf_neuron, center_neuron_for_freq = take_closest(cf, freq)
+    else:
+        cf_neuron, center_neuron_for_freq = take_closest(cf, cf_target *Hz)
+
+    old2newid = {oldid: i for i, oldid in enumerate(spikes["global_ids"])}
+    new2oldid = {v: k for k, v in old2newid.items()}
+
+    relevant_neurons = range_around_center(
+        center_neuron_for_freq, radius=bandwidth, max_val=num_neurons - 1
+    )
+    relevant_neurons_ids = [new2oldid[i] for i in relevant_neurons]
+
+    spike_times_list = [sender2times[i] for i in relevant_neurons_ids]  
+    spike_times_array = np.concatenate(spike_times_list)  # Flatten into a single array
+
+    phases = get_spike_phases(
+        spike_times= spike_times_array, frequency=freq / Hz
+    )
+    vs = calculate_vector_strength(
+        spike_times=spike_times_array, frequency=freq / Hz
+    )
+
+
+    if not display:
+        return (vs, None)
+    
+    # plot phases
+    bins = np.linspace(0, 2 * np.pi, n_bins + 1)
+    bin_centers = (bins[:-1] + bins[1:]) / 2
+
+    fig, ax = plt.subplots(1, 1, figsize=(10,5))
+    hist1, _ = np.histogram(phases, bins=bins)
+    ax.bar(bin_centers, hist1, width=2 * np.pi / n_bins, alpha=0.7)
+    if(bandwidth == 0):
+        ax.set_title(
+            f"Neuron {relevant_neurons_ids[0]} (CF: {cf_neuron:.1f} Hz)\nVS={vs:.3f}"
+        )
+    else:
+        ax.set_title(
+            f"Neurons {relevant_neurons_ids[0]} : {relevant_neurons_ids[-1]} (center CF: {cf_neuron:.1f} Hz)\nVS={vs:.3f}"
+        )
+    ax.set_xlabel("Phase (radians)")
+    ax.set_ylabel("Spike Count")
+    fig.show()
+
+    return (fig,vs)
