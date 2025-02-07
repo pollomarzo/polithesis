@@ -4,10 +4,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+import matplotlib.pyplot as plt
 from brian2 import Hz, kHz, ms
-from brian2hears import IRCAM_LISTEN, Sound, dB
+from brian2hears import IRCAM_LISTEN, Sound, dB, erbspace
 from joblib.memory import MemorizedFunc
 from sorcery import dict_of
+from cochleas.consts import CFMAX, CFMIN
+from collections import defaultdict
+from bisect import bisect_left
+
 
 from consts import Paths
 from models.InhModel.params import Parameters
@@ -163,3 +168,4 @@ class CheckThreshold:
             else:
                 self.above_threshold = False
         return self.above_threshold
+    
