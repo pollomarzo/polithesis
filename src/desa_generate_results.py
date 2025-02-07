@@ -11,12 +11,12 @@ import nest
 import nest.voltage_trace
 from brian2 import Hz
 
-from cochleas.anf_utils import TC_COC_KEY,GAMMATONE_COC_KEY,PPG_COC_KEY, create_sound_key, load_anf_response
+from cochleas.anf_utils import TC_COC_KEY, create_sound_key, load_anf_response
 from cochleas.consts import ANGLES
 from consts import Paths, save_current_conf
 from models.BrainstemModel.BrainstemModel import BrainstemModel
-from models.BrainstemModel.params import Parameters
-from utils.custom_sounds import Click, Clicks, Tone, ToneBurst, WhiteNoise
+from models.BrainstemModel.params import Parameters as TCParam
+from utils.custom_sounds import Click, Tone, ToneBurst, WhiteNoise
 from utils.log import logger, tqdm
 
 # big result objects need big stacks
@@ -26,12 +26,16 @@ resource.setrlimit(
 
 nest.set_verbosity("M_ERROR")
 
-create_execution_key = lambda i, c, p: f"{create_sound_key(i)}&{c}&{p}"
+TIME_SIMULATION = 200
+
+
+create_execution_key = lambda i, c, m, p: f"{create_sound_key(i)}&{c}&{m}&{p}"
 ex_key_with_time = (
     lambda *args: f"{datetime.datetime.now().isoformat()[:-7]}&{create_execution_key(*args)}"
 )
 
-CURRENT_TEST = "angle2rates_new"
+CURRENT_TEST = "test"
+
 
 def create_save_result_object(
     input,
@@ -58,16 +62,13 @@ def create_save_result_object(
 
 if __name__ == "__main__":
 
-    TIME_SIMULATION = 1000
-    inputs = [Tone(i, TIME_SIMULATION * b2.ms) for i in [100,1000,10000]* b2.Hz] + [WhiteNoise(TIME_SIMULATION * b2.ms)]
+    inputs = [Tone(i, 1000 * b2.ms) for i in [100] * b2.Hz]
     for e in inputs:
         e.sound.level = 70 * b2h.dB
+
+    models = [BrainstemModel]
+    params = [TCParam("subject_1")]
     cochlea_key = TC_COC_KEY
-    models = [BrainstemModel, BrainstemModel, BrainstemModel]
-    params = [Parameters("subject_1"), Parameters("itd_only"), Parameters("ild_only")]
-    params[1].cochlea[cochlea_key]["hrtf_params"]["subj_number"] = 'itd_only'
-    params[2].cochlea[cochlea_key]["hrtf_params"]["subj_number"] = 'ild_only'
-    
 
     num_runs = len(inputs) * len(params)
     current_run = 0
@@ -77,16 +78,14 @@ if __name__ == "__main__":
     trials_pbar = tqdm(total=num_runs, desc="trials")
 
     for Model, param in zip(models, params):
-        curr_ex = f"{cochlea_key}&{param.key}"
+        curr_ex = f"{Model.key}&{cochlea_key}&{param.key}"
         curr_result_dir = result_dir / curr_ex
         curr_result_dir.mkdir(exist_ok=True, parents=True)
         result_paths = []
         for input in inputs:
             start = timer()
-            ex_key = ex_key_with_time(input, cochlea_key, param.key)
-            logger.info(
-                f">>>>> now testing arch n.{current_run+1} of {num_runs}"
-            )
+            ex_key = ex_key_with_time(input, cochlea_key, Model.key, param.key)
+            logger.info(f">>>>> now testing arch n.{current_run+1} of {num_runs}")
             angle_to_rate = {}
             for angle in tqdm(ANGLES, "⮡ angles"):
                 nest.ResetKernel()
