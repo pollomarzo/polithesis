@@ -19,8 +19,8 @@ import numpy as np
 from PIL import Image
 from sorcery import dict_of
 
-from analyze import sound_analysis as SA
-from analyze.graph import generate_flow_chart
+from cochleas.analyze import sound_analysis as SA
+from cochleas.analyze.graph import generate_flow_chart
 from cochleas.consts import CFMAX, CFMIN
 from cochleas.GammatoneCochlea import run_hrtf
 from utils.custom_sounds import Tone, ToneBurst
@@ -849,3 +849,48 @@ def calculate_vector_strength_from_result(
     fig.show()
 
     return (fig,vs)
+
+def draw_spikes_single_pop(
+    data,
+    angle,
+    side,
+    pop,
+    y_ax = 'ids',
+    title=None,
+    xlim=None,
+    color = 'b',
+    figsize = (7,5)
+):
+    spikes = data["angle_to_rate"][angle][side][pop]  
+    num_neurons = len(spikes["global_ids"])
+    cf = erbspace(CFMIN, CFMAX, num_neurons)
+    neuron_to_cf = {global_id: freq for global_id, freq in zip(spikes["global_ids"], cf)}
+    duration = data.get("simulation_time", data["basesound"].sound.duration / b2.ms)
+    if side == 'L': color = 'm'
+    if side == 'R': color = 'g'
+    if xlim == None: xlim = [0,duration]
+    if y_ax == 'ids':
+        y_values = spikes['senders']
+        ylabel = "id_senders"
+    elif y_ax == 'cf':
+        y_values = np.array([neuron_to_cf[sender] for sender in spikes["senders"]])
+        ylabel = "Characteristic Frequency (Hz)"
+    elif y_ax == 'global_ids':
+        y_values = spikes['senders'] - spikes['global_ids'][0]
+        ylabel = "Global Neuron IDs"
+    else:
+        raise ValueError("Invalid value for 'ax'. Choose 'ids', 'cf', or 'global_ids'.")
+
+    
+    fig, ax = plt.subplots(1, figsize = figsize)
+    ax.plot(spikes['times'], y_values, '.', color = color, markersize=1)
+    ax.set_title(title)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel("time [ms]")
+    ax.set_xlim(xlim)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+
+    return fig
+
+
