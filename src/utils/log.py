@@ -2,8 +2,7 @@ import datetime
 import logging
 import os
 from functools import partial
-from pathlib import Path
-from consts import Paths
+
 import __main__
 from tqdm import tqdm as std_tqdm
 
@@ -31,7 +30,7 @@ except:
     PREFIX = "ipythonNB"
     # main file not set by ipynb, no time to think of ergonomic solution
 
-LOG_PATH = Path(Paths.LOG_DIR)# "/home/ubuntu/polithesis/logs/"
+LOG_PATH = "../logs/"
 LOG_NAME = f"{PREFIX}_{datetime.datetime.now().date()}"
 
 logger = logging.getLogger(PREFIX)
