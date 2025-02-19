@@ -4,11 +4,12 @@ from inspect import isfunction
 
 @dataclass
 class Paths:
-    DATA_DIR: str = "../data/"
+    DATA_DIR: str = "/home/ubuntu/polithesis/data/"
     IRCAM_DIR: str = DATA_DIR + "IRCAM/"
     SOFA_DIR: str = DATA_DIR + "SOFA/"
     ANF_SPIKES_DIR: str = DATA_DIR + "ANF_SPIKETRAINS/"
-    RESULTS_DIR: str = "../results/"
+    RESULTS_DIR: str = "/home/ubuntu/polithesis/results/"
+    LOG_DIR: str = "/home/ubuntu/polithesis/logs/"
 
 
 def save_current_conf(model, params, cochlea, sound_key, paths=Paths()):

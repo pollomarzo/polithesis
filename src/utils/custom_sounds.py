@@ -4,6 +4,8 @@ import brian2hears as b2h
 DEFAULT_SOUND_DURATION = 25 * b2.ms
 DEFAULT_SILENCE_DURATION = DEFAULT_BURST_SINGLE_DURATION = 25 * b2.ms
 DEFAULT_BURST_REP = 3
+DEFAULT_CLICKS_NUMBER = 10
+DEFAULT_CLICKS_INTERVAL = 50
 
 
 # i considered subclassing for a bit but i don't know enough
@@ -53,9 +55,19 @@ class WhiteNoise:
 class Click:
     sound: b2h.Sound
 
-    def __init__(self, duration=DEFAULT_SOUND_DURATION, **kwargs):
-        self.peak = kwargs.get("peak", None)
-        self.sound = b2h.click(duration, **kwargs)
+    def __init__(self, duration=DEFAULT_SOUND_DURATION, level=None, **kwargs):
+        self.peak = level
+        self.sound = b2h.click(duration, self.peak)
+
+
+class Clicks:
+    sound: b2h.Sound
+
+    def __init__(self, duration=DEFAULT_SOUND_DURATION, number = DEFAULT_CLICKS_NUMBER, interval = DEFAULT_CLICKS_INTERVAL, level=None, **kwargs):
+        self.peak = level
+        self.sound = b2h.clicks(duration,number,interval, self.peak)
+        self.number = number
+
 
 
 class ToneFromAngle(Tone):

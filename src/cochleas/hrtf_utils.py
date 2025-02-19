@@ -131,13 +131,12 @@ def synthetic_ild(sound: Tone, angle: int):
 
 def run_hrtf(sound: Sound | Tone | ToneBurst, angle, hrtf_params) -> Sound:
     subj = hrtf_params["subj_number"]
-    ild_only = hrtf_params["ild_only"]
     orig_sound = sound
     if type(sound) is not Sound:  # assume good faith, ok to fail otherwise
         sound = sound.sound
     samplerate = sound.samplerate
     original_duration = sound.duration
-    if subj == "headless":
+    if subj == "itd_only":
         # delay sound to mimic time to reach ear (conservative approximation,
         # it changes among HRTFs)
         sound = Sound.sequence(
@@ -147,7 +146,7 @@ def run_hrtf(sound: Sound | Tone | ToneBurst, angle, hrtf_params) -> Sound:
         hrtfset = HeadlessDatabase(13, azim_max=90).load_subject()
         hrtf = hrtfset(azim=angle)
         binaural_sound: Sound = hrtf(sound)
-    elif subj == "synthetic_ild":
+    elif subj == "ild_only":
         binaural_sound: Sound = synthetic_ild(orig_sound, angle)
     else:
         hrtfdb = IRCAM_LISTEN(Paths.IRCAM_DIR)
@@ -155,12 +154,5 @@ def run_hrtf(sound: Sound | Tone | ToneBurst, angle, hrtf_params) -> Sound:
         hrtf = hrtfset(azim=ANGLE_TO_IRCAM[angle], elev=0)
         binaural_sound: Sound = hrtf(sound)
 
-    if ild_only:
-        binaural_sound, compensated_itd = compensate_ITD(
-            binaural_sound,
-            angle,
-            hrtf_params["itd_remove_strategy"],
-            show_ITD_plots=hrtf_params.get("show_ITD_plots", False),
-        )
     binaural_sound = binaural_sound.resized(math.floor(original_duration * samplerate))
     return binaural_sound

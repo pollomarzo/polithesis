@@ -19,8 +19,8 @@ import numpy as np
 from PIL import Image
 from sorcery import dict_of
 
-from cochleas.analyze import sound_analysis as SA
-from cochleas.analyze.graph import generate_flow_chart
+from analyze import sound_analysis as SA
+from analyze.graph import generate_flow_chart
 from cochleas.consts import CFMAX, CFMIN
 from cochleas.GammatoneCochlea import run_hrtf
 from utils.custom_sounds import Tone, ToneBurst
@@ -780,9 +780,11 @@ def calculate_vector_strength_from_result(
         side,
         pop,
         freq = None, # if None: freq = res['basesound'].frequency
+        color = None,
         cf_target = None,
         bandwidth=0,
         n_bins = 7,
+        figsize = (7,5),
         display=False # if True also return fig, show() in caller function
         ):
     
@@ -828,14 +830,16 @@ def calculate_vector_strength_from_result(
 
     if not display:
         return (vs, None)
-    
+    if color == None:
+        if side == 'L': color = 'm'
+        if side == 'R': color = 'g'
     # plot phases
     bins = np.linspace(0, 2 * np.pi, n_bins + 1)
     bin_centers = (bins[:-1] + bins[1:]) / 2
 
-    fig, ax = plt.subplots(1, 1, figsize=(10,5))
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
     hist1, _ = np.histogram(phases, bins=bins)
-    ax.bar(bin_centers, hist1, width=2 * np.pi / n_bins, alpha=0.7)
+    ax.bar(bin_centers, hist1, width=2 * np.pi / n_bins, alpha=0.7, color = color)
     if(bandwidth == 0):
         ax.set_title(
             f"Neuron {relevant_neurons_ids[0]} (CF: {cf_neuron:.1f} Hz)\nVS={vs:.3f}"
@@ -858,7 +862,7 @@ def draw_spikes_single_pop(
     y_ax = 'ids',
     title=None,
     xlim=None,
-    color = 'b',
+    color = None,
     figsize = (7,5)
 ):
     spikes = data["angle_to_rate"][angle][side][pop]  
@@ -866,18 +870,24 @@ def draw_spikes_single_pop(
     cf = erbspace(CFMIN, CFMAX, num_neurons)
     neuron_to_cf = {global_id: freq for global_id, freq in zip(spikes["global_ids"], cf)}
     duration = data.get("simulation_time", data["basesound"].sound.duration / b2.ms)
-    if side == 'L': color = 'm'
-    if side == 'R': color = 'g'
-    if xlim == None: xlim = [0,duration]
+    if color == None:
+        if side == 'L': color = 'm'
+        if side == 'R': color = 'g'
+    if xlim == None: 
+        xlim_array = [0,duration]
+    else: xlim_array = [0,xlim]
     if y_ax == 'ids':
         y_values = spikes['senders']
         ylabel = "id_senders"
     elif y_ax == 'cf':
         y_values = np.array([neuron_to_cf[sender] for sender in spikes["senders"]])
-        ylabel = "Characteristic Frequency (Hz)"
+        ylabel = "Characteristic Frequency [Hz]"
     elif y_ax == 'global_ids':
         y_values = spikes['senders'] - spikes['global_ids'][0]
         ylabel = "Global Neuron IDs"
+    elif y_ax == 'cf_custom':
+        y_values = spikes['senders']
+        ylabel = "Characteristic Frequency (Hz)"
     else:
         raise ValueError("Invalid value for 'ax'. Choose 'ids', 'cf', or 'global_ids'.")
 
@@ -886,10 +896,14 @@ def draw_spikes_single_pop(
     ax.plot(spikes['times'], y_values, '.', color = color, markersize=1)
     ax.set_title(title)
     ax.set_ylabel(ylabel)
-    ax.set_xlabel("time [ms]")
-    ax.set_xlim(xlim)
+    ax.set_xlabel("Time [ms]")
+    ax.set_xlim(xlim_array)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
+    if y_ax == 'cf_custom':
+        ax.set_yticks([0, 2219, 12709, 29573, 34999]) #8552 500 Hz
+        ax.set_yticklabels(int(cf[t]) for t in [0, 2219, 12709, 29573, 34999])
+
 
     return fig
 
