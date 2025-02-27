@@ -19,8 +19,8 @@ import numpy as np
 from PIL import Image
 from sorcery import dict_of
 
-from cochleas.analyze import sound_analysis as SA
-from cochleas.analyze.graph import generate_flow_chart
+from analyze import sound_analysis as SA
+from analyze.graph import generate_flow_chart
 from cochleas.consts import CFMAX, CFMIN
 from cochleas.GammatoneCochlea import run_hrtf
 from utils.custom_sounds import Tone, ToneBurst
@@ -250,7 +250,7 @@ def draw_hist(
             ax.axhline(y=neur_n)
     ax.yaxis.set_minor_locator(plt.NullLocator())  # remove minor ticks
 
-def draw_rate_vs_angle2(
+def draw_rate_vs_angle(
     data,
     title,
     rate=True,
@@ -334,114 +334,13 @@ def draw_rate_vs_angle2(
                 num_neurons=len(angle_to_rate[0]["L"][pop]["global_ids"]),
                 max_spikes_single_neuron=max_spikes_single_neuron,
                 logscale=hist_logscale,
-            )
-    # _ = ax[i].legend(loc="lower right")
-    
+            )    
     if len(show_pops) < 8:
         ax[len(show_pops)].axis('off')  # Turn off the 8th subplot (or any remaining one)
 
     plt.suptitle(title)
-    #plt.setp([ax], xticks=angles)
-    #[ax.set_xticklabels([f"{i}°" for i in angle_to_rate.keys()]) for ax in ax]
-
     plt.tight_layout()
 
-    return fig
-
-def draw_rate_vs_angle(
-    data,
-    title,
-    rate=True,
-    hist_logscale=True,
-    show_pops=["parrot_ANF", "GBC", "SBC", "LNTBC", "MNTBC", "LSO", "MSO", "ICC"],
-    ylim=None,
-    show_hist=True,
-    show_freq=False,
-):
-    logger.debug(dict_of(title, show_pops, rate, hist_logscale))
-    version = data["angle_to_rate"][0].get("version", None)
-    angle_to_rate = data["angle_to_rate"]
-    name = data["conf"]["model_desc"]["name"]
-    input = data["basesound"]
-    sound_key = data["conf"]["sound_key"]
-    duration = (
-        data.get("simulation_time", data["basesound"].sound.duration / b2.ms) * b2.ms
-    )
-    logger.debug(f"simulation time={duration}")
-
-    angles = list(angle_to_rate.keys())
-    sides = ["L", "R"]
-
-    with plt.ioff():
-        fig, ax = plt.subplots(len(show_pops), figsize=(8, 2 * len(show_pops)))
-    ax = list(flatten([ax]))
-
-    for i, pop in tqdm(list(enumerate(show_pops)), desc="pop"):
-        num_active = {
-            side: [len(set(angle_to_rate[angle][side][pop])) for angle in angles]
-            for side in sides
-        }
-        tot_spikes = {
-            side: [
-                len(angle_to_rate[angle][side][pop]["times"] / duration)
-                for angle in angles
-            ]
-            for side in sides
-        }
-        active_neuron_rate = {
-            side: [
-                avg_fire_rate_actv_neurons(angle_to_rate[angle][side][pop])
-                * (1 * b2.second)
-                / duration
-                for angle in angles
-            ]
-            for side in sides
-        }
-        distr = {
-            side: [
-                firing_neurons_distribution(angle_to_rate[angle][side][pop])
-                for angle in angles
-            ]
-            for side in sides
-        }
-        plotted_rate = active_neuron_rate if rate else tot_spikes
-        ax[i].plot(angles, plotted_rate["L"], label=f"left  {pop}")
-        ax[i].plot(angles, plotted_rate["R"], label=f"right {pop}")
-        ax[i].set_ylabel("actv neur spk/sec (Hz)" if rate else "total pop spks/sec")
-        ax[i].set_ylim(ylim)
-
-        if show_hist:
-            v = ax[i].twinx()
-            v.grid(visible=False)  # or use linestyle='--'
-            if version > 2:  # needed for global ids
-                senders_renamed = {
-                    side: [
-                        shift_senders(angle_to_rate[angle][side][pop], hist_logscale)
-                        for angle in angles
-                    ]
-                    for side in sides
-                }
-                max_spikes_single_neuron = max(flatten(distr.values()))
-                draw_hist(
-                    v,
-                    senders_renamed,
-                    angles,
-                    num_neurons=len(angle_to_rate[0]["L"][pop]["global_ids"]),
-                    max_spikes_single_neuron=max_spikes_single_neuron,
-                    logscale=hist_logscale,
-                    freq=(
-                        input.frequency
-                        if (show_freq and (isinstance(input, Tone)))
-                        else None
-                    ),
-                )
-        _ = ax[i].legend(loc="lower right")
-
-    plt.suptitle(title)
-    plt.setp([ax], xticks=angles)
-    [ax.set_xticklabels([f"{i}°" for i in angle_to_rate.keys()]) for ax in ax]
-
-    plt.tight_layout()
     return fig
 
 
@@ -736,24 +635,6 @@ def generate_multi_inputs_single_net(
     )
     return result
 
-def take_closest(myList, myNumber):
-    """
-    Assumes myList is sorted. Returns closest value to myNumber.
-
-    If two numbers are equally close, return the smallest number.
-    """
-    pos = bisect_left(myList, myNumber)
-    if pos == 0:
-        return (myList[0], 0)
-    if pos == len(myList):
-        return (myList[-1], len(myList))
-    before = myList[pos - 1]
-    after = myList[pos]
-    if after - myNumber < myNumber - before:
-        return (after, pos)
-    else:
-        return (before, pos - 1)
-
 
 def get_spike_phases(spike_times: np.ndarray, frequency: float) -> np.ndarray:
     times_sec = spike_times
@@ -782,8 +663,11 @@ def calculate_vector_strength_from_result(
         freq = None, # if None: freq = res['basesound'].frequency
         cf_target = None,
         bandwidth=0,
-        n_bins = 7,
-        display=False # if True also return fig, show() in caller function
+        n_bins = 8,
+        display=False,
+        y_ax = 'pdf',
+        color = None,
+        figsize = [7,5]
         ):
     
     spikes = res["angle_to_rate"][angle][side][pop]
@@ -827,15 +711,25 @@ def calculate_vector_strength_from_result(
 
 
     if not display:
-        return (vs, None)
+        return (vs)
     
     # plot phases
     bins = np.linspace(0, 2 * np.pi, n_bins + 1)
     bin_centers = (bins[:-1] + bins[1:]) / 2
 
-    fig, ax = plt.subplots(1, 1, figsize=(10,5))
-    hist1, _ = np.histogram(phases, bins=bins)
-    ax.bar(bin_centers, hist1, width=2 * np.pi / n_bins, alpha=0.7)
+    if color == None:
+        if side == 'L': color = 'm'
+        elif side == 'R': color = 'g'
+        else: color = 'k'
+
+    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    if y_ax == 'pdf':
+        hist1, _ = np.histogram(phases, bins=bins, density= True)
+        ax.set_ylabel("PDF")
+    if y_ax == 'spikes':
+        hist1, _ = np.histogram(phases, bins=bins, density= False)
+        ax.set_ylabel("Spike Count")
+    ax.bar(bin_centers, hist1, width=2 * np.pi / n_bins, alpha=0.7, color = color)
     if(bandwidth == 0):
         ax.set_title(
             f"Neuron {relevant_neurons_ids[0]} (CF: {cf_neuron:.1f} Hz)\nVS={vs:.3f}"
@@ -845,52 +739,157 @@ def calculate_vector_strength_from_result(
             f"Neurons {relevant_neurons_ids[0]} : {relevant_neurons_ids[-1]} (center CF: {cf_neuron:.1f} Hz)\nVS={vs:.3f}"
         )
     ax.set_xlabel("Phase (radians)")
-    ax.set_ylabel("Spike Count")
-    fig.show()
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    plt.show()
+    return (vs)
 
-    return (fig,vs)
+def calculate_vector_strength_from_result_polar(
+        res,
+        angle,
+        side,
+        pop,
+        freq=None,  # if None: freq = res['basesound'].frequency
+        cf_target=None,
+        bandwidth=0,
+        n_bins=7,
+        display=False,
+        color = None,
+        figsize = [7,5]  # if True also return fig, show() in caller function
+        ):
+    
+    # Get spikes and organize times per sender
+    spikes = res["angle_to_rate"][angle][side][pop] 
+    print(spikes)
+    sender2times = defaultdict(list)
+    for sender, time in zip(spikes["senders"], spikes["times"]):
+        sender2times[sender].append(time)
+    sender2times = {k: np.array(v) / 1000 for k, v in sender2times.items()}
+    num_neurons = len(spikes["global_ids"])
+    cf = erbspace(CFMIN, CFMAX, num_neurons)
+    
+    # Determine the frequency to use
+    if freq is None:
+        if type(res['basesound']) in (Tone, ToneBurst):
+            freq = res['basesound'].frequency
+        else:
+            logger.error("Frequency needs to be specified for non-Tone sounds")
+    else:
+        freq = freq * Hz
+    
+    # Determine the closest characteristic frequency (CF) neuron
+    if cf_target is None:    
+        cf_neuron, center_neuron_for_freq = take_closest(cf, freq)
+    else:
+        cf_neuron, center_neuron_for_freq = take_closest(cf, cf_target * Hz)
+    
+    # Map between old and new neuron IDs
+    old2newid = {oldid: i for i, oldid in enumerate(spikes["global_ids"])}
+    new2oldid = {v: k for k, v in old2newid.items()}
+    
+    # Choose relevant neurons based on the center neuron and bandwidth
+    relevant_neurons = range_around_center(
+        center_neuron_for_freq, radius=bandwidth, max_val=num_neurons - 1
+    )
+    relevant_neurons_ids = [new2oldid[i] for i in relevant_neurons]
+    
+    # Concatenate the spike times from the relevant neurons
+    spike_times_list = [sender2times[i] for i in relevant_neurons_ids]
+    spike_times_array = np.concatenate(spike_times_list)  # Flatten into a single array
+    
+    # Compute phases and vector strength
+    phases = get_spike_phases(spike_times=spike_times_array, frequency=freq / Hz)
+    vs = calculate_vector_strength(spike_times=spike_times_array, frequency=freq / Hz)
+    
+    if not display:
+        return (vs, None)
+
+    if color == None:
+        if side == 'L': color = 'm'
+        elif side == 'R': color = 'g'
+        else: color = 'k'
+
+    
+    # Plot phases in polar coordinates
+    bins = np.linspace(0, 2 * np.pi, n_bins + 1)
+    bin_centers = (bins[:-1] + bins[1:]) / 2
+
+    # Create a polar subplot
+    fig, ax = plt.subplots(1, 1, subplot_kw={'projection': 'polar'}, figsize=figsize)
+    hist1, _ = np.histogram(phases, bins=bins, density = True)
+    ax.bar(bin_centers, hist1, width=2 * np.pi / n_bins, alpha=0.7, color = color)
+    
+    if bandwidth == 0:
+        ax.set_title(f"Neuron {relevant_neurons_ids[0]} (CF: {cf_neuron:.1f} Hz)\nVS={vs:.3f}")
+    else:
+        ax.set_title(f"Neurons {relevant_neurons_ids[0]} : {relevant_neurons_ids[-1]} (center CF: {cf_neuron:.1f} Hz)\nVS={vs:.3f}")
+    
+    # Remove all but the last yticks
+    ax.set_yticks([])  # Keep only the last tick
+    #ax.yaxis.set_tick_params(labelsize=10)  # Adjust size if needed
+
+    plt.show()
+    return
+
 
 def draw_spikes_single_pop(
-    data,
+    res,
     angle,
     side,
     pop,
     y_ax = 'ids',
+    f_ticks = [100,1000,10000],
     title=None,
     xlim=None,
-    color = 'b',
+    color = None,
     figsize = (7,5)
 ):
-    spikes = data["angle_to_rate"][angle][side][pop]  
+    spikes = res["angle_to_rate"][angle][side][pop]  
     num_neurons = len(spikes["global_ids"])
     cf = erbspace(CFMIN, CFMAX, num_neurons)
     neuron_to_cf = {global_id: freq for global_id, freq in zip(spikes["global_ids"], cf)}
-    duration = data.get("simulation_time", data["basesound"].sound.duration / b2.ms)
-    if side == 'L': color = 'm'
-    if side == 'R': color = 'g'
+    duration = res.get("simulation_time", res["basesound"].sound.duration / b2.ms)
+
+    if color == None:
+        if side == 'L': color = 'm'
+        elif side == 'R': color = 'g'
+        else: color = 'k'
+
     if xlim == None: xlim = [0,duration]
     if y_ax == 'ids':
         y_values = spikes['senders']
         ylabel = "id_senders"
     elif y_ax == 'cf':
         y_values = np.array([neuron_to_cf[sender] for sender in spikes["senders"]])
-        ylabel = "Characteristic Frequency (Hz)"
+        ylabel = "Characteristic Frequency [Hz]"
     elif y_ax == 'global_ids':
         y_values = spikes['senders'] - spikes['global_ids'][0]
         ylabel = "Global Neuron IDs"
+    elif y_ax == 'cf_custom':
+        y_values = spikes['senders'] - spikes['global_ids'][0]
+        ylabel = "Characteristic Frequency [Hz]"
     else:
         raise ValueError("Invalid value for 'ax'. Choose 'ids', 'cf', or 'global_ids'.")
 
-    
     fig, ax = plt.subplots(1, figsize = figsize)
     ax.plot(spikes['times'], y_values, '.', color = color, markersize=1)
     ax.set_title(title)
     ax.set_ylabel(ylabel)
-    ax.set_xlabel("time [ms]")
+    ax.set_xlabel("Time [ms]")
     ax.set_xlim(xlim)
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
+    ticks = []
+    if y_ax == 'cf_custom':
+        for f in f_ticks:
+            _, pos = take_closest(cf, f * Hz)
+            ticks.append(pos)
+        ax.set_yticks(ticks)
+        ax.set_yticklabels(f_ticks)
+    if title == None: ax.set_title(res['filename'])
 
-    return fig
+    plt.show()
+    return
+    
 
 

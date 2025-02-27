@@ -27,16 +27,15 @@ resource.setrlimit(
 
 nest.set_verbosity("M_ERROR")
 
-TIME_SIMULATION = 200
+TIME_SIMULATION = 1000
 
 
-create_execution_key = lambda i, c, m, p: f"{create_sound_key(i)}&{c}&{m}&{p}"
+create_execution_key = lambda i, c, p: f"{create_sound_key(i)}&{c}&{p}"
 ex_key_with_time = (
     lambda *args: f"{datetime.datetime.now().isoformat()[:-7]}&{create_execution_key(*args)}"
 )
 
-CURRENT_TEST = "test"
-
+CURRENT_TEST = "angle2rates3"
 
 def create_save_result_object(
     input,
@@ -63,13 +62,20 @@ def create_save_result_object(
 
 if __name__ == "__main__":
 
-    inputs = [Tone(i, 1000 * b2.ms) for i in [100] * b2.Hz]
+    inputs = [Tone(i, 1000 * b2.ms) for i in [1000, 10000] * b2.Hz]
     for e in inputs:
         e.sound.level = 70 * b2h.dB
 
-    models = [BrainstemModel]
-    params = [TCParam("subject_1")]
+    models = [BrainstemModel, BrainstemModel, BrainstemModel]
     cochlea_key = TC_COC_KEY
+
+    p2 = TCParam("itd_only")
+    p2.cochlea[cochlea_key]['subj_number'] = 'itd_only'
+
+    p3 = TCParam("ild_only")
+    p3.cochlea[cochlea_key]['subj_number'] = 'ild_only'
+
+    params = [p2,p3]
 
     num_runs = len(inputs) * len(params)
     current_run = 0
@@ -79,13 +85,11 @@ if __name__ == "__main__":
     trials_pbar = tqdm(total=num_runs, desc="trials")
 
     for Model, param in zip(models, params):
-        curr_ex = f"{Model.key}&{cochlea_key}&{param.key}"
-        curr_result_dir = result_dir / curr_ex
-        curr_result_dir.mkdir(exist_ok=True, parents=True)
+        curr_ex = f"{cochlea_key}&{param.key}"
         result_paths = []
         for input in inputs:
             start = timer()
-            ex_key = ex_key_with_time(input, cochlea_key, Model.key, param.key)
+            ex_key = ex_key_with_time(input, cochlea_key, param.key)
             logger.info(
                 f">>>>> now testing arch n.{current_run+1} of {num_runs}"
             )
@@ -111,9 +115,10 @@ if __name__ == "__main__":
                 logger.info("trial complete.")
 
             logger.info(f"saving all angles for model {ex_key}...")
+
             # save model results to file
             filename = f"{ex_key}.pic"
-            result_file = curr_result_dir / filename
+            result_file = result_dir / filename
             result_paths.append(result_file)
 
             end = timer()
