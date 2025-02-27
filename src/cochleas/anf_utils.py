@@ -16,7 +16,7 @@ from bisect import bisect_left
 
 from consts import Paths
 from models.InhModel.params import Parameters
-from utils.custom_sounds import Click, Tone, ToneBurst, WhiteNoise
+from utils.custom_sounds import Click, Tone, ToneBurst, WhiteNoise, Clicks
 from utils.log import logger
 
 from .anf_response import AnfResponse
@@ -63,6 +63,13 @@ def create_sound_key(sound):
             level = sound.peak
         else:
             level = "XX"
+    elif type(sound) is Clicks:
+        sound_type = "clicks"
+        add_info = str(sound.number).replace(" ", "")
+        if sound.peak is not None:
+            level = sound.peak
+        else:
+            level = "XX"
     else:
         raise NotImplementedError(f"sound {sound} is not a Tone")
     return f"{sound_type}{f"_{add_info}" if add_info else ""}_{level}dB"
@@ -79,7 +86,7 @@ def generate_possible_sounds():
 
 
 def load_anf_response(
-    sound: Tone | Sound | ToneBurst | Click | WhiteNoise,
+    sound: Tone | Sound | ToneBurst | Click | Clicks | WhiteNoise,
     angle: int,
     cochlea_key: str,
     params: dict,

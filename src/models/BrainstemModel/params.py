@@ -28,7 +28,6 @@ class Parameters:
                 "TanCarney": {
                     "hrtf_params": {
                         "subj_number": 1,
-                        "ild_only": False,
                         "itd_remove_strategy": ITD_REMOVAL_STRAT.ESTIMATE_FROM_HRTF,
                     },
                     "cochlea_params": None,

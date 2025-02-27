@@ -11,13 +11,12 @@ import nest
 import nest.voltage_trace
 from brian2 import Hz
 
-from cochleas.anf_utils import TC_COC_KEY, create_sound_key, load_anf_response
-
+from cochleas.anf_utils import TC_COC_KEY,GAMMATONE_COC_KEY,PPG_COC_KEY, create_sound_key, load_anf_response
 from cochleas.consts import ANGLES
 from consts import Paths, save_current_conf
 from models.BrainstemModel.BrainstemModel import BrainstemModel
-from models.BrainstemModel.params import Parameters as TCParam
-from utils.custom_sounds import Click, Tone, ToneBurst, WhiteNoise
+from models.BrainstemModel.params import Parameters
+from utils.custom_sounds import Click, Clicks, Tone, ToneBurst, WhiteNoise
 from utils.log import logger, tqdm
 
 # big result objects need big stacks
@@ -89,6 +88,7 @@ if __name__ == "__main__":
         result_paths = []
         for input in inputs:
             start = timer()
+            ex_key = ex_key_with_time(input, cochlea_key, param.key)
             ex_key = ex_key_with_time(input, cochlea_key, param.key)
             logger.info(
                 f">>>>> now testing arch n.{current_run+1} of {num_runs}"
