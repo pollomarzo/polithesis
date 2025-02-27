@@ -713,7 +713,8 @@ def calculate_vector_strength_from_result(
         return (vs, None)
     if color == None:
         if side == 'L': color = 'm'
-        if side == 'R': color = 'g'
+        elif side == 'R': color = 'g'
+        else: color = 'k'
     # plot phases
     bins = np.linspace(0, 2 * np.pi, n_bins + 1)
     bin_centers = (bins[:-1] + bins[1:]) / 2
@@ -842,7 +843,8 @@ def draw_spikes_single_pop(
     duration = data.get("simulation_time", data["basesound"].sound.duration / b2.ms)
     if color == None:
         if side == 'L': color = 'm'
-        if side == 'R': color = 'g'
+        elif side == 'R': color = 'g'
+        else: color = 'k'
     if xlim == None: 
         xlim_array = [0,duration]
     else: xlim_array = [0,xlim]
