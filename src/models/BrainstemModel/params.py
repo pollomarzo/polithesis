@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+from cochleas.consts import ITD_REMOVAL_STRAT
+
 
 @dataclass
 class Parameters:
@@ -22,7 +24,7 @@ class Parameters:
                 #     }
                 # },
                 "TanCarney": {
-                    "subj_number": 1, #"headless",
+                    "subj_number": 1,  # "headless",
                     "cochlea_params": None,
                     "rng_seed": 42,
                     "omni_noise_level": 0,
