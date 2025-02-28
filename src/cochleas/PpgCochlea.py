@@ -6,6 +6,7 @@ import brian2 as b2
 import brian2hears as b2h
 import numpy as np
 import scipy.stats as stats
+from brian2hears import erbspace
 from joblib import Memory
 from scipy.interpolate import interp1d
 from sorcery import dict_of
@@ -40,12 +41,14 @@ def tone_to_ppg_spikes(sound: Tone, angle: int, params: dict):
 
     n_ANFs = int(N_IHCs * 10)
     # cochlea array of frequencies
-    coch_freqs = np.round(
-        np.logspace(
-            np.log(CFMIN / b2.Hz), np.log(CFMAX / b2.Hz), num=N_IHCs, base=np.exp(1)
-        ),
-        2,
-    )
+    # original logspace method
+    # coch_freqs = np.round(
+    #     np.logspace(
+    #         np.log(CFMIN / b2.Hz), np.log(CFMAX / b2.Hz), num=N_IHCs, base=np.exp(1)
+    #     ),
+    #     2,
+    # )
+    coch_freqs = erbspace(CFMIN, CFMAX, N_IHCs) / b2.Hz
     # [nr. of spikes], num of spikes for each pulse packet (PPG parameter)
     ild_values = [
         10,
