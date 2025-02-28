@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+from cochleas.consts import ITD_REMOVAL_STRAT
+
 
 @dataclass
 class Parameters:
@@ -22,7 +24,11 @@ class Parameters:
                 #     }
                 # },
                 "TanCarney": {
-                    "subj_number": "headless",
+                    "hrtf_params": {
+                        "subj_number": 6,
+                        "ild_only": False,
+                        "itd_remove_strategy": ITD_REMOVAL_STRAT.COMPUTED,
+                    },
                     "cochlea_params": None,
                     "rng_seed": 42,
                     "omni_noise_level": 0,
@@ -133,12 +139,12 @@ class Parameters:
         ANFs2GBCs: float = 7.0
         GBCs2LNTBCs: float = 20.0
         GBCs2MNTBCs: float = 30.0
-        SBCs2LSO: float = 5.0
-        MNTBCs2LSO: float = -20.0
-        # MNTBCs2LSO: float = -50.0
-        MNTBCs2MSO: float = -40.0
-        LNTBCs2MSO: float = -40.0
+        SBCs2LSO: float = 8.0
+        MNTBCs2LSO: float = -10.0
+
         SBCs2MSO: float = 9.0
+        MNTBCs2MSO: float = -0.0
+        LNTBCs2MSO: float = -0.0
         MSO2ICC: float = 20.0
         LSO2ICC: float = 20.0
 
@@ -153,7 +159,7 @@ class Parameters:
         MNTBC: int = 15
         LNTBC: int = 15
         MSO: float = 20
-        LSO: float = 30
+        LSO: float = 20
         ICC: float = 20
         # default leak conductance (g_L) at 16.6667 nS gives with C_m = 1 pF:
         # Membrane time constant τ = C_m/g_L ≈ 0.06 ms
